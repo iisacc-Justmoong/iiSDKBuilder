@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.31)
+project(Hello LANGUAGES CXX)
+find_package(iiSDKCore 0.10 CONFIG REQUIRED)
+find_package(Addon CONFIG REQUIRED)
+add_executable(hello main.cpp)
+target_link_libraries(hello PRIVATE iiSDKCore::iiSDKCore Addon::Addon)
+set_target_properties(hello PROPERTIES CXX_EXTENSIONS OFF)

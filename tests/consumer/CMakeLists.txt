@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.31)
+project(iiSDKBuilderConsumer LANGUAGES CXX)
+find_package(iiSDKBuilder 0.1 CONFIG REQUIRED)
+include("${iiSDKBuilder_DIR}/iiSDKBuilderMatrix.cmake")
+add_executable(consumer main.cpp)
+target_link_libraries(consumer PRIVATE iiSDKBuilder::iiSDKBuilder)
+enable_testing()
+add_test(NAME consumer COMMAND consumer)

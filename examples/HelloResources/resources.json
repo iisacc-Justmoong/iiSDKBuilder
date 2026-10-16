@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "name": "hello_assets",
+  "resources": [
+    {"name": "text/greeting.txt", "source": "assets/greeting.txt"},
+    {"name": "text/greeting-alias.txt", "source": "assets/greeting.txt"},
+    {"name": "icons/app.svg", "source": "assets/app.svg"},
+    {"name": "platform.txt", "source": "assets/windows.txt", "platform": "windows"},
+    {"name": "platform.txt", "source": "assets/macos.txt", "platform": "macos"},
+    {"name": "platform.txt", "source": "assets/linux.txt", "platform": "linux"},
+    {"name": "platform.txt", "source": "assets/android.txt", "platform": "android"},
+    {"name": "platform.txt", "source": "assets/ios.txt", "platform": "ios"},
+    {"name": "platform.txt", "source": "assets/wasm.txt", "platform": "wasm"}
+  ]
+}

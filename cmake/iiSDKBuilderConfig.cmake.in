@@ -1,0 +1,12 @@
+@PACKAGE_INIT@
+include(CMakeFindDependencyMacro)
+find_dependency(iiFileProviderNative 0.6 CONFIG HINTS "$ENV{IIFILEPROVIDER_PREFIX}" "$ENV{HOME}/.local/SDK/iiFileProvider")
+
+
+
+
+
+
+find_dependency(iiSDKCore 0.17 CONFIG)
+include("${CMAKE_CURRENT_LIST_DIR}/iiSDKBuilderTargets.cmake")
+check_required_components(iiSDKBuilder)

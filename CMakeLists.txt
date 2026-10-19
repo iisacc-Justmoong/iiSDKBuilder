@@ -1,9 +1,8 @@
 cmake_minimum_required(VERSION 3.31)
-project(iiSDKBuilder VERSION 0.2.0 LANGUAGES CXX)
+project(iiSDKBuilder VERSION 0.2.1 LANGUAGES CXX)
 set(CMAKE_CXX_EXTENSIONS OFF)
 # File creation is owned by iiFileProvider.
 find_package(iiFileProviderNative 0.6 CONFIG REQUIRED HINTS "$ENV{IIFILEPROVIDER_PREFIX}" "$ENV{HOME}/.local/SDK/iiFileProvider")
-link_libraries(iiFileProvider::Native)
 
 
 
@@ -37,6 +36,7 @@ target_sources(iiSDKBuilder PRIVATE src/Resources.cpp)
 add_library(iiSDKBuilder::iiSDKBuilder ALIAS iiSDKBuilder)
 target_compile_features(iiSDKBuilder PUBLIC cxx_std_23)
 target_link_libraries(iiSDKBuilder PUBLIC iiSDKCore::iiSDKCore)
+target_link_libraries(iiSDKBuilder PRIVATE iiFileProvider::Native)
 target_include_directories(iiSDKBuilder PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
@@ -103,7 +103,7 @@ install(DIRECTORY docs/ DESTINATION ${CMAKE_INSTALL_DATADIR}/iiSDKBuilder/docs)
 
 if(BUILD_TESTING)
     add_executable(iiSDKBuilderResourceTests tests/resources.cpp)
-    target_link_libraries(iiSDKBuilderResourceTests PRIVATE iiSDKBuilder::iiSDKBuilder)
+    target_link_libraries(iiSDKBuilderResourceTests PRIVATE iiSDKBuilder::iiSDKBuilder iiFileProvider::Native)
     add_test(NAME iiSDKBuilder.resources COMMAND iiSDKBuilderResourceTests
         "${CMAKE_CURRENT_BINARY_DIR}/tests/resources")
     set(_builder_test_core "${IISDKBUILDER_CORE_SOURCE_DIR}")
@@ -116,7 +116,7 @@ if(BUILD_TESTING)
     endif()
     add_executable(iiSDKBuilderTests tests/contracts.cpp src/Json.cpp)
     target_include_directories(iiSDKBuilderTests PRIVATE src)
-    target_link_libraries(iiSDKBuilderTests PRIVATE iiSDKBuilder::iiSDKBuilder)
+    target_link_libraries(iiSDKBuilderTests PRIVATE iiSDKBuilder::iiSDKBuilder iiFileProvider::Native)
     add_executable(iiSDKBuilderArtifactTests tests/artifacts.cpp)
     target_link_libraries(iiSDKBuilderArtifactTests PRIVATE iiSDKBuilder::iiSDKBuilder)
     add_test(NAME iiSDKBuilder.native_contract COMMAND iiSDKBuilderArtifactTests
@@ -130,6 +130,12 @@ if(BUILD_TESTING)
     endforeach()
     if(_builder_real_core)
         find_package(Python3 3.9 COMPONENTS Interpreter REQUIRED)
+        if(IISDKBUILDER_CORE_SOURCE_DIR)
+            add_test(NAME iiSDKBuilder.core_foundation COMMAND "${Python3_EXECUTABLE}" -B
+                "${IISDKBUILDER_CORE_SOURCE_DIR}/tests/core_boundary.py"
+                --source "${IISDKBUILDER_CORE_SOURCE_DIR}"
+                --build "${CMAKE_CURRENT_BINARY_DIR}/core/build")
+        endif()
         add_test(NAME iiSDKBuilder.resource_integration COMMAND "${Python3_EXECUTABLE}" -B
             "${CMAKE_CURRENT_SOURCE_DIR}/tests/resources_integration.py"
             "$<TARGET_FILE:iiSDKBuilderCLI>" "${CMAKE_CURRENT_SOURCE_DIR}"

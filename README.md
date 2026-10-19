@@ -1,5 +1,10 @@
 # iiSDKBuilder
 
+Package release: **0.2.1** (2026-10-19). This patch packages the current
+source snapshot; build, test and installation evidence is recorded in the SDK
+patch-release report. Earlier versioned feature notes remain historical.
+
+
 iiSDKBuilder is a Qt-free C++23 library and command-line tool that builds an
 application and its iiSDK dependencies through CMake for Windows, macOS, Linux,
 Android, iOS, and WebAssembly in one invocation. Version 0.2 uses iiSDKCore 0.17 or newer
@@ -64,3 +69,8 @@ The [Hello World example](examples/Hello/README.md) is a minimal Core-only
 application built through the Builder CLI. It dispatches a Core event-loop task,
 then prints `Hello, World!` through Core. Builder's internal file/log dependency
 does not become an application link dependency.
+
+The native file-provider dependency is scoped to Builder and its direct test
+consumers. It is not inherited by a source-built iiSDKCore. The
+`iiSDKBuilder.core_foundation` regression checks the actual Core target
+dependency manifest when `IISDKBUILDER_CORE_SOURCE_DIR` is enabled.

@@ -76,3 +76,11 @@ The native file-provider dependency is scoped to Builder and its direct test
 consumers. It is not inherited by a source-built iiSDKCore. The
 `iiSDKBuilder.core_foundation` regression checks the actual Core target
 dependency manifest when `IISDKBUILDER_CORE_SOURCE_DIR` is enabled.
+
+## License
+
+SPDX-License-Identifier: MIT
+
+The original code and documentation in this repository are licensed under the
+[MIT License](LICENSE). Third-party code, libraries, fonts, tools, and model
+weights retain their respective licenses.

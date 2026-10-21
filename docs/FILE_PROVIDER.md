@@ -10,9 +10,9 @@ runtime validation are separate evidence.
 Changed boundaries:
 
 
-- `src/Builder.cpp`
-- `src/Json.cpp`
-- `src/Process.cpp`
+- `src/iiSDKBuilder/Builder.cpp`
+- `src/iiSDKBuilder/Json.cpp`
+- `src/iiSDKBuilder/Process.cpp`
 # Core foundation migration (0.13)
 
 Builder's JSON/manifests/reports use `iiFileProvider::native::File::write` directly.

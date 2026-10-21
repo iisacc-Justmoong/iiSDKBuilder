@@ -31,14 +31,14 @@ else()
     find_package(iiSDKCore 0.17 CONFIG REQUIRED)
 endif()
 
-add_library(iiSDKBuilder src/Json.cpp src/Manifest.cpp src/Plan.cpp src/Process.cpp src/Builder.cpp src/Artifact.cpp)
-target_sources(iiSDKBuilder PRIVATE src/Resources.cpp)
+add_library(iiSDKBuilder src/iiSDKBuilder/Json.cpp src/iiSDKBuilder/Manifest.cpp src/iiSDKBuilder/Plan.cpp src/iiSDKBuilder/Process.cpp src/iiSDKBuilder/Builder.cpp src/iiSDKBuilder/Artifact.cpp)
+target_sources(iiSDKBuilder PRIVATE src/iiSDKBuilder/Resources.cpp)
 add_library(iiSDKBuilder::iiSDKBuilder ALIAS iiSDKBuilder)
 target_compile_features(iiSDKBuilder PUBLIC cxx_std_23)
 target_link_libraries(iiSDKBuilder PUBLIC iiSDKCore::iiSDKCore)
 target_link_libraries(iiSDKBuilder PRIVATE iiFileProvider::Native)
 target_include_directories(iiSDKBuilder PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 generate_export_header(iiSDKBuilder BASE_NAME IISDKBUILDER
@@ -76,7 +76,11 @@ install(TARGETS iiSDKBuilder iiSDKBuilderCLI EXPORT iiSDKBuilderTargets
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
-install(DIRECTORY include/iiSDKBuilder DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(FILES
+    src/iiSDKBuilder/Builder.h
+    src/iiSDKBuilder/Resources.h
+    src/iiSDKBuilder/iiSDKBuilder.h
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/iiSDKBuilder)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/include/iiSDKBuilder/Export.h"
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/iiSDKBuilder)
 install(EXPORT iiSDKBuilderTargets NAMESPACE iiSDKBuilder:: DESTINATION "${_package_dir}")
@@ -114,8 +118,8 @@ if(BUILD_TESTING)
     if(NOT _builder_test_core)
         set(_builder_test_core "${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures/sdk/iiSDKCore")
     endif()
-    add_executable(iiSDKBuilderTests tests/contracts.cpp src/Json.cpp)
-    target_include_directories(iiSDKBuilderTests PRIVATE src)
+    add_executable(iiSDKBuilderTests tests/contracts.cpp src/iiSDKBuilder/Json.cpp)
+    target_include_directories(iiSDKBuilderTests PRIVATE src/iiSDKBuilder)
     target_link_libraries(iiSDKBuilderTests PRIVATE iiSDKBuilder::iiSDKBuilder iiFileProvider::Native)
     add_executable(iiSDKBuilderArtifactTests tests/artifacts.cpp)
     target_link_libraries(iiSDKBuilderArtifactTests PRIVATE iiSDKBuilder::iiSDKBuilder)

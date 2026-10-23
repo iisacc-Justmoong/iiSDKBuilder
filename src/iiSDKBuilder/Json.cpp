@@ -1,5 +1,6 @@
 #include <iiFileProviderStorage.h>
 #include "Json.h"
+#include <iiSDKCore/Core/Text/Number.h>
 #include <iiFileProviderNative.h>
 #include <charconv>
 #include <cmath>
@@ -132,10 +133,9 @@ struct Reader final {
             while (pos<text.size() && text[pos]>='0' && text[pos]<='9') ++pos;
             if (first==pos) invalid("Missing JSON exponent digits");
         }
-        double number=0;
-        const auto converted=std::from_chars(text.data()+start,text.data()+pos,number);
-        if (converted.ec!=std::errc{} || !std::isfinite(number)) invalid("JSON number out of range");
-        return number;
+        const auto number=ii::core::parse_decimal(text.substr(start,pos-start));
+        if (!number) invalid("JSON number out of range");
+        return *number;
     }
 };
 void quote(std::string& out, std::string_view input) {
@@ -154,9 +154,8 @@ void dump(std::string& out,const Json& json) {
         if constexpr (std::is_same_v<T,std::nullptr_t>) out+="null";
         else if constexpr (std::is_same_v<T,bool>) out+=v?"true":"false";
         else if constexpr (std::is_same_v<T,double>) {
-            char buffer[64]; const auto result=std::to_chars(buffer,buffer+64,v);
-            if (result.ec!=std::errc{} || !std::isfinite(v)) invalid("Cannot encode JSON number");
-            out.append(buffer,result.ptr);
+            if (!std::isfinite(v)) invalid("Cannot encode JSON number");
+            out+=ii::core::format_decimal(v);
         } else if constexpr (std::is_same_v<T,std::string>) quote(out,v);
         else if constexpr (std::is_same_v<T,Json::Array>) {
             out+='['; bool first=true;

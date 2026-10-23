@@ -8,6 +8,8 @@
 #include <iostream>
 #include <stdexcept>
 #include <thread>
+#include <cmath>
+#include <limits>
 
 using namespace ii::builder;
 namespace fs = std::filesystem;
@@ -41,6 +43,10 @@ Request request(const fs::path& source, const fs::path& core, const fs::path& ou
     return r;
 }
 void json_test() {
+    for(double value:{-0.,1.25,std::numeric_limits<double>::denorm_min(),std::numeric_limits<double>::max()}){
+        auto decoded=parse_json(dump_json(Json{value}));good(decoded,"Portable decimal roundtrip");
+        const auto actual=std::get<double>(decoded->value);require(actual==value&&std::signbit(actual)==std::signbit(value),"Manifest decimal changed value or sign");
+    }
     auto parsed = parse_json(R"({"escaped":"\"\\\n\uD83D\uDE00","n":12,"b":false,"a":[null,1.5]})");
     good(parsed, "JSON parse");
     require(parsed->at("n").integer() == 12, "integer value");

@@ -13,7 +13,7 @@ include(CMakePackageConfigHelpers)
 include(GenerateExportHeader)
 include(CTest)
 option(BUILD_SHARED_LIBS "Build a shared iiSDKBuilder library" OFF)
-set(IISDKBUILDER_CORE_SOURCE_DIR "" CACHE PATH "Optional iiSDKCore source checkout (0.17 or newer)")
+set(IISDKBUILDER_CORE_SOURCE_DIR "" CACHE PATH "Optional iiSDKCore source checkout (0.18.1 or newer)")
 
 if(IISDKBUILDER_CORE_SOURCE_DIR)
     get_filename_component(IISDKBUILDER_CORE_SOURCE_DIR "${IISDKBUILDER_CORE_SOURCE_DIR}" ABSOLUTE
@@ -28,7 +28,7 @@ if(IISDKBUILDER_CORE_SOURCE_DIR)
     set(BUILD_TESTING "${_builder_testing}")
     set(BUILD_SHARED_LIBS "${_builder_shared}")
 else()
-    find_package(iiSDKCore 0.17 CONFIG REQUIRED)
+    find_package(iiSDKCore 0.18.1 CONFIG REQUIRED)
 endif()
 
 add_library(iiSDKBuilder src/iiSDKBuilder/Json.cpp src/iiSDKBuilder/Manifest.cpp src/iiSDKBuilder/Plan.cpp src/iiSDKBuilder/Process.cpp src/iiSDKBuilder/Builder.cpp src/iiSDKBuilder/Artifact.cpp)
@@ -134,6 +134,10 @@ if(BUILD_TESTING)
     endforeach()
     if(_builder_real_core)
         find_package(Python3 3.9 COMPONENTS Interpreter REQUIRED)
+        add_test(NAME iiSDKBuilder.native_kit COMMAND "${Python3_EXECUTABLE}" -B
+            "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_native_kit.py")
+        add_test(NAME iiSDKBuilder.native_kit_freeze COMMAND "${Python3_EXECUTABLE}" -B
+            "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_native_kit_freeze.py")
         if(IISDKBUILDER_CORE_SOURCE_DIR)
             add_test(NAME iiSDKBuilder.core_foundation COMMAND "${Python3_EXECUTABLE}" -B
                 "${IISDKBUILDER_CORE_SOURCE_DIR}/tests/core_boundary.py"

@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "dependencies": [
+    {
+      "name": "openssl", "version": "3.5.9", "archive": "openssl-3.5.9.tar.gz",
+      "url": "https://github.com/openssl/openssl/releases/download/openssl-3.5.9/openssl-3.5.9.tar.gz",
+      "sha256": "603f5602e2eef00d77fbd429d34dcd5822bb301757a1bc9cdb24c670f1eb859a",
+      "checksum_source": "https://github.com/openssl/openssl/releases/download/openssl-3.5.9/openssl-3.5.9.tar.gz.sha256"
+    },
+    {
+      "name": "jpeg", "version": "3.2.0", "archive": "libjpeg-turbo-3.2.0.tar.gz",
+      "url": "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/3.2.0/libjpeg-turbo-3.2.0.tar.gz",
+      "sha256": "6f30092cef9fb839779646608f4ee14ae3cbac989c47fa05e841b0841f09878e"
+    },
+    {
+      "name": "png", "version": "1.6.59", "archive": "libpng-1.6.59.tar.xz",
+      "url": "https://downloads.sourceforge.net/project/libpng/libpng16/1.6.59/libpng-1.6.59.tar.xz",
+      "sha256": "d80dd2a38a37f803cb9b6ac7b14bd6e74ddc3b654780a8380bdf93523fdb4389"
+    },
+    {
+      "name": "webp", "version": "1.6.0", "archive": "libwebp-1.6.0.tar.gz",
+      "url": "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.6.0.tar.gz",
+      "sha256": "e4ab7009bf0629fd11982d4c2aa83964cf244cffba7347ecd39019a9e38c4564"
+    },
+    {
+      "name": "tiff", "version": "4.7.2", "archive": "tiff-4.7.2.tar.gz",
+      "url": "https://download.osgeo.org/libtiff/tiff-4.7.2.tar.gz",
+      "sha256": "672bd7d10aee4606171afb864f3570b83340f6a33e2c186dc0512f7145ffdf6a"
+    }
+  ]
+}

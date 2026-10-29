@@ -1,0 +1,158 @@
+{
+  "format": "iisacc.agent-document",
+  "schema_version": 1,
+  "document_id": "urn:iisacc:document:8db3d1fdcaec22d35f46bd9015faaaecffb2f44f0644b7bf07f8cf7fa055599e",
+  "project": {
+    "id": "urn:iisacc:project:SDK%2FiiSDKBuilder",
+    "name": "iiSDKBuilder",
+    "root": "SDK/iiSDKBuilder",
+    "kind": "sdk"
+  },
+  "source": {
+    "path": "examples/HelloResources/README.md",
+    "sha256": "b2e2dc82adcc106fafd46fc5abf405bd772fe28883348855285778a41c91d59a",
+    "bytes": 1694,
+    "line_count": 33,
+    "encoding": "utf-8",
+    "language": "en"
+  },
+  "document": {
+    "title": "HelloResources",
+    "role": "overview",
+    "authority": "markdown_source"
+  },
+  "blocks": [
+    {
+      "id": "b000001",
+      "kind": "heading",
+      "start_line": 1,
+      "end_line": 1,
+      "raw": "# HelloResources\n",
+      "level": 1,
+      "title": "HelloResources"
+    },
+    {
+      "id": "b000002",
+      "kind": "blank",
+      "start_line": 2,
+      "end_line": 2,
+      "raw": "\n"
+    },
+    {
+      "id": "b000003",
+      "kind": "paragraph",
+      "start_line": 3,
+      "end_line": 6,
+      "raw": "This C++23 app reads embedded greeting/icon/platform resources through Core,\nchecks fingerprints and verifies two logical names share one payload address.\nThe same main.cpp is used for all target platforms. The SVG is opaque resource\ndata here; this example does not render it or claim a graphics backend.\n"
+    },
+    {
+      "id": "b000004",
+      "kind": "blank",
+      "start_line": 7,
+      "end_line": 7,
+      "raw": "\n"
+    },
+    {
+      "id": "b000005",
+      "kind": "paragraph",
+      "start_line": 8,
+      "end_line": 8,
+      "raw": "Build with installed Core 0.17 and a build-host Builder 0.2:\n"
+    },
+    {
+      "id": "b000006",
+      "kind": "blank",
+      "start_line": 9,
+      "end_line": 9,
+      "raw": "\n"
+    },
+    {
+      "id": "b000007",
+      "kind": "fenced_code",
+      "start_line": 10,
+      "end_line": 16,
+      "raw": "~~~sh\ncmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \\\n  -DCMAKE_PREFIX_PATH=/path/to/Core \\\n  -DIISDKBUILDER_RESOURCE_COMPILER=/host/Builder/bin/iisdk-builder\ncmake --build build\nctest --test-dir build --output-on-failure\n~~~\n",
+      "language": "sh",
+      "code": "cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \\\n  -DCMAKE_PREFIX_PATH=/path/to/Core \\\n  -DIISDKBUILDER_RESOURCE_COMPILER=/host/Builder/bin/iisdk-builder\ncmake --build build\nctest --test-dir build --output-on-failure\n",
+      "closed": true
+    },
+    {
+      "id": "b000008",
+      "kind": "blank",
+      "start_line": 17,
+      "end_line": 17,
+      "raw": "\n"
+    },
+    {
+      "id": "b000009",
+      "kind": "paragraph",
+      "start_line": 18,
+      "end_line": 22,
+      "raw": "The source checkout locates Builder's CMake module relative to this example.\nFor a copied/standalone application, pass\nIISDKBUILDER_RESOURCES_MODULE=/host/Builder/lib/cmake/iiSDKBuilder/iiSDKBuilderResources.cmake.\nCross builds use the target Core package/toolchain while the compiler/module\ncome from the build host. No Builder/FileProvider library is linked into the app.\n"
+    },
+    {
+      "id": "b000010",
+      "kind": "blank",
+      "start_line": 23,
+      "end_line": 23,
+      "raw": "\n"
+    },
+    {
+      "id": "b000011",
+      "kind": "paragraph",
+      "start_line": 24,
+      "end_line": 28,
+      "raw": "To build through Builder's matrix, select this directory as app.source, target\nHelloResources, and pass both helper paths through app.cache. Core is configured,\nbuilt and installed first; then the application is configured and built.\nresources_integration.py reproduces this path with five successful steps on the\nnative host. Tests do not run foreign target executables automatically.\n"
+    },
+    {
+      "id": "b000012",
+      "kind": "blank",
+      "start_line": 29,
+      "end_line": 29,
+      "raw": "\n"
+    },
+    {
+      "id": "b000013",
+      "kind": "paragraph",
+      "start_line": 30,
+      "end_line": 33,
+      "raw": "On Android the example produces a native shared library; it is not a Java or\nAndroid UI host. iOS produces a bundle for compilation; signed device execution\nrequires a real application host. WASM emits a compiled module with normal\nEmscripten glue. See the module's verification record for actual execution.\n"
+    }
+  ],
+  "outline": [
+    {
+      "block_id": "b000001",
+      "parent_id": null,
+      "level": 1,
+      "title": "HelloResources",
+      "anchor": "helloresources",
+      "start_line": 1
+    }
+  ],
+  "indexes": {
+    "directive_candidates": [
+      {
+        "block_id": "b000011",
+        "line": 28,
+        "text": "native host. Tests do not run foreign target executables automatically.",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      }
+    ],
+    "commands": [
+      {
+        "block_id": "b000007",
+        "language": "sh",
+        "code": "cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \\\n  -DCMAKE_PREFIX_PATH=/path/to/Core \\\n  -DIISDKBUILDER_RESOURCE_COMPILER=/host/Builder/bin/iisdk-builder\ncmake --build build\nctest --test-dir build --output-on-failure\n"
+      }
+    ],
+    "links": [],
+    "tables": []
+  },
+  "provenance": {
+    "generator": "workspace-docs",
+    "version": "1.0.0",
+    "profile": "lossless-blocks-v1",
+    "derived": true
+  }
+}

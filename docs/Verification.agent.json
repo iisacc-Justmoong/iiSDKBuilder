@@ -1,0 +1,833 @@
+{
+  "format": "iisacc.agent-document",
+  "schema_version": 1,
+  "document_id": "urn:iisacc:document:6c0f9017b571425d87b8bfbfd8f0f19bbb07bef5fbd1aa96facc2f0c6299f044",
+  "project": {
+    "id": "urn:iisacc:project:SDK%2FiiSDKBuilder",
+    "name": "iiSDKBuilder",
+    "root": "SDK/iiSDKBuilder",
+    "kind": "sdk"
+  },
+  "source": {
+    "path": "docs/Verification.md",
+    "sha256": "246930a718c96aaf26dd8868c39188eeaa4b7e26c9c5ef217fb9d808ac963a5e",
+    "bytes": 11664,
+    "line_count": 189,
+    "encoding": "utf-8",
+    "language": "en"
+  },
+  "document": {
+    "title": "Verification",
+    "role": "evidence",
+    "authority": "markdown_source"
+  },
+  "blocks": [
+    {
+      "id": "b000001",
+      "kind": "heading",
+      "start_line": 1,
+      "end_line": 1,
+      "raw": "# Verification\n",
+      "level": 1,
+      "title": "Verification"
+    },
+    {
+      "id": "b000002",
+      "kind": "blank",
+      "start_line": 2,
+      "end_line": 2,
+      "raw": "\n"
+    },
+    {
+      "id": "b000003",
+      "kind": "heading",
+      "start_line": 3,
+      "end_line": 3,
+      "raw": "## 0.2 native resource compiler — 2026-10-16\n",
+      "level": 2,
+      "title": "0.2 native resource compiler — 2026-10-16"
+    },
+    {
+      "id": "b000004",
+      "kind": "blank",
+      "start_line": 4,
+      "end_line": 4,
+      "raw": "\n"
+    },
+    {
+      "id": "b000005",
+      "kind": "paragraph",
+      "start_line": 5,
+      "end_line": 12,
+      "raw": "The macOS ARM64 host regression passed 14/14 CTest entries, including the native\nresource compiler and a real Core -> HelloResources build. New unit checks\ncover target override/common fallback, omitted missing files, content aliases,\nstrict manifests/paths/budgets, source/output preservation and unchanged\ntimestamps. The real CMake/Ninja test removes source assets for execution,\nchecks changed assets and manifests, skips unchanged work and rebuilds paths\ncontaining spaces, UTF-8, # and $. It retains per-run evidence under\nbuild/resources/resource-integration/.\n"
+    },
+    {
+      "id": "b000006",
+      "kind": "blank",
+      "start_line": 13,
+      "end_line": 13,
+      "raw": "\n"
+    },
+    {
+      "id": "b000007",
+      "kind": "paragraph",
+      "start_line": 14,
+      "end_line": 18,
+      "raw": "Core 0.17 Debug/static, Release/shared and ASan/UBSan regressions each passed\n41/41; targeted Resources/HostLoop/Operation TSan passed 3/3. The independently\ninstalled shared Core Runtime+Values, Contracts/text and Values consumers passed\n18/18, 2/2 and 3/3. Existing iiGUI regression with Core 0.17 passed 19/19.\nCounts are CTest entries, not unique features or assertion counts.\n"
+    },
+    {
+      "id": "b000008",
+      "kind": "blank",
+      "start_line": 19,
+      "end_line": 19,
+      "raw": "\n"
+    },
+    {
+      "id": "b000009",
+      "kind": "paragraph",
+      "start_line": 20,
+      "end_line": 25,
+      "raw": "A separate copied HelloResources app builds using only relocated installed Core,\nthe installed resource CMake module and the installed host compiler. Application\npackage discovery for Builder, FileProvider and Qt is disabled; its native\nruntime dependencies contain Core/libc++/libSystem, not the build tool/provider.\nThe app still runs with its source assets removed. That relocated consumer's\none CTest entry passed. The tool's FileProvider dependency remains host-side.\n"
+    },
+    {
+      "id": "b000010",
+      "kind": "blank",
+      "start_line": 26,
+      "end_line": 26,
+      "raw": "\n"
+    },
+    {
+      "id": "b000011",
+      "kind": "table",
+      "start_line": 27,
+      "end_line": 34,
+      "raw": "| Target | Image | Core/app Builder steps | Execution |\n|---|---|---:|---|\n| macOS ARM64 | Native Mach-O executable | 5/5 passed | Native resource checks passed |\n| Windows x64 | Native PE executable | 5/5 passed | Explicitly deferred by user |\n| Linux ARM64 / Debian 13 sysroot | Native ELF executable | 5/5 passed | Explicitly deferred by user |\n| Android ARM64 / API 34 | Native ELF shared library | 5/5 passed | Not run on a device |\n| iOS ARM64 | Native Mach-O bundle executable | 5/5 passed | Not signed/run on a device |\n| WASM32 pthread configuration | Compiled .wasm + Emscripten glue | 5/5 passed | Actual module under Node passed; browser not run |\n",
+      "columns": [
+        "Target",
+        "Image",
+        "Core/app Builder steps",
+        "Execution"
+      ],
+      "rows": [
+        [
+          "macOS ARM64",
+          "Native Mach-O executable",
+          "5/5 passed",
+          "Native resource checks passed"
+        ],
+        [
+          "Windows x64",
+          "Native PE executable",
+          "5/5 passed",
+          "Explicitly deferred by user"
+        ],
+        [
+          "Linux ARM64 / Debian 13 sysroot",
+          "Native ELF executable",
+          "5/5 passed",
+          "Explicitly deferred by user"
+        ],
+        [
+          "Android ARM64 / API 34",
+          "Native ELF shared library",
+          "5/5 passed",
+          "Not run on a device"
+        ],
+        [
+          "iOS ARM64",
+          "Native Mach-O bundle executable",
+          "5/5 passed",
+          "Not signed/run on a device"
+        ],
+        [
+          "WASM32 pthread configuration",
+          "Compiled .wasm + Emscripten glue",
+          "5/5 passed",
+          "Actual module under Node passed; browser not run"
+        ]
+      ]
+    },
+    {
+      "id": "b000012",
+      "kind": "blank",
+      "start_line": 35,
+      "end_line": 35,
+      "raw": "\n"
+    },
+    {
+      "id": "b000013",
+      "kind": "paragraph",
+      "start_line": 36,
+      "end_line": 41,
+      "raw": "Every kit uses the same main.cpp and manifest. The build-host compiler selects\nthe kit's platform file and the target compiler builds the generated const data.\nThe application has no shared VM/interpreter dependency on the five OS targets;\nWASM remains the explicit web execution model. Android's shared library and iOS's\ncompile-only bundle are not complete mobile UI hosts or deployment evidence.\nNo MSVC build or physical Windows/Linux mapping/paging result is asserted.\n"
+    },
+    {
+      "id": "b000014",
+      "kind": "blank",
+      "start_line": 42,
+      "end_line": 42,
+      "raw": "\n"
+    },
+    {
+      "id": "b000015",
+      "kind": "paragraph",
+      "start_line": 43,
+      "end_line": 46,
+      "raw": "The duplicate 4 MiB payload fixture stores 8,388,608 logical bytes in 4,194,496\nencoded bytes; it does not claim compression or universal size reduction.\nCore's resource validation record separately preserves an initial concurrent-run\nASan timeout and its unchanged isolated/full successful reruns.\n"
+    },
+    {
+      "id": "b000016",
+      "kind": "blank",
+      "start_line": 47,
+      "end_line": 47,
+      "raw": "\n"
+    },
+    {
+      "id": "b000017",
+      "kind": "paragraph",
+      "start_line": 48,
+      "end_line": 52,
+      "raw": "Source hashes, binary/section/import inspection, package paths, XML and the\nexplicit execution boundaries are aggregated in build/resources-verification.json.\nCore stores the same aggregate under its build/. The SDK/Product creation audit\nhas zero violations/unreadable files. Earlier records below retain their original\nversions/scope. Global installations and existing apps are preserved.\n"
+    },
+    {
+      "id": "b000018",
+      "kind": "blank",
+      "start_line": 53,
+      "end_line": 53,
+      "raw": "\n"
+    },
+    {
+      "id": "b000019",
+      "kind": "paragraph",
+      "start_line": 54,
+      "end_line": 55,
+      "raw": "The tests keep simulated executor behavior, real CMake compilation, installed\npackage consumption, and target runtime evidence separate.\n"
+    },
+    {
+      "id": "b000020",
+      "kind": "blank",
+      "start_line": 56,
+      "end_line": 56,
+      "raw": "\n"
+    },
+    {
+      "id": "b000021",
+      "kind": "heading",
+      "start_line": 57,
+      "end_line": 57,
+      "raw": "## Automated checks\n",
+      "level": 2,
+      "title": "Automated checks"
+    },
+    {
+      "id": "b000022",
+      "kind": "blank",
+      "start_line": 58,
+      "end_line": 58,
+      "raw": "\n"
+    },
+    {
+      "id": "b000023",
+      "kind": "paragraph",
+      "start_line": 59,
+      "end_line": 59,
+      "raw": "`ctest --test-dir build --output-on-failure` runs these contracts:\n"
+    },
+    {
+      "id": "b000024",
+      "kind": "blank",
+      "start_line": 60,
+      "end_line": 60,
+      "raw": "\n"
+    },
+    {
+      "id": "b000025",
+      "kind": "list",
+      "start_line": 61,
+      "end_line": 83,
+      "raw": "- JSON parsing/encoding, malformed input, duplicate keys, surrogate pairs and\n  resource bounds.\n- Manifest field/type validation, round trips and relative path resolution.\n- SDK dependency order, unknown dependencies, cycles and unsafe/colliding names.\n- All six kit entries and explicit missing-toolchain results.\n- Literal CMake argument vectors, per-child environment, isolated prefixes,\n  target selection, reserved settings and pure planning.\n- Injected child failure, blocked dependents, independent kit progress, exit-code\n  persistence, root locking and cancellation before any process starts.\n- Real native child execution with spaces, quotes, shell metacharacters and a\n  trailing backslash; timeout, active cancellation and missing executable errors.\n- File API artifact references, Xcode placeholder resolution, missing artifacts,\n  incompatible kit reuse and mandatory target-system verification markers.\n- PE32/PE32+, ELF32/ELF64 and Mach-O thin/universal image/CPU checks;\n  CLR managed PE, scripts, JVM/DEX bytecode, truncated images, wrong platform,\n  iOS device/simulator mismatch and absent WASM companion rejection.\n- Successful CMake/executor results producing script launchers still fail the\n  build. Native app execution removes interpreter search paths from its environment.\n- Real native iiSDKCore → Addon → Hello configure/build/install/consumer flow,\n  app execution, incremental rebuild, a deliberately mismatched foreign kit,\n  and invocation through the CMake matrix target helper.\n- Staged installation, relocation, an external CMake consumer and installed CLI\n  execution with Qt5 and Qt6 package discovery disabled.\n",
+      "items": [
+        {
+          "marker": "-",
+          "text": "JSON parsing/encoding, malformed input, duplicate keys, surrogate pairs and",
+          "checked": null
+        },
+        {
+          "marker": "-",
+          "text": "Manifest field/type validation, round trips and relative path resolution.",
+          "checked": null
+        },
+        {
+          "marker": "-",
+          "text": "SDK dependency order, unknown dependencies, cycles and unsafe/colliding names.",
+          "checked": null
+        },
+        {
+          "marker": "-",
+          "text": "All six kit entries and explicit missing-toolchain results.",
+          "checked": null
+        },
+        {
+          "marker": "-",
+          "text": "Literal CMake argument vectors, per-child environment, isolated prefixes,",
+          "checked": null
+        },
+        {
+          "marker": "-",
+          "text": "Injected child failure, blocked dependents, independent kit progress, exit-code",
+          "checked": null
+        },
+        {
+          "marker": "-",
+          "text": "Real native child execution with spaces, quotes, shell metacharacters and a",
+          "checked": null
+        },
+        {
+          "marker": "-",
+          "text": "File API artifact references, Xcode placeholder resolution, missing artifacts,",
+          "checked": null
+        },
+        {
+          "marker": "-",
+          "text": "PE32/PE32+, ELF32/ELF64 and Mach-O thin/universal image/CPU checks;",
+          "checked": null
+        },
+        {
+          "marker": "-",
+          "text": "Successful CMake/executor results producing script launchers still fail the",
+          "checked": null
+        },
+        {
+          "marker": "-",
+          "text": "Real native iiSDKCore → Addon → Hello configure/build/install/consumer flow,",
+          "checked": null
+        },
+        {
+          "marker": "-",
+          "text": "Staged installation, relocation, an external CMake consumer and installed CLI",
+          "checked": null
+        }
+      ]
+    },
+    {
+      "id": "b000026",
+      "kind": "blank",
+      "start_line": 84,
+      "end_line": 84,
+      "raw": "\n"
+    },
+    {
+      "id": "b000027",
+      "kind": "paragraph",
+      "start_line": 85,
+      "end_line": 88,
+      "raw": "Both source-provided Core and a separately installed Core dependency are\nsupported. When Core is supplied from source, it is installed alongside Builder\nin the staging prefix. Otherwise the relocated consumer resolves the existing\nCore package through its explicit package directory.\n"
+    },
+    {
+      "id": "b000028",
+      "kind": "blank",
+      "start_line": 89,
+      "end_line": 89,
+      "raw": "\n"
+    },
+    {
+      "id": "b000029",
+      "kind": "paragraph",
+      "start_line": 90,
+      "end_line": 92,
+      "raw": "The full native integration test requires `IISDKBUILDER_CORE_SOURCE_DIR`, since\nthe system under test builds Core from source for its target kit. A compiler's\navailability or a generated plan does not count as a successful target build.\n"
+    },
+    {
+      "id": "b000030",
+      "kind": "blank",
+      "start_line": 93,
+      "end_line": 93,
+      "raw": "\n"
+    },
+    {
+      "id": "b000031",
+      "kind": "heading",
+      "start_line": 94,
+      "end_line": 94,
+      "raw": "## Evidence boundaries\n",
+      "level": 2,
+      "title": "Evidence boundaries"
+    },
+    {
+      "id": "b000032",
+      "kind": "blank",
+      "start_line": 95,
+      "end_line": 95,
+      "raw": "\n"
+    },
+    {
+      "id": "b000033",
+      "kind": "paragraph",
+      "start_line": 96,
+      "end_line": 98,
+      "raw": "The reproducible example is `examples/Hello`. To request the real six-platform\nmatrix, use the CLI build command without `--platform`. Its report preserves\nmissing and failed platforms. Do not treat a selected subset as all-six success.\n"
+    },
+    {
+      "id": "b000034",
+      "kind": "blank",
+      "start_line": 99,
+      "end_line": 99,
+      "raw": "\n"
+    },
+    {
+      "id": "b000035",
+      "kind": "paragraph",
+      "start_line": 100,
+      "end_line": 108,
+      "raw": "Windows and Linux host execution of the builder, and Windows Job Object behavior,\nmust be run on those systems before being described as verified there. Android\nand iOS cross-compilation does not establish physical-device execution. A WASM\nlink does not establish browser execution or deployment. Code signing and app\nstore packages require the application's separate validation.\nImage/header inspection proves the recorded format and CPU metadata, not the\nabsence of arbitrary interpreter code deliberately embedded by an application.\nThe SDK/build architecture supplies native code and introduces no common VM.\nWASM engine execution is always recorded separately from native OS execution.\n"
+    },
+    {
+      "id": "b000036",
+      "kind": "blank",
+      "start_line": 109,
+      "end_line": 109,
+      "raw": "\n"
+    },
+    {
+      "id": "b000037",
+      "kind": "paragraph",
+      "start_line": 110,
+      "end_line": 112,
+      "raw": "See the generated `build/Testing/Temporary/LastTest.log` and each matrix's\n`report.json`/step logs for the current run, rather than inferring results from\nthis source document.\n"
+    },
+    {
+      "id": "b000038",
+      "kind": "blank",
+      "start_line": 113,
+      "end_line": 113,
+      "raw": "\n"
+    },
+    {
+      "id": "b000039",
+      "kind": "heading",
+      "start_line": 114,
+      "end_line": 114,
+      "raw": "## Recorded run: 2026-10-14\n",
+      "level": 2,
+      "title": "Recorded run: 2026-10-14"
+    },
+    {
+      "id": "b000040",
+      "kind": "blank",
+      "start_line": 115,
+      "end_line": 115,
+      "raw": "\n"
+    },
+    {
+      "id": "b000041",
+      "kind": "paragraph",
+      "start_line": 116,
+      "end_line": 120,
+      "raw": "The macOS arm64 Release build passed all **12/12** registered CTest cases,\nincluding real SDK/addon/app builds, native app execution, wrong-system rejection,\nthe CMake matrix target and relocated package/CLI consumption. Dynamic dependency\ninspection of the resulting CLI contained no Qt libraries. iiSDKCore sources were\nconsumed unchanged.\n"
+    },
+    {
+      "id": "b000042",
+      "kind": "blank",
+      "start_line": 121,
+      "end_line": 121,
+      "raw": "\n"
+    },
+    {
+      "id": "b000043",
+      "kind": "paragraph",
+      "start_line": 122,
+      "end_line": 125,
+      "raw": "A separate shared-library build using the installed Core package also passed\n**11/11** selected tests, including its relocated shared library, external\nconsumer and CLI. The real source-SDK integration case was already covered by\nthe full 12-case build and was not repeated in the shared configuration.\n"
+    },
+    {
+      "id": "b000044",
+      "kind": "blank",
+      "start_line": 126,
+      "end_line": 126,
+      "raw": "\n"
+    },
+    {
+      "id": "b000045",
+      "kind": "paragraph",
+      "start_line": 127,
+      "end_line": 127,
+      "raw": "The real default six-platform request using `examples/Hello` produced:\n"
+    },
+    {
+      "id": "b000046",
+      "kind": "blank",
+      "start_line": 128,
+      "end_line": 128,
+      "raw": "\n"
+    },
+    {
+      "id": "b000047",
+      "kind": "table",
+      "start_line": 129,
+      "end_line": 136,
+      "raw": "| Kit | Result | Direct evidence |\n| --- | --- | --- |\n| Windows | unavailable | No Windows cross compiler/sysroot toolchain configured on this host |\n| macOS | succeeded | Core and app built; Mach-O arm64; app returned 0 and printed `Hello from iiSDKCore: 42` |\n| Linux | unavailable | No Linux cross compiler/sysroot toolchain configured on this host |\n| Android | succeeded | Core built/installed; app linked as an ARM aarch64 ELF shared object |\n| iOS | succeeded | Core built/installed; app bundle contains a Mach-O arm64 executable; no code signature |\n| WASM | succeeded | Core built/installed; JS and valid WASM binary generated; Node execution returned 0 and printed `Hello from iiSDKCore: 42` |\n",
+      "columns": [
+        "Kit",
+        "Result",
+        "Direct evidence"
+      ],
+      "rows": [
+        [
+          "Windows",
+          "unavailable",
+          "No Windows cross compiler/sysroot toolchain configured on this host"
+        ],
+        [
+          "macOS",
+          "succeeded",
+          "Core and app built; Mach-O arm64; app returned 0 and printed `Hello from iiSDKCore: 42`"
+        ],
+        [
+          "Linux",
+          "unavailable",
+          "No Linux cross compiler/sysroot toolchain configured on this host"
+        ],
+        [
+          "Android",
+          "succeeded",
+          "Core built/installed; app linked as an ARM aarch64 ELF shared object"
+        ],
+        [
+          "iOS",
+          "succeeded",
+          "Core built/installed; app bundle contains a Mach-O arm64 executable; no code signature"
+        ],
+        [
+          "WASM",
+          "succeeded",
+          "Core built/installed; JS and valid WASM binary generated; Node execution returned 0 and printed `Hello from iiSDKCore: 42`"
+        ]
+      ]
+    },
+    {
+      "id": "b000048",
+      "kind": "blank",
+      "start_line": 137,
+      "end_line": 137,
+      "raw": "\n"
+    },
+    {
+      "id": "b000049",
+      "kind": "paragraph",
+      "start_line": 138,
+      "end_line": 142,
+      "raw": "The six-platform matrix returned **1** with `succeeded=false`, preserving both\nunavailable kits. The four successful kits are compilation evidence; only the\nmacOS native and Node WASM examples were executed. No Android/iOS physical-device,\nbrowser, Windows-host or Linux-host execution is claimed. Android APK/AAB and\nApp Store packaging were not part of this run.\n"
+    },
+    {
+      "id": "b000050",
+      "kind": "blank",
+      "start_line": 143,
+      "end_line": 143,
+      "raw": "\n"
+    },
+    {
+      "id": "b000051",
+      "kind": "paragraph",
+      "start_line": 144,
+      "end_line": 147,
+      "raw": "Post-link checks recorded Mach-O arm64 for macOS/iOS, ELF arm64 for Android,\nand a separate WebAssembly module for the web kit. The native app and builder\nexecuted successfully with PATH empty and interpreter/library override variables\nremoved. WASM execution used Node explicitly and is not OS-native evidence.\n"
+    },
+    {
+      "id": "b000052",
+      "kind": "blank",
+      "start_line": 148,
+      "end_line": 148,
+      "raw": "\n"
+    },
+    {
+      "id": "b000053",
+      "kind": "paragraph",
+      "start_line": 149,
+      "end_line": 154,
+      "raw": "Machine-readable local evidence is under `build/native-contract-verification.json`,\n`build/six-platform/report.json`, `build/native-contract-tests.xml`, and\n`build/shared-native-contract-tests.xml`. The verification record contains\nartifact hashes, inspected image/CPU metadata and runtime output. Windows/Linux\nheader-format tests use artificial image fixtures and do not establish execution\non those operating systems.\n"
+    },
+    {
+      "id": "b000054",
+      "kind": "heading",
+      "start_line": 155,
+      "end_line": 155,
+      "raw": "# Core 0.13 foundation migration - 2026-10-16\n",
+      "level": 1,
+      "title": "Core 0.13 foundation migration - 2026-10-16"
+    },
+    {
+      "id": "b000055",
+      "kind": "blank",
+      "start_line": 156,
+      "end_line": 156,
+      "raw": "\n"
+    },
+    {
+      "id": "b000056",
+      "kind": "paragraph",
+      "start_line": 157,
+      "end_line": 163,
+      "raw": "`build/core-foundation` builds against the staged independent Core 0.13 and\niiFileProvider Native. All 12 CTests pass, including atomic JSON replacement and\nfailure preservation, actual Core/Addon/app compilation, and relocated package\nexecution. The package test passes the resolved Native dependency directory to\nits independent consumer, as it already does for Core; it does not select an\nolder user installation by accident. This check covers the macOS native host\nand does not repeat the historical cross-platform matrix below.\n"
+    },
+    {
+      "id": "b000057",
+      "kind": "blank",
+      "start_line": 164,
+      "end_line": 164,
+      "raw": "\n"
+    },
+    {
+      "id": "b000058",
+      "kind": "heading",
+      "start_line": 165,
+      "end_line": 165,
+      "raw": "## Common process migration — 0.1.1 (2026-10-16)\n",
+      "level": 2,
+      "title": "Common process migration — 0.1.1 (2026-10-16)"
+    },
+    {
+      "id": "b000059",
+      "kind": "blank",
+      "start_line": 166,
+      "end_line": 166,
+      "raw": "\n"
+    },
+    {
+      "id": "b000060",
+      "kind": "paragraph",
+      "start_line": 167,
+      "end_line": 171,
+      "raw": "Builder now requires Core 0.15 and delegates process ownership and standard-pipe\npumping to `ii::process::Process`. There is no platform process backend in\nBuilder's src/Process.cpp. Provider OutputFile owns the complete merged log and\nis flushed/closed before success. CLI/package versions derive from the same\nCMake project version and the installed CLI is checked for exact equality.\n"
+    },
+    {
+      "id": "b000061",
+      "kind": "blank",
+      "start_line": 172,
+      "end_line": 172,
+      "raw": "\n"
+    },
+    {
+      "id": "b000062",
+      "kind": "paragraph",
+      "start_line": 173,
+      "end_line": 183,
+      "raw": "The macOS arm64 Release suite in build/core-foundation passed all 12 CTest\nentries, including a real Core → Addon → app build/run, target image inspection,\na relocated installed package/library consumer and the installed 0.1.1 CLI.\nThe process contract verifies literal quoting, normal nonzero exit versus spawn\nfailure, timeout, stop cancellation, a merged log larger than 1 MiB and a log\ncreation failure. Core's native process suite independently passed 104 checks\nwith normal, address/undefined and thread sanitizers and installed consumers.\nSee the [Core contract](../../iiSDKCore/docs/process.md) and\n[platform evidence](../../iiSDKCore/docs/validation.md) for native backend and\nunsupported-target boundaries. These do not establish execution of this Builder\nrelease on Windows/Linux or deployment of the generated mobile/browser apps.\n"
+    },
+    {
+      "id": "b000063",
+      "kind": "blank",
+      "start_line": 184,
+      "end_line": 184,
+      "raw": "\n"
+    },
+    {
+      "id": "b000064",
+      "kind": "paragraph",
+      "start_line": 185,
+      "end_line": 189,
+      "raw": "Core and Builder are installed to isolated prefixes under build/ for these\nchecks. The workspace creation audit reports no violations and SDK declarations\nremain a DAG. Build logs, XML and the aggregate evidence are recorded in\n../iiSDKCore/build/p1-verification.json. Earlier platform-matrix snapshots in this\nfile remain historical evidence, separate from this host process migration.\n"
+    }
+  ],
+  "outline": [
+    {
+      "block_id": "b000001",
+      "parent_id": null,
+      "level": 1,
+      "title": "Verification",
+      "anchor": "verification",
+      "start_line": 1
+    },
+    {
+      "block_id": "b000003",
+      "parent_id": "b000001",
+      "level": 2,
+      "title": "0.2 native resource compiler — 2026-10-16",
+      "anchor": "02-native-resource-compiler--2026-10-16",
+      "start_line": 3
+    },
+    {
+      "block_id": "b000021",
+      "parent_id": "b000001",
+      "level": 2,
+      "title": "Automated checks",
+      "anchor": "automated-checks",
+      "start_line": 57
+    },
+    {
+      "block_id": "b000031",
+      "parent_id": "b000001",
+      "level": 2,
+      "title": "Evidence boundaries",
+      "anchor": "evidence-boundaries",
+      "start_line": 94
+    },
+    {
+      "block_id": "b000039",
+      "parent_id": "b000001",
+      "level": 2,
+      "title": "Recorded run: 2026-10-14",
+      "anchor": "recorded-run-2026-10-14",
+      "start_line": 114
+    },
+    {
+      "block_id": "b000054",
+      "parent_id": null,
+      "level": 1,
+      "title": "Core 0.13 foundation migration - 2026-10-16",
+      "anchor": "core-013-foundation-migration---2026-10-16",
+      "start_line": 155
+    },
+    {
+      "block_id": "b000058",
+      "parent_id": "b000054",
+      "level": 2,
+      "title": "Common process migration — 0.1.1 (2026-10-16)",
+      "anchor": "common-process-migration--011-2026-10-16",
+      "start_line": 165
+    }
+  ],
+  "indexes": {
+    "directive_candidates": [
+      {
+        "block_id": "b000033",
+        "line": 98,
+        "text": "missing and failed platforms. Do not treat a selected subset as all-six success.",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      },
+      {
+        "block_id": "b000035",
+        "line": 101,
+        "text": "must be run on those systems before being described as verified there. Android",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      },
+      {
+        "block_id": "b000053",
+        "line": 153,
+        "text": "header-format tests use artificial image fixtures and do not establish execution",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      },
+      {
+        "block_id": "b000062",
+        "line": 182,
+        "text": "unsupported-target boundaries. These do not establish execution of this Builder",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      }
+    ],
+    "commands": [],
+    "links": [
+      {
+        "block_id": "b000062",
+        "label": "Core contract",
+        "target": "../../iiSDKCore/docs/process.md",
+        "kind": "relative",
+        "line": 180
+      },
+      {
+        "block_id": "b000062",
+        "label": "platform evidence",
+        "target": "../../iiSDKCore/docs/validation.md",
+        "kind": "relative",
+        "line": 181
+      }
+    ],
+    "tables": [
+      {
+        "block_id": "b000011",
+        "columns": [
+          "Target",
+          "Image",
+          "Core/app Builder steps",
+          "Execution"
+        ],
+        "rows": [
+          [
+            "macOS ARM64",
+            "Native Mach-O executable",
+            "5/5 passed",
+            "Native resource checks passed"
+          ],
+          [
+            "Windows x64",
+            "Native PE executable",
+            "5/5 passed",
+            "Explicitly deferred by user"
+          ],
+          [
+            "Linux ARM64 / Debian 13 sysroot",
+            "Native ELF executable",
+            "5/5 passed",
+            "Explicitly deferred by user"
+          ],
+          [
+            "Android ARM64 / API 34",
+            "Native ELF shared library",
+            "5/5 passed",
+            "Not run on a device"
+          ],
+          [
+            "iOS ARM64",
+            "Native Mach-O bundle executable",
+            "5/5 passed",
+            "Not signed/run on a device"
+          ],
+          [
+            "WASM32 pthread configuration",
+            "Compiled .wasm + Emscripten glue",
+            "5/5 passed",
+            "Actual module under Node passed; browser not run"
+          ]
+        ]
+      },
+      {
+        "block_id": "b000047",
+        "columns": [
+          "Kit",
+          "Result",
+          "Direct evidence"
+        ],
+        "rows": [
+          [
+            "Windows",
+            "unavailable",
+            "No Windows cross compiler/sysroot toolchain configured on this host"
+          ],
+          [
+            "macOS",
+            "succeeded",
+            "Core and app built; Mach-O arm64; app returned 0 and printed `Hello from iiSDKCore: 42`"
+          ],
+          [
+            "Linux",
+            "unavailable",
+            "No Linux cross compiler/sysroot toolchain configured on this host"
+          ],
+          [
+            "Android",
+            "succeeded",
+            "Core built/installed; app linked as an ARM aarch64 ELF shared object"
+          ],
+          [
+            "iOS",
+            "succeeded",
+            "Core built/installed; app bundle contains a Mach-O arm64 executable; no code signature"
+          ],
+          [
+            "WASM",
+            "succeeded",
+            "Core built/installed; JS and valid WASM binary generated; Node execution returned 0 and printed `Hello from iiSDKCore: 42`"
+          ]
+        ]
+      }
+    ]
+  },
+  "provenance": {
+    "generator": "workspace-docs",
+    "version": "1.0.0",
+    "profile": "lossless-blocks-v1",
+    "derived": true
+  }
+}

@@ -1,0 +1,3 @@
+# Explicit Lattice iCEstick HX1K TQ144 board pin assignment.
+set_io clk 21
+set_io led 99

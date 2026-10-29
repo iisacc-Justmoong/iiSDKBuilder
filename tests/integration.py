@@ -23,7 +23,7 @@ data = {
     "schema": 1,
     "app": {"name": "Hello", "source": str(app), "targets": ["hello"]},
     "sdkRoot": str(core.parent),
-    "sdks": [{"name": "Addon", "source": str(addon), "depends": ["iiSDKCore"]}],
+    "sdks": [{"name": "Addon", "source": str(addon), "depends": []}],
     "buildRoot": str(output / "matrix"),
     "cmake": cmake,
     "jobs": 2,

@@ -1,0 +1,849 @@
+{
+  "format": "iisacc.agent-document",
+  "schema_version": 1,
+  "document_id": "urn:iisacc:document:c2ca0fa521d8355b337e76fe81d43a46cd9642b8a2322cf651df943e8932cf2a",
+  "project": {
+    "id": "urn:iisacc:project:SDK%2FiiSDKBuilder",
+    "name": "iiSDKBuilder",
+    "root": "SDK/iiSDKBuilder",
+    "kind": "sdk"
+  },
+  "source": {
+    "path": "docs/Usage.md",
+    "sha256": "6f33202a321c40f01f687e19fac3d4648a359113302e0580804802d792be3cc9",
+    "bytes": 12866,
+    "line_count": 268,
+    "encoding": "utf-8",
+    "language": "ko"
+  },
+  "document": {
+    "title": "Usage and manifest schema 1",
+    "role": "guide",
+    "authority": "markdown_source"
+  },
+  "blocks": [
+    {
+      "id": "b000001",
+      "kind": "heading",
+      "start_line": 1,
+      "end_line": 1,
+      "raw": "# Usage and manifest schema 1\n",
+      "level": 1,
+      "title": "Usage and manifest schema 1"
+    },
+    {
+      "id": "b000002",
+      "kind": "blank",
+      "start_line": 2,
+      "end_line": 2,
+      "raw": "\n"
+    },
+    {
+      "id": "b000003",
+      "kind": "paragraph",
+      "start_line": 3,
+      "end_line": 6,
+      "raw": "The CLI is `iisdk-builder`; the library target is\n`iiSDKBuilder::iiSDKBuilder`, with public headers under `<iiSDKBuilder/...>`.\nThe build host must be Windows, macOS, or Linux. The six target platforms are\nindependent entries in a single matrix.\n"
+    },
+    {
+      "id": "b000004",
+      "kind": "blank",
+      "start_line": 7,
+      "end_line": 7,
+      "raw": "\n"
+    },
+    {
+      "id": "b000005",
+      "kind": "paragraph",
+      "start_line": 8,
+      "end_line": 13,
+      "raw": "Five OS targets compile to native machine code. Build-host tooling, including\nCMake/Python, does not become an application interpreter. WASM is a separate\nweb-engine target, identified as `executionModel=webassembly`; every OS target\nis identified as `native`. These fields are derived from the platform and cannot\nbe overridden through the manifest. A strictly native matrix selects\n`--platform windows,macos,linux,android,ios`.\n"
+    },
+    {
+      "id": "b000006",
+      "kind": "blank",
+      "start_line": 14,
+      "end_line": 14,
+      "raw": "\n"
+    },
+    {
+      "id": "b000007",
+      "kind": "heading",
+      "start_line": 15,
+      "end_line": 15,
+      "raw": "## One command for an application\n",
+      "level": 2,
+      "title": "One command for an application"
+    },
+    {
+      "id": "b000008",
+      "kind": "blank",
+      "start_line": 16,
+      "end_line": 16,
+      "raw": "\n"
+    },
+    {
+      "id": "b000009",
+      "kind": "paragraph",
+      "start_line": 17,
+      "end_line": 17,
+      "raw": "From the iiSDKBuilder checkout:\n"
+    },
+    {
+      "id": "b000010",
+      "kind": "blank",
+      "start_line": 18,
+      "end_line": 18,
+      "raw": "\n"
+    },
+    {
+      "id": "b000011",
+      "kind": "fenced_code",
+      "start_line": 19,
+      "end_line": 21,
+      "raw": "```sh\nbuild/iisdk-builder build --app examples/Hello --sdk-root ..\n```\n",
+      "language": "sh",
+      "code": "build/iisdk-builder build --app examples/Hello --sdk-root ..\n",
+      "closed": true
+    },
+    {
+      "id": "b000012",
+      "kind": "blank",
+      "start_line": 22,
+      "end_line": 22,
+      "raw": "\n"
+    },
+    {
+      "id": "b000013",
+      "kind": "paragraph",
+      "start_line": 23,
+      "end_line": 24,
+      "raw": "This requests all six platforms and returns a nonzero code if any requested\nkit is unavailable or fails. To build only an explicitly chosen subset:\n"
+    },
+    {
+      "id": "b000014",
+      "kind": "blank",
+      "start_line": 25,
+      "end_line": 25,
+      "raw": "\n"
+    },
+    {
+      "id": "b000015",
+      "kind": "fenced_code",
+      "start_line": 26,
+      "end_line": 29,
+      "raw": "```sh\nbuild/iisdk-builder build --app examples/Hello --sdk-root .. \\\n  --platform macos,android,ios,wasm\n```\n",
+      "language": "sh",
+      "code": "build/iisdk-builder build --app examples/Hello --sdk-root .. \\\n  --platform macos,android,ios,wasm\n",
+      "closed": true
+    },
+    {
+      "id": "b000016",
+      "kind": "blank",
+      "start_line": 30,
+      "end_line": 30,
+      "raw": "\n"
+    },
+    {
+      "id": "b000017",
+      "kind": "paragraph",
+      "start_line": 31,
+      "end_line": 34,
+      "raw": "The default output is `<app>/build/iiSDKBuilder`. `--build-root` can select\nanother directory inside `build/`. Planning creates no directories. Output\nmust not contain source directories, and the builder never deletes source\nfiles or another project's existing build tree.\n"
+    },
+    {
+      "id": "b000018",
+      "kind": "blank",
+      "start_line": 35,
+      "end_line": 35,
+      "raw": "\n"
+    },
+    {
+      "id": "b000019",
+      "kind": "heading",
+      "start_line": 36,
+      "end_line": 36,
+      "raw": "## Reusable project configuration\n",
+      "level": 2,
+      "title": "Reusable project configuration"
+    },
+    {
+      "id": "b000020",
+      "kind": "blank",
+      "start_line": 37,
+      "end_line": 37,
+      "raw": "\n"
+    },
+    {
+      "id": "b000021",
+      "kind": "fenced_code",
+      "start_line": 38,
+      "end_line": 62,
+      "raw": "```json\n{\n  \"schema\": 1,\n  \"app\": {\n    \"name\": \"MyApp\",\n    \"source\": \"../MyApp\",\n    \"targets\": [\"MyApp\"],\n    \"cache\": {\"MYAPP_BUILD_EXAMPLES\": \"OFF\"}\n  },\n  \"sdkRoot\": \"../../SDK\",\n  \"sdks\": [\n    {\n      \"name\": \"MyFeature\",\n      \"source\": \"../../SDK/MyFeature\",\n      \"depends\": [],\n      \"cache\": {\"MYFEATURE_BUILD_TOOLS\": \"OFF\"}\n    }\n  ],\n  \"buildRoot\": \"../MyApp/build/iiSDKBuilder\",\n  \"configuration\": \"Release\",\n  \"jobs\": 2,\n  \"parallelKits\": 2,\n  \"timeoutSeconds\": 1800\n}\n```\n",
+      "language": "json",
+      "code": "{\n  \"schema\": 1,\n  \"app\": {\n    \"name\": \"MyApp\",\n    \"source\": \"../MyApp\",\n    \"targets\": [\"MyApp\"],\n    \"cache\": {\"MYAPP_BUILD_EXAMPLES\": \"OFF\"}\n  },\n  \"sdkRoot\": \"../../SDK\",\n  \"sdks\": [\n    {\n      \"name\": \"MyFeature\",\n      \"source\": \"../../SDK/MyFeature\",\n      \"depends\": [],\n      \"cache\": {\"MYFEATURE_BUILD_TOOLS\": \"OFF\"}\n    }\n  ],\n  \"buildRoot\": \"../MyApp/build/iiSDKBuilder\",\n  \"configuration\": \"Release\",\n  \"jobs\": 2,\n  \"parallelKits\": 2,\n  \"timeoutSeconds\": 1800\n}\n",
+      "closed": true
+    },
+    {
+      "id": "b000022",
+      "kind": "blank",
+      "start_line": 63,
+      "end_line": 63,
+      "raw": "\n"
+    },
+    {
+      "id": "b000023",
+      "kind": "paragraph",
+      "start_line": 64,
+      "end_line": 70,
+      "raw": "Replace the example source paths with real CMake projects. All manifest paths\nare relative to the manifest file, not the process working directory.\n`cmake` is resolved on PATH unless it contains a directory component. The\nmanifest is UTF-8 JSON, bounded to 16 MiB and 64 nested levels. Duplicate keys,\nunknown schema fields, incorrect field types, and NUL strings are rejected.\nCache and environment values are strings; booleans use CMake strings such as\n`\"ON\"` and `\"OFF\"`.\n"
+    },
+    {
+      "id": "b000024",
+      "kind": "blank",
+      "start_line": 71,
+      "end_line": 71,
+      "raw": "\n"
+    },
+    {
+      "id": "b000025",
+      "kind": "paragraph",
+      "start_line": 72,
+      "end_line": 79,
+      "raw": "`app.name`과 각 SDK 이름은 디렉터리명과 무관한 명시적 식별자이다. 선택한 SDK만\n구성하며 `iiSDKCore`는 `<sdkRoot>/iiSDKCore`에서 별도 프로젝트로 자동 선택한다.\n다른 SDK는 manifest 순서로 추가하되 각 SDK의 `depends`는 비워야 한다. 다른 SDK를\n선행 조건으로 선언하면 계획 단계에서 오류가 발생한다. 앱의 `depends`는 선택한\nSDK 이름들을 검증하며 선택 목록 자체를 줄이지 않는다. 선택한 SDK들의 빌드·설치가\n끝난 뒤 앱을 빌드하고, 순서는 SDK 사이의 의존 관계를 뜻하지 않는다. Core의 명시적\n항목으로 소스·캐시 설정을 지정할 수 있다. 빈 `targets`는 CMake 기본 대상을 빌드한다.\nSDK들은 앱이 독립적으로 사용할 설치 규칙을 제공해야 한다.\n"
+    },
+    {
+      "id": "b000026",
+      "kind": "blank",
+      "start_line": 80,
+      "end_line": 80,
+      "raw": "\n"
+    },
+    {
+      "id": "b000027",
+      "kind": "paragraph",
+      "start_line": 81,
+      "end_line": 81,
+      "raw": "Create the six-kit starter manifest without overwriting an existing file:\n"
+    },
+    {
+      "id": "b000028",
+      "kind": "blank",
+      "start_line": 82,
+      "end_line": 82,
+      "raw": "\n"
+    },
+    {
+      "id": "b000029",
+      "kind": "fenced_code",
+      "start_line": 83,
+      "end_line": 89,
+      "raw": "```sh\nbuild/iisdk-builder init --app examples/Hello --sdk-root .. \\\n  --manifest build/hello.json\nbuild/iisdk-builder doctor --manifest build/hello.json\nbuild/iisdk-builder plan --manifest build/hello.json\nbuild/iisdk-builder build --manifest build/hello.json --platform host\n```\n",
+      "language": "sh",
+      "code": "build/iisdk-builder init --app examples/Hello --sdk-root .. \\\n  --manifest build/hello.json\nbuild/iisdk-builder doctor --manifest build/hello.json\nbuild/iisdk-builder plan --manifest build/hello.json\nbuild/iisdk-builder build --manifest build/hello.json --platform host\n",
+      "closed": true
+    },
+    {
+      "id": "b000030",
+      "kind": "blank",
+      "start_line": 90,
+      "end_line": 90,
+      "raw": "\n"
+    },
+    {
+      "id": "b000031",
+      "kind": "heading",
+      "start_line": 91,
+      "end_line": 91,
+      "raw": "## Kits\n",
+      "level": 2,
+      "title": "Kits"
+    },
+    {
+      "id": "b000032",
+      "kind": "blank",
+      "start_line": 92,
+      "end_line": 92,
+      "raw": "\n"
+    },
+    {
+      "id": "b000033",
+      "kind": "paragraph",
+      "start_line": 93,
+      "end_line": 95,
+      "raw": "Omitting `kits` requests the six default kits. Provide a `kits` array to select\nspecific environments or multiple architectures of one platform. Kit IDs\nmust be unique even when case is ignored. This example shows kit fields:\n"
+    },
+    {
+      "id": "b000034",
+      "kind": "blank",
+      "start_line": 96,
+      "end_line": 96,
+      "raw": "\n"
+    },
+    {
+      "id": "b000035",
+      "kind": "fenced_code",
+      "start_line": 97,
+      "end_line": 108,
+      "raw": "```json\n{\n  \"id\": \"ios-simulator-arm64\",\n  \"platform\": \"ios\",\n  \"generator\": \"Xcode\",\n  \"architecture\": \"arm64\",\n  \"sysroot\": \"iphonesimulator\",\n  \"cache\": {\"CMAKE_OSX_DEPLOYMENT_TARGET\": \"17.0\"},\n  \"environment\": {},\n  \"prefixes\": []\n}\n```\n",
+      "language": "json",
+      "code": "{\n  \"id\": \"ios-simulator-arm64\",\n  \"platform\": \"ios\",\n  \"generator\": \"Xcode\",\n  \"architecture\": \"arm64\",\n  \"sysroot\": \"iphonesimulator\",\n  \"cache\": {\"CMAKE_OSX_DEPLOYMENT_TARGET\": \"17.0\"},\n  \"environment\": {},\n  \"prefixes\": []\n}\n",
+      "closed": true
+    },
+    {
+      "id": "b000036",
+      "kind": "blank",
+      "start_line": 109,
+      "end_line": 109,
+      "raw": "\n"
+    },
+    {
+      "id": "b000037",
+      "kind": "paragraph",
+      "start_line": 110,
+      "end_line": 117,
+      "raw": "`platform`은 `windows`, `macos`, `linux`, `android`, `ios`, `wasm`, `automotive`, `arduino`, `fpga`이다. 새 장치 타겟의 BSP·합성·실행 계약은 [EmbeddedTargets.md](EmbeddedTargets.md)를 따른다.\n`toolchain` names a CMake toolchain file. On a foreign desktop target it is\nrequired. `architecture` is an Apple architecture list (for example\n`arm64;x86_64`) or the Visual Studio `-A` value. Other cross architectures\nbelong in a toolchain file. The default generator is Ninja, or Xcode for iOS.\nFor native Windows, run in an initialized compiler environment or use a Visual\nStudio generator and its `architecture` field. MSVC/Windows SDK discovery and\ncompiler initialization are handled by that environment/CMake.\n"
+    },
+    {
+      "id": "b000038",
+      "kind": "blank",
+      "start_line": 118,
+      "end_line": 118,
+      "raw": "\n"
+    },
+    {
+      "id": "b000039",
+      "kind": "paragraph",
+      "start_line": 119,
+      "end_line": 122,
+      "raw": "Android automatically uses `ANDROID_NDK_HOME` or `ANDROID_NDK_ROOT` unless\n`toolchain` is provided. `androidAbi` defaults to `arm64-v8a`; supported values\nare `arm64-v8a`, `armeabi-v7a`, `x86`, and `x86_64`. `androidApi` defaults to 24\nand must be at least 21. Use separate kit IDs for each ABI.\n"
+    },
+    {
+      "id": "b000040",
+      "kind": "blank",
+      "start_line": 123,
+      "end_line": 123,
+      "raw": "\n"
+    },
+    {
+      "id": "b000041",
+      "kind": "paragraph",
+      "start_line": 124,
+      "end_line": 128,
+      "raw": "WASM locates `Emscripten.cmake` through `EMSDK`, `EMSCRIPTEN`, or `emcc` on PATH.\nActivate emsdk before running the builder, or provide its toolchain and child\nenvironment explicitly. iiSDKCore uses WASM threads by default. A kit cache\nentry `\"IISDKCORE_WASM_THREADS\": \"OFF\"` requests its explicit single-thread\nvariant. Browser execution is a separate application test.\n"
+    },
+    {
+      "id": "b000042",
+      "kind": "blank",
+      "start_line": 129,
+      "end_line": 129,
+      "raw": "\n"
+    },
+    {
+      "id": "b000043",
+      "kind": "paragraph",
+      "start_line": 130,
+      "end_line": 145,
+      "raw": "`prefixes`는 **대상 플랫폼용** 외부 의존성 경로이다. 빌드 도구는 SDK 구성에 그\nSDK의 개별 설치 prefix만, 앱 구성에는 선택한 각 SDK의 prefix를 제공한다. 명시적\n외부 경로는 그 뒤에 추가한다. 자식 명령에서는 상속된 `CMAKE_PREFIX_PATH`,\n`CMAKE_INCLUDE_PATH`, `CMAKE_LIBRARY_PATH`, `CMAKE_FRAMEWORK_PATH`,\n`CMAKE_APPBUNDLE_PATH`, `CPATH`, `C_INCLUDE_PATH`, `CPLUS_INCLUDE_PATH`,\n`OBJC_INCLUDE_PATH`, `LIBRARY_PATH`, `PKG_CONFIG_PATH`, `PKG_CONFIG_LIBDIR`,\n`DYLD_LIBRARY_PATH`, `DYLD_FALLBACK_LIBRARY_PATH`, `DYLD_FRAMEWORK_PATH`,\n`LD_LIBRARY_PATH`를 비운다. 필요한 값은 키트 `environment`에 명시하면 제거 후\n다시 적용된다. `CMAKE_PREFIX_PATH`는 `environment`가 아니라 `prefixes`로 지정한다.\nCMake 사용자·시스템 패키지 레지스트리와 설치 prefix 자동 검색도 비활성화한다.\n`iiSDKCore_DIR`는 앱 구성에만 지정한다. 외부 경로나 시스템 위치의 패키지가\n다른 SDK를 노출하지 않는지는 해당 모듈의 별도 경계 검사로 확인해야 한다.\n`PATH`와 Windows의 `INCLUDE`·`LIB`는 컴파일러 및 시스템 SDK 검색을 위해 유지하므로\n이 환경 정리만으로 모든 우발적 SDK 검색을 차단한다고 보장하지 않는다.\n크로스 툴체인은 sysroot·네이티브 라이브러리·pkg-config 환경과 CMake 루트 경로\n정책을 별도로 정확히 설정해야 한다. 누락된 컴파일러나 SDK를 다운로드·에뮬레이션하지 않는다.\n"
+    },
+    {
+      "id": "b000044",
+      "kind": "blank",
+      "start_line": 146,
+      "end_line": 146,
+      "raw": "\n"
+    },
+    {
+      "id": "b000045",
+      "kind": "paragraph",
+      "start_line": 147,
+      "end_line": 156,
+      "raw": "Kit cache values are applied before per-project cache overrides. The builder\nowns the configuration, toolchain, target system, platform ABI/SDK fields,\ninstall prefix and package prefix path. Configure these through their request\nor kit fields. Existing `CMAKE_PROJECT_TOP_LEVEL_INCLUDES` scripts are preserved\nand the builder appends its target verification hook. Defaults include\n`BUILD_TESTING=OFF`, `IISDKCORE_BUILD_EXAMPLES=OFF`, `BUILD_SHARED_LIBS=OFF`, and\n`CMAKE_INSTALL_LIBDIR=lib` for the target SDK builds. C++ module scanning is\noff by default because standard NDK/Emscripten distributions can omit\n`clang-scan-deps`; module-based projects can set `CMAKE_CXX_SCAN_FOR_MODULES`\nto `ON` in their cache and supply the scanner.\n"
+    },
+    {
+      "id": "b000046",
+      "kind": "blank",
+      "start_line": 157,
+      "end_line": 157,
+      "raw": "\n"
+    },
+    {
+      "id": "b000047",
+      "kind": "heading",
+      "start_line": 158,
+      "end_line": 158,
+      "raw": "## Results, cancellation, and reuse\n",
+      "level": 2,
+      "title": "Results, cancellation, and reuse"
+    },
+    {
+      "id": "b000048",
+      "kind": "blank",
+      "start_line": 159,
+      "end_line": 159,
+      "raw": "\n"
+    },
+    {
+      "id": "b000049",
+      "kind": "paragraph",
+      "start_line": 160,
+      "end_line": 164,
+      "raw": "Each kit runs independent SDK configure → build → install in selection order, then app\nconfigure → build. Kits run concurrently through iiSDKCore Runtime. `jobs`\nlimits compiler jobs per kit, so an upper bound is `jobs × parallelKits` active\ncompiler jobs. Commands use argument vectors and per-child environment settings.\nNo command shell or process-global environment mutation is used by the builder.\n"
+    },
+    {
+      "id": "b000050",
+      "kind": "blank",
+      "start_line": 165,
+      "end_line": 165,
+      "raw": "\n"
+    },
+    {
+      "id": "b000051",
+      "kind": "paragraph",
+      "start_line": 166,
+      "end_line": 166,
+      "raw": "Outputs are organized as:\n"
+    },
+    {
+      "id": "b000052",
+      "kind": "blank",
+      "start_line": 167,
+      "end_line": 167,
+      "raw": "\n"
+    },
+    {
+      "id": "b000053",
+      "kind": "fenced_code",
+      "start_line": 168,
+      "end_line": 178,
+      "raw": "```text\nbuild/iiSDKBuilder/\n  report.json\n  kits/<kit-id>/<configuration>/\n    kit-identity.json\n    prefix/<sdk-name>/\n    sdk/<sdk-name>/isolated/build/\n    app/isolated/build/\n    logs/sdk/<sdk-name>/<configure|build|install>.log\n    logs/app/<configure|build>.log\n```\n",
+      "language": "text",
+      "code": "build/iiSDKBuilder/\n  report.json\n  kits/<kit-id>/<configuration>/\n    kit-identity.json\n    prefix/<sdk-name>/\n    sdk/<sdk-name>/isolated/build/\n    app/isolated/build/\n    logs/sdk/<sdk-name>/<configure|build|install>.log\n    logs/app/<configure|build>.log\n",
+      "closed": true
+    },
+    {
+      "id": "b000054",
+      "kind": "blank",
+      "start_line": 179,
+      "end_line": 179,
+      "raw": "\n"
+    },
+    {
+      "id": "b000055",
+      "kind": "paragraph",
+      "start_line": 180,
+      "end_line": 187,
+      "raw": "`report.json` records every kit, every planned command, its status, original\narguments, exit code, elapsed time, log path and existing app artifacts from the\nCMake File API. A failed SDK blocks its remaining stages and the app, while the\nother selected SDKs in that kit continue. The first SDK failure remains the kit\nerror and the kit fails even if later SDKs succeed. Cancellation blocks all later\nstages. Independent kits continue. Missing kits remain `unavailable`, and their\ncommands are `blocked`. The overall `succeeded` field is true only if every\nrequested kit succeeds. Report writes use iiFileProvider Native atomic publication.\n"
+    },
+    {
+      "id": "b000056",
+      "kind": "blank",
+      "start_line": 188,
+      "end_line": 188,
+      "raw": "\n"
+    },
+    {
+      "id": "b000057",
+      "kind": "paragraph",
+      "start_line": 189,
+      "end_line": 196,
+      "raw": "The report includes `executionModel` for each kit and `verifiedArtifacts` for\nimages that pass mandatory post-link format/CPU checks. Each verified entry\ncontains `file`, `format`, `executionModel` and `architectures`. PE, ELF and\nMach-O images are required by their OS targets; a script launcher, JVM/DEX\nbytecode or CLR managed PE cannot satisfy this contract. Apple deployment\ncommands distinguish macOS, iOS devices and iOS simulators. CMake success alone\ndoes not bypass this check. CMake's primary target filename excludes PDB/debug\ndata and import archives from executable-image inspection.\n"
+    },
+    {
+      "id": "b000058",
+      "kind": "blank",
+      "start_line": 197,
+      "end_line": 197,
+      "raw": "\n"
+    },
+    {
+      "id": "b000059",
+      "kind": "paragraph",
+      "start_line": 198,
+      "end_line": 200,
+      "raw": "WASM JS/HTML output must have a separate `.wasm` companion, which is inspected\nand reported as the verified image. JS/asm.js alone and embedded single-file\nWASM bundles are not accepted by the current inspector.\n"
+    },
+    {
+      "id": "b000060",
+      "kind": "blank",
+      "start_line": 201,
+      "end_line": 201,
+      "raw": "\n"
+    },
+    {
+      "id": "b000061",
+      "kind": "paragraph",
+      "start_line": 202,
+      "end_line": 207,
+      "raw": "The CLI returns 0 for success, 1 for an incomplete/failed matrix or missing\ndoctor prerequisites, 2 for invalid input or a fatal builder error, and 130\nafter an interrupt. SIGINT/SIGTERM requests cancellation; active POSIX process\ngroups or Windows child jobs are terminated and reaped, while pending stages\nare blocked. The library accepts `std::stop_token` and can use an injected\nthread-safe executor for embedding or tests.\n"
+    },
+    {
+      "id": "b000062",
+      "kind": "blank",
+      "start_line": 208,
+      "end_line": 208,
+      "raw": "\n"
+    },
+    {
+      "id": "b000063",
+      "kind": "paragraph",
+      "start_line": 209,
+      "end_line": 216,
+      "raw": "Incremental builds reuse the same paths. A kit's platform, generator, toolchain\ntimestamp, architecture/SDK/ABI, selected compiler cache and explicit environment\nform its stored identity. Change the kit ID or build root when these change;\nthe builder fails rather than silently reusing an incompatible CMake cache.\nConfigurations use separate directories and prefixes. The `isolated/build`\nlayout leaves older shared-prefix builds and caches untouched; applications\nmust rebuild against the newly installed SDK packages. CMake handles ordinary\nsource changes and other cache updates incrementally.\n"
+    },
+    {
+      "id": "b000064",
+      "kind": "blank",
+      "start_line": 217,
+      "end_line": 217,
+      "raw": "\n"
+    },
+    {
+      "id": "b000065",
+      "kind": "paragraph",
+      "start_line": 218,
+      "end_line": 221,
+      "raw": "A `.iisdkbuilder.lock` directory prevents concurrent runs against the same\nroot and is removed after a normal return. An abruptly killed builder can\nleave a stale lock. Remove that **specific lock directory** only after verifying\nthat no build for that root is running. No automatic cleanup/reset is performed.\n"
+    },
+    {
+      "id": "b000066",
+      "kind": "blank",
+      "start_line": 222,
+      "end_line": 222,
+      "raw": "\n"
+    },
+    {
+      "id": "b000067",
+      "kind": "heading",
+      "start_line": 223,
+      "end_line": 223,
+      "raw": "## Library consumption\n",
+      "level": 2,
+      "title": "Library consumption"
+    },
+    {
+      "id": "b000068",
+      "kind": "blank",
+      "start_line": 224,
+      "end_line": 224,
+      "raw": "\n"
+    },
+    {
+      "id": "b000069",
+      "kind": "fenced_code",
+      "start_line": 225,
+      "end_line": 228,
+      "raw": "```cmake\nfind_package(iiSDKBuilder 0.1 CONFIG REQUIRED)\ntarget_link_libraries(my_build_tool PRIVATE iiSDKBuilder::iiSDKBuilder)\n```\n",
+      "language": "cmake",
+      "code": "find_package(iiSDKBuilder 0.1 CONFIG REQUIRED)\ntarget_link_libraries(my_build_tool PRIVATE iiSDKBuilder::iiSDKBuilder)\n",
+      "closed": true
+    },
+    {
+      "id": "b000070",
+      "kind": "blank",
+      "start_line": 229,
+      "end_line": 229,
+      "raw": "\n"
+    },
+    {
+      "id": "b000071",
+      "kind": "fenced_code",
+      "start_line": 230,
+      "end_line": 241,
+      "raw": "```cpp\n#include <iiSDKBuilder/Builder.h>\n\nauto request = ii::builder::read_manifest(\"iiSDKBuilder.json\");\nif (!request) { /* report request.error() */ }\nelse {\n    ii::builder::Builder builder;\n    auto report = builder.build(*request);\n    if (!report) { /* fatal builder error */ }\n    else if (!report->succeeded) { /* inspect per-kit/per-step results */ }\n}\n```\n",
+      "language": "cpp",
+      "code": "#include <iiSDKBuilder/Builder.h>\n\nauto request = ii::builder::read_manifest(\"iiSDKBuilder.json\");\nif (!request) { /* report request.error() */ }\nelse {\n    ii::builder::Builder builder;\n    auto report = builder.build(*request);\n    if (!report) { /* fatal builder error */ }\n    else if (!report->succeeded) { /* inspect per-kit/per-step results */ }\n}\n",
+      "closed": true
+    },
+    {
+      "id": "b000072",
+      "kind": "blank",
+      "start_line": 242,
+      "end_line": 242,
+      "raw": "\n"
+    },
+    {
+      "id": "b000073",
+      "kind": "paragraph",
+      "start_line": 243,
+      "end_line": 245,
+      "raw": "The host tooling depends on iiSDKBuilder; target applications depend on their\nSDKs, including iiSDKCore. Do not link the host process runner into mobile or\nbrowser application binaries.\n"
+    },
+    {
+      "id": "b000074",
+      "kind": "blank",
+      "start_line": 246,
+      "end_line": 246,
+      "raw": "\n"
+    },
+    {
+      "id": "b000075",
+      "kind": "heading",
+      "start_line": 247,
+      "end_line": 247,
+      "raw": "## A CMake build target\n",
+      "level": 2,
+      "title": "A CMake build target"
+    },
+    {
+      "id": "b000076",
+      "kind": "blank",
+      "start_line": 248,
+      "end_line": 248,
+      "raw": "\n"
+    },
+    {
+      "id": "b000077",
+      "kind": "paragraph",
+      "start_line": 249,
+      "end_line": 250,
+      "raw": "The standalone helper can be included without importing the host library into\nthe target application. Point `BUILDER` at an existing desktop host executable:\n"
+    },
+    {
+      "id": "b000078",
+      "kind": "blank",
+      "start_line": 251,
+      "end_line": 251,
+      "raw": "\n"
+    },
+    {
+      "id": "b000079",
+      "kind": "fenced_code",
+      "start_line": 252,
+      "end_line": 258,
+      "raw": "```cmake\ninclude(\"/path/to/iiSDKBuilder/cmake/iiSDKBuilderMatrix.cmake\")\niisdkbuilder_add_matrix(\n    TARGET build-all-platforms\n    MANIFEST \"${CMAKE_CURRENT_SOURCE_DIR}/iiSDKBuilder.json\"\n    BUILDER \"/path/to/iiSDKBuilder/build/iisdk-builder\")\n```\n",
+      "language": "cmake",
+      "code": "include(\"/path/to/iiSDKBuilder/cmake/iiSDKBuilderMatrix.cmake\")\niisdkbuilder_add_matrix(\n    TARGET build-all-platforms\n    MANIFEST \"${CMAKE_CURRENT_SOURCE_DIR}/iiSDKBuilder.json\"\n    BUILDER \"/path/to/iiSDKBuilder/build/iisdk-builder\")\n",
+      "closed": true
+    },
+    {
+      "id": "b000080",
+      "kind": "blank",
+      "start_line": 259,
+      "end_line": 259,
+      "raw": "\n"
+    },
+    {
+      "id": "b000081",
+      "kind": "fenced_code",
+      "start_line": 260,
+      "end_line": 262,
+      "raw": "```sh\ncmake --build build --target build-all-platforms\n```\n",
+      "language": "sh",
+      "code": "cmake --build build --target build-all-platforms\n",
+      "closed": true
+    },
+    {
+      "id": "b000082",
+      "kind": "blank",
+      "start_line": 263,
+      "end_line": 263,
+      "raw": "\n"
+    },
+    {
+      "id": "b000083",
+      "kind": "paragraph",
+      "start_line": 264,
+      "end_line": 268,
+      "raw": "The helper is also installed beside `iiSDKBuilderConfig.cmake`. `PLATFORMS host`\nor `PLATFORMS macos ios android wasm` optionally limits the target. Without\n`BUILDER`, it selects an existing iiSDKBuilder CLI target or searches for the\nhost program on PATH without using the cross-compilation root. The custom\ntarget is explicit and is not added to the application's default build target.\n"
+    }
+  ],
+  "outline": [
+    {
+      "block_id": "b000001",
+      "parent_id": null,
+      "level": 1,
+      "title": "Usage and manifest schema 1",
+      "anchor": "usage-and-manifest-schema-1",
+      "start_line": 1
+    },
+    {
+      "block_id": "b000007",
+      "parent_id": "b000001",
+      "level": 2,
+      "title": "One command for an application",
+      "anchor": "one-command-for-an-application",
+      "start_line": 15
+    },
+    {
+      "block_id": "b000019",
+      "parent_id": "b000001",
+      "level": 2,
+      "title": "Reusable project configuration",
+      "anchor": "reusable-project-configuration",
+      "start_line": 36
+    },
+    {
+      "block_id": "b000031",
+      "parent_id": "b000001",
+      "level": 2,
+      "title": "Kits",
+      "anchor": "kits",
+      "start_line": 91
+    },
+    {
+      "block_id": "b000047",
+      "parent_id": "b000001",
+      "level": 2,
+      "title": "Results, cancellation, and reuse",
+      "anchor": "results-cancellation-and-reuse",
+      "start_line": 158
+    },
+    {
+      "block_id": "b000067",
+      "parent_id": "b000001",
+      "level": 2,
+      "title": "Library consumption",
+      "anchor": "library-consumption",
+      "start_line": 223
+    },
+    {
+      "block_id": "b000075",
+      "parent_id": "b000001",
+      "level": 2,
+      "title": "A CMake build target",
+      "anchor": "a-cmake-build-target",
+      "start_line": 247
+    }
+  ],
+  "indexes": {
+    "directive_candidates": [
+      {
+        "block_id": "b000003",
+        "line": 5,
+        "text": "The build host must be Windows, macOS, or Linux. The six target platforms are",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      },
+      {
+        "block_id": "b000017",
+        "line": 33,
+        "text": "must not contain source directories, and the builder never deletes source",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      },
+      {
+        "block_id": "b000025",
+        "line": 77,
+        "text": "끝난 뒤 앱을 빌드하고, 순서는 SDK 사이의 의존 관계를 뜻하지 않는다. Core의 명시적",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      },
+      {
+        "block_id": "b000025",
+        "line": 79,
+        "text": "SDK들은 앱이 독립적으로 사용할 설치 규칙을 제공해야 한다.",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      },
+      {
+        "block_id": "b000033",
+        "line": 95,
+        "text": "must be unique even when case is ignored. This example shows kit fields:",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      },
+      {
+        "block_id": "b000037",
+        "line": 112,
+        "text": "required. `architecture` is an Apple architecture list (for example",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      },
+      {
+        "block_id": "b000039",
+        "line": 122,
+        "text": "and must be at least 21. Use separate kit IDs for each ABI.",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      },
+      {
+        "block_id": "b000043",
+        "line": 141,
+        "text": "다른 SDK를 노출하지 않는지는 해당 모듈의 별도 경계 검사로 확인해야 한다.",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      },
+      {
+        "block_id": "b000043",
+        "line": 143,
+        "text": "이 환경 정리만으로 모든 우발적 SDK 검색을 차단한다고 보장하지 않는다.",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      },
+      {
+        "block_id": "b000043",
+        "line": 145,
+        "text": "정책을 별도로 정확히 설정해야 한다. 누락된 컴파일러나 SDK를 다운로드·에뮬레이션하지 않는다.",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      },
+      {
+        "block_id": "b000057",
+        "line": 192,
+        "text": "Mach-O images are required by their OS targets; a script launcher, JVM/DEX",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      },
+      {
+        "block_id": "b000059",
+        "line": 198,
+        "text": "WASM JS/HTML output must have a separate `.wasm` companion, which is inspected",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      },
+      {
+        "block_id": "b000063",
+        "line": 215,
+        "text": "must rebuild against the newly installed SDK packages. CMake handles ordinary",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      },
+      {
+        "block_id": "b000073",
+        "line": 244,
+        "text": "SDKs, including iiSDKCore. Do not link the host process runner into mobile or",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      }
+    ],
+    "commands": [
+      {
+        "block_id": "b000011",
+        "language": "sh",
+        "code": "build/iisdk-builder build --app examples/Hello --sdk-root ..\n"
+      },
+      {
+        "block_id": "b000015",
+        "language": "sh",
+        "code": "build/iisdk-builder build --app examples/Hello --sdk-root .. \\\n  --platform macos,android,ios,wasm\n"
+      },
+      {
+        "block_id": "b000029",
+        "language": "sh",
+        "code": "build/iisdk-builder init --app examples/Hello --sdk-root .. \\\n  --manifest build/hello.json\nbuild/iisdk-builder doctor --manifest build/hello.json\nbuild/iisdk-builder plan --manifest build/hello.json\nbuild/iisdk-builder build --manifest build/hello.json --platform host\n"
+      },
+      {
+        "block_id": "b000081",
+        "language": "sh",
+        "code": "cmake --build build --target build-all-platforms\n"
+      }
+    ],
+    "links": [
+      {
+        "block_id": "b000037",
+        "label": "EmbeddedTargets.md",
+        "target": "EmbeddedTargets.md",
+        "kind": "relative",
+        "line": 110
+      }
+    ],
+    "tables": []
+  },
+  "provenance": {
+    "generator": "workspace-docs",
+    "version": "1.0.0",
+    "profile": "lossless-blocks-v1",
+    "derived": true
+  }
+}

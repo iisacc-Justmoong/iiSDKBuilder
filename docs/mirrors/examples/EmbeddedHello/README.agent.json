@@ -1,0 +1,93 @@
+{
+  "format": "iisacc.agent-document",
+  "schema_version": 1,
+  "document_id": "urn:iisacc:document:59855307d4304a551230e84016f5530582e97acd96dcd828e25c210ad91f071a",
+  "project": {
+    "id": "urn:iisacc:project:SDK%2FiiSDKBuilder",
+    "name": "iiSDKBuilder",
+    "root": "SDK/iiSDKBuilder",
+    "kind": "sdk"
+  },
+  "source": {
+    "path": "examples/EmbeddedHello/README.md",
+    "sha256": "50f7318dbd45456b08a0f480f6c24df3d42a2badb63b34f8523e835cc1dd5d31",
+    "bytes": 632,
+    "line_count": 5,
+    "encoding": "utf-8",
+    "language": "en"
+  },
+  "document": {
+    "title": "EmbeddedHello",
+    "role": "overview",
+    "authority": "markdown_source"
+  },
+  "blocks": [
+    {
+      "id": "b000001",
+      "kind": "heading",
+      "start_line": 1,
+      "end_line": 1,
+      "raw": "# EmbeddedHello\n",
+      "level": 1,
+      "title": "EmbeddedHello"
+    },
+    {
+      "id": "b000002",
+      "kind": "blank",
+      "start_line": 2,
+      "end_line": 2,
+      "raw": "\n"
+    },
+    {
+      "id": "b000003",
+      "kind": "paragraph",
+      "start_line": 3,
+      "end_line": 3,
+      "raw": "One C++23 application uses `iiSDKCore::Embedded` on a native CPU or an Arduino board. `App.h` owns its bounded loop and callbacks. `EmbeddedHello.ino` binds Arduino's native Serial/millis BSP. The CMake application links the installed Embedded component. The optional Cortex-M3 BSP is specifically for QEMU LM3S6965 and is enabled only by `IISDK_EXAMPLE_CORTEX_M3=ON`.\n"
+    },
+    {
+      "id": "b000004",
+      "kind": "blank",
+      "start_line": 4,
+      "end_line": 4,
+      "raw": "\n"
+    },
+    {
+      "id": "b000005",
+      "kind": "paragraph",
+      "start_line": 5,
+      "end_line": 5,
+      "raw": "A BSP/compiler must support C++23. A successful generic CPU emulator run is reported as emulation; it does not certify an unrelated physical board. See `docs/EmbeddedTargets.md` for profiles, toolchains and explicit deployment/runner contracts.\n"
+    }
+  ],
+  "outline": [
+    {
+      "block_id": "b000001",
+      "parent_id": null,
+      "level": 1,
+      "title": "EmbeddedHello",
+      "anchor": "embeddedhello",
+      "start_line": 1
+    }
+  ],
+  "indexes": {
+    "directive_candidates": [
+      {
+        "block_id": "b000005",
+        "line": 5,
+        "text": "A BSP/compiler must support C++23. A successful generic CPU emulator run is reported as emulation; it does not certify an unrelated physical board. See `docs/EmbeddedTargets.md` for profiles, toolchains and explicit deployment/runner contracts.",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      }
+    ],
+    "commands": [],
+    "links": [],
+    "tables": []
+  },
+  "provenance": {
+    "generator": "workspace-docs",
+    "version": "1.0.0",
+    "profile": "lossless-blocks-v1",
+    "derived": true
+  }
+}

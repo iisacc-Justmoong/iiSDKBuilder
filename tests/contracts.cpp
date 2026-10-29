@@ -34,7 +34,7 @@ Request request(const fs::path& source, const fs::path& core, const fs::path& ou
     Request r;
     r.app = {"Hello", source / "tests/fixtures/app", {}, {}, {"hello"}};
     r.sdk_root = core.parent_path();
-    r.sdks = {{"Addon", source / "tests/fixtures/addon", {"iiSDKCore"}, {}, {}}};
+    r.sdks = {{"Addon", source / "tests/fixtures/addon", {}, {}, {}}};
     r.build_root = output;
     r.cmake = cmake;
     auto host = host_platform();
@@ -93,18 +93,18 @@ void publication_test(const fs::path& output) {
     require(saved->at("version").integer() == 2, "failed publication never truncates the original");
 }
 void graph_test(Request r) {
-    r.sdks.push_back({"Extra", r.sdks.front().source, {"Addon"}, {}, {}});
+    r.sdks.push_back({"Extra", r.sdks.front().source, {}, {}, {}});
     std::reverse(r.sdks.begin(), r.sdks.end());
     auto plan = make_plan(r);
     good(plan, "graph planning");
     const auto& p = plan->kits.front().projects;
     require(p.size() == 4 && p[0].project.name == "iiSDKCore" &&
-        p[1].project.name == "Addon" && p[2].project.name == "Extra" &&
-        p[3].project.name == "Hello", "topological SDK order, application last");
+        p[1].project.name == "Extra" && p[2].project.name == "Addon" &&
+        p[3].project.name == "Hello", "independent selection order, application last");
     r.sdks[1].depends = {"Extra"};
-    require(!make_plan(r), "cycle rejected");
+    require(!make_plan(r), "SDK dependency rejected");
     r.sdks[1].depends = {"Missing"};
-    require(!make_plan(r), "unknown SDK rejected");
+    require(!make_plan(r), "unknown SDK dependency rejected");
     r.sdks[1].depends.clear();
     r.sdks[0].name = "../escape";
     require(!make_plan(r), "unsafe SDK directory rejected");
@@ -143,12 +143,16 @@ void commands_test(Request r) {
     const auto& configure = k.projects.back().commands.front();
     require(contains(configure, "-DGREETING=" + r.app.cache["GREETING"]), "literal cache argument");
     require(contains(configure, "BUILD_COLOR=two words"), "per-child environment");
-    require(contains(configure, "-DCMAKE_PREFIX_PATH=" + path_string(k.prefix)), "target prefix only");
+    require(contains(configure, "-DCMAKE_PREFIX_PATH=" + path_string(k.prefix/"iiSDKCore") + ";" +
+        path_string(k.prefix/"Addon")), "application receives each selected SDK prefix");
     require(contains(k.projects.back().commands.back(), "hello"), "app target selected");
     require(!fs::exists(r.build_root), "planning has no filesystem mutation");
     r.app.cache["CMAKE_TOOLCHAIN_FILE"] = "/wrong";
     require(!make_plan(r), "project cannot replace kit toolchain");
     r.app.cache.erase("CMAKE_TOOLCHAIN_FILE");
+    r.app.cache["CMAKE_FIND_NO_INSTALL_PREFIX"] = "OFF";
+    require(!make_plan(r), "project cannot restore the old shared-prefix search");
+    r.app.cache.erase("CMAKE_FIND_NO_INSTALL_PREFIX");
     r.build_root = r.app.source;
     require(!make_plan(r), "source output refused");
     r.build_root = r.app.source.parent_path() / "out";
@@ -159,6 +163,7 @@ void commands_test(Request r) {
     require(!make_plan(r), "Android ABI validated");
 }
 void failure_test(Request r) {
+    r.sdks.push_back({"Extra", r.sdks.front().source, {}, {}, {}});
     r.kits.push_back(r.kits.front());
     r.kits.back().id = "second";
     Builder b{[](const Command& c, std::stop_token) -> ii::core::Result<ProcessOutcome> {
@@ -181,6 +186,12 @@ void failure_test(Request r) {
     require(report->kits[0].status == Status::failed && report->kits[1].status == Status::failed,
         "independent kits continue on failure");
     const auto& steps = report->kits[0].steps;
+    for (const auto& sdk : {"Addon", "Extra"}) {
+        require(std::ranges::count_if(steps, [&](const auto& s) {
+            return s.command.project == sdk && s.status == Status::succeeded;
+        }) == 3, "unrelated SDK must continue after another SDK fails");
+    }
+    require(report->kits[0].message == "Child exited with code 17", "first SDK failure remains visible");
     require(std::ranges::any_of(steps, [](const auto& s) {
         return s.command.project == "Hello" && s.status == Status::blocked;
     }), "dependent app blocked after SDK failure");
@@ -204,6 +215,45 @@ void cancellation_test(Request r) {
     good(report, "cancelled report");
     require(!report->succeeded && calls == 0 && report->kits[0].status == Status::cancelled,
         "pre-cancellation starts no child");
+    r.sdks.push_back({"Extra", r.sdks.front().source, {}, {}, {}});
+    Builder during{[](const Command& c, std::stop_token) -> ii::core::Result<ProcessOutcome> {
+        if (c.project == "Addon" && c.phase == Phase::build) return ProcessOutcome{0, false, true};
+        if (c.phase == Phase::configure) {
+            const auto where=std::ranges::find(c.arguments,"-B");
+            const auto host=host_platform();
+            std::ofstream(fs::path(*(where+1))/"iisdkbuilder-system.txt") <<
+                (*host==Platform::macos?"Darwin":(*host==Platform::windows?"Windows":"Linux")) << '\n';
+        }
+        return ProcessOutcome{0};
+    }};
+    auto mid = during.build(r);
+    good(mid, "mid-build cancellation report");
+    require(mid->kits[0].status == Status::cancelled, "child cancellation remains terminal");
+    require(std::ranges::none_of(mid->kits[0].steps, [](const auto& step) {
+        return (step.command.project == "Extra" || step.command.project == "Hello") &&
+            step.status != Status::blocked;
+    }), "cancelled build starts no later SDK or application commands");
+    std::stop_source after_failure;
+    Builder failed_then_cancelled{[&](const Command& c, std::stop_token) -> ii::core::Result<ProcessOutcome> {
+        if (c.project == "iiSDKCore" && c.phase == Phase::build) {
+            after_failure.request_stop();
+            return ProcessOutcome{17};
+        }
+        if (c.phase == Phase::configure) {
+            const auto where=std::ranges::find(c.arguments,"-B");
+            const auto host=host_platform();
+            std::ofstream(fs::path(*(where+1))/"iisdkbuilder-system.txt") <<
+                (*host==Platform::macos?"Darwin":(*host==Platform::windows?"Windows":"Linux")) << '\n';
+        }
+        return ProcessOutcome{0};
+    }};
+    auto stopped = failed_then_cancelled.build(r, after_failure.get_token());
+    good(stopped, "failure followed by cancellation report");
+    require(stopped->kits[0].status == Status::cancelled, "cancellation takes effect after a failed SDK");
+    require(std::ranges::none_of(stopped->kits[0].steps, [](const auto& step) {
+        return (step.command.project == "Addon" || step.command.project == "Extra" || step.command.project == "Hello") &&
+            step.status != Status::blocked;
+    }), "stop after SDK failure blocks later projects");
 }
 void file_api_test(Request r) {
     auto fake=[&](const Command& c,std::stop_token) -> ii::core::Result<ProcessOutcome> {
@@ -279,6 +329,17 @@ void process_test(const fs::path& output, const fs::path& cmake) {
     std::getline(input, line);
     if (!line.empty() && line.back() == '\r') line.pop_back();
     require(line == literal, "shell metacharacters and trailing slashes preserved");
+    c.expected_output="BUILD_OK";
+    c.arguments={path_string(cmake),"-E","echo","BUILD_OK"};
+    outcome=run_process(c);good(outcome,"finite output observer");
+    require(outcome->exit_code==0&&outcome->matched_output,"finite runner marker observed");
+    c.expected_output="MISSING";
+    outcome=run_process(c);good(outcome,"missing output observer");
+    require(!outcome->matched_output,"exit zero cannot invent a boot marker");
+    c.expected_output="BUILD_OK";c.stop_after_match=true;
+    outcome=run_process(c);good(outcome,"bounded serial observer");
+    require(outcome->matched_output&&!outcome->cancelled&&!outcome->timed_out&&outcome->exit_code==0,"owned observer completion is successful");
+    c.expected_output.clear();require(!run_process(c),"serial observation requires marker");c.stop_after_match=false;
     c.arguments={path_string(cmake),"-E","false"};
     c.log=output/"nonzero.log";
     outcome=run_process(c);

@@ -1,10 +1,8 @@
 cmake_minimum_required(VERSION 3.31)
 project(Addon LANGUAGES CXX)
-find_package(iiSDKCore 0.10 CONFIG REQUIRED)
 add_library(Addon INTERFACE)
-target_link_libraries(Addon INTERFACE iiSDKCore::iiSDKCore)
 install(TARGETS Addon EXPORT AddonTargets)
 install(EXPORT AddonTargets NAMESPACE Addon:: DESTINATION lib/cmake/Addon)
 file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/AddonConfig.cmake"
-    "include(CMakeFindDependencyMacro)\nfind_dependency(iiSDKCore 0.10 CONFIG)\ninclude(\"\${CMAKE_CURRENT_LIST_DIR}/AddonTargets.cmake\")\n")
+    "include(\"\${CMAKE_CURRENT_LIST_DIR}/AddonTargets.cmake\")\n")
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/AddonConfig.cmake" DESTINATION lib/cmake/Addon)

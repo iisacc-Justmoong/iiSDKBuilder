@@ -1,5 +1,6 @@
 #include <iiSDKBuilder/Builder.h>
 #include "Json.h"
+#include "Targets.h"
 #include <algorithm>
 #include <stdexcept>
 
@@ -62,7 +63,7 @@ core::Result<Request> read_manifest(const fs::path& file) {
     auto root=detail::read_json(file);
     if (!root) return std::unexpected(root.error());
     try {
-        fields(*root,{"schema","app","sdkRoot","sdks","kits","buildRoot","cmake","configuration","jobs","parallelKits","timeoutSeconds"});
+        fields(*root,{"schema","app","sdkRoot","sdks","kits","buildRoot","cmake","configuration","jobs","parallelKits","timeoutSeconds","deploy","run"});
         if (root->at("schema").integer()!=1) throw std::runtime_error("Unsupported iiSDKBuilder manifest schema (expected 1)");
         const auto base=fs::absolute(file).parent_path().lexically_normal();
         Request r;
@@ -77,11 +78,15 @@ core::Result<Request> read_manifest(const fs::path& file) {
         r.jobs=number(*root,"jobs",2);
         r.parallel_kits=number(*root,"parallelKits",2);
         r.timeout=std::chrono::seconds{number(*root,"timeoutSeconds",1800)};
+        for(auto item:{std::pair{"deploy",&r.deploy},std::pair{"run",&r.run}})if(root->has(item.first)){
+            const auto* value=std::get_if<bool>(&root->at(item.first).value);
+            if(!value)throw std::runtime_error(std::string(item.first)+" must be boolean");*item.second=*value;
+        }
         if (root->has("sdks")) for (const auto& item:root->at("sdks").array()) r.sdks.push_back(project(item,base));
         if (root->has("kits")) {
             r.kits.clear();
             for (const auto& item:root->at("kits").array()) {
-                fields(item,{"id","platform","toolchain","generator","architecture","sysroot","androidApi","androidAbi","cache","environment","prefixes"});
+                fields(item,{"id","platform","toolchain","generator","architecture","sysroot","androidApi","androidAbi","cache","environment","prefixes","target"});
                 Kit kit;
                 kit.id=item.at("id").string();
                 auto platform=parse_platform(item.at("platform").string());
@@ -101,6 +106,7 @@ core::Result<Request> read_manifest(const fs::path& file) {
                     auto p=detail::utf8_path(prefix.string());
                     kit.prefixes.push_back((p.is_absolute()?p:base/p).lexically_normal());
                 }
+                if(item.has("target"))kit.target=detail::read_target(item.at("target"),base);
                 r.kits.push_back(std::move(kit));
             }
         }
@@ -120,14 +126,14 @@ core::Result<void> write_manifest(const Request& r,const fs::path& file) {
             {"toolchain",absolute_text(k.toolchain)},{"generator",k.generator},
             {"architecture",k.architecture},{"sysroot",k.sysroot},{"androidApi",k.android_api},
             {"androidAbi",k.android_abi},{"cache",json_variables(k.cache)},
-            {"environment",json_variables(k.environment)},{"prefixes",std::move(prefixes)}});
+            {"environment",json_variables(k.environment)},{"prefixes",std::move(prefixes)},{"target",detail::target_json(k.target)}});
     }
     return detail::write_text(file,detail::dump_json(Json::Object{{"schema",1},{"app",json_project(r.app)},
         {"sdkRoot",absolute_text(r.sdk_root)},{"sdks",std::move(sdks)},{"kits",std::move(kits)},
         {"buildRoot",absolute_text(r.build_root)},
         {"cmake",r.cmake.has_parent_path()?absolute_text(r.cmake):detail::path_string(r.cmake)},
         {"configuration",r.configuration},{"jobs",r.jobs},{"parallelKits",r.parallel_kits},
-        {"timeoutSeconds",static_cast<double>(r.timeout.count())}}));
+        {"timeoutSeconds",static_cast<double>(r.timeout.count())},{"deploy",r.deploy},{"run",r.run}}));
 }
 
 std::string plan_json(const Plan& plan) {
@@ -140,10 +146,10 @@ std::string plan_json(const Plan& plan) {
                 {"phase",phase_name(command.phase)},{"arguments",json_strings(command.arguments)},
                 {"log",detail::path_string(command.log)}});
             projects.emplace_back(Json::Object{{"name",p.project.name},{"source",detail::path_string(p.project.source)},
-                {"binaryDir",detail::path_string(p.binary_dir)},{"commands",std::move(commands)}});
+                {"hostValidation",p.host_validation},{"binaryDir",detail::path_string(p.binary_dir)},{"commands",std::move(commands)}});
         }
         kits.emplace_back(Json::Object{{"id",k.kit.id},{"platform",platform_name(k.kit.platform)},
-            {"executionModel",execution_model_name(execution_model(k.kit.platform))},
+            {"executionModel",execution_model_name(execution_model(k.kit))},{"profile",k.kit.target.profile},{"target",detail::target_json(k.kit.target)},
             {"available",k.unavailable_reason.empty()},{"reason",k.unavailable_reason},
             {"toolchain",detail::path_string(k.kit.toolchain)},{"prefix",detail::path_string(k.prefix)},
             {"projects",std::move(projects)}});

@@ -1,0 +1,144 @@
+{
+  "format": "iisacc.agent-document",
+  "schema_version": 1,
+  "document_id": "urn:iisacc:document:7257b191a4c4a3faaba9e487436e11c572ab0149a0f2abe2267c11ac25527a77",
+  "project": {
+    "id": "urn:iisacc:project:SDK%2FiiSDKBuilder",
+    "name": "iiSDKBuilder",
+    "root": "SDK/iiSDKBuilder",
+    "kind": "sdk"
+  },
+  "source": {
+    "path": "examples/HLSHello/README.md",
+    "sha256": "029a01adbed4b94e2af11d897038de55f0d8461d7ee899da18a4592c6b29bc9f",
+    "bytes": 1046,
+    "line_count": 13,
+    "encoding": "utf-8",
+    "language": "en"
+  },
+  "document": {
+    "title": "HLSHello",
+    "role": "overview",
+    "authority": "markdown_source"
+  },
+  "blocks": [
+    {
+      "id": "b000001",
+      "kind": "heading",
+      "start_line": 1,
+      "end_line": 1,
+      "raw": "# HLSHello\n",
+      "level": 1,
+      "title": "HLSHello"
+    },
+    {
+      "id": "b000002",
+      "kind": "blank",
+      "start_line": 2,
+      "end_line": 2,
+      "raw": "\n"
+    },
+    {
+      "id": "b000003",
+      "kind": "paragraph",
+      "start_line": 3,
+      "end_line": 3,
+      "raw": "`crc8.cpp` is the actual C++23 synthesis input. The builder lowers the bounded CRC-8 algorithm to a typed dataflow and SystemVerilog. `board.v` connects its generated `crc_kernel` ready/valid interface to a counter and LED. `ice40.pcf` is specifically for the iCEstick HX1K TQ144 clock/LED pins.\n"
+    },
+    {
+      "id": "b000004",
+      "kind": "blank",
+      "start_line": 4,
+      "end_line": 4,
+      "raw": "\n"
+    },
+    {
+      "id": "b000005",
+      "kind": "paragraph",
+      "start_line": 5,
+      "end_line": 5,
+      "raw": "Run a portable RTL build with the example manifest:\n"
+    },
+    {
+      "id": "b000006",
+      "kind": "blank",
+      "start_line": 6,
+      "end_line": 6,
+      "raw": "\n"
+    },
+    {
+      "id": "b000007",
+      "kind": "fenced_code",
+      "start_line": 7,
+      "end_line": 9,
+      "raw": "```sh\niisdk-builder build --manifest examples/HLSHello/iiSDKBuilder.json --sdk-root /path/to/SDK\n```\n",
+      "language": "sh",
+      "code": "iisdk-builder build --manifest examples/HLSHello/iiSDKBuilder.json --sdk-root /path/to/SDK\n",
+      "closed": true
+    },
+    {
+      "id": "b000008",
+      "kind": "blank",
+      "start_line": 10,
+      "end_line": 10,
+      "raw": "\n"
+    },
+    {
+      "id": "b000009",
+      "kind": "paragraph",
+      "start_line": 11,
+      "end_line": 11,
+      "raw": "The manifest uses `clang++` and `yosys` from the kit environment. To generate an iCE40 image, choose `implementation: ice40`, `part: hx1k`, `family: tq144`, `top: hls_board`, the wrapper and constraints, and a clock period of 83333 ps. The same emitted SystemVerilog can be implemented through the Vivado or Quartus adapters with their actual part/constraint/tool settings.\n"
+    },
+    {
+      "id": "b000010",
+      "kind": "blank",
+      "start_line": 12,
+      "end_line": 12,
+      "raw": "\n"
+    },
+    {
+      "id": "b000011",
+      "kind": "paragraph",
+      "start_line": 13,
+      "end_line": 13,
+      "raw": "See [HLS](../../docs/HLS.md) for the exact supported C++ subset. The FPGA contains gates and registers; Core manages build-time process ownership on the host. Device programming is a separate explicit step.\n"
+    }
+  ],
+  "outline": [
+    {
+      "block_id": "b000001",
+      "parent_id": null,
+      "level": 1,
+      "title": "HLSHello",
+      "anchor": "hlshello",
+      "start_line": 1
+    }
+  ],
+  "indexes": {
+    "directive_candidates": [],
+    "commands": [
+      {
+        "block_id": "b000007",
+        "language": "sh",
+        "code": "iisdk-builder build --manifest examples/HLSHello/iiSDKBuilder.json --sdk-root /path/to/SDK\n"
+      }
+    ],
+    "links": [
+      {
+        "block_id": "b000011",
+        "label": "HLS",
+        "target": "../../docs/HLS.md",
+        "kind": "relative",
+        "line": 13
+      }
+    ],
+    "tables": []
+  },
+  "provenance": {
+    "generator": "workspace-docs",
+    "version": "1.0.0",
+    "profile": "lossless-blocks-v1",
+    "derived": true
+  }
+}

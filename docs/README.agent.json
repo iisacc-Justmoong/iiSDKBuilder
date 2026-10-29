@@ -1,0 +1,580 @@
+{
+  "format": "iisacc.agent-document",
+  "schema_version": 1,
+  "document_id": "urn:iisacc:document:5477b7ffd4d56d4e35b3a3b54d06502b8fe93ea28ce5d565ef06db994a66702a",
+  "project": {
+    "id": "urn:iisacc:project:SDK%2FiiSDKBuilder",
+    "name": "iiSDKBuilder",
+    "root": "SDK/iiSDKBuilder",
+    "kind": "sdk"
+  },
+  "source": {
+    "path": "docs/README.md",
+    "sha256": "e1bc6ed2f68628c5c94f729d004fe97b9272fab947b8e481da8ec40895b922d3",
+    "bytes": 2161,
+    "line_count": 30,
+    "encoding": "utf-8",
+    "language": "en"
+  },
+  "document": {
+    "title": "iiSDKBuilder Documentation",
+    "role": "overview",
+    "authority": "markdown_source"
+  },
+  "blocks": [
+    {
+      "id": "b000001",
+      "kind": "heading",
+      "start_line": 1,
+      "end_line": 1,
+      "raw": "# iiSDKBuilder Documentation\n",
+      "level": 1,
+      "title": "iiSDKBuilder Documentation"
+    },
+    {
+      "id": "b000002",
+      "kind": "blank",
+      "start_line": 2,
+      "end_line": 2,
+      "raw": "\n"
+    },
+    {
+      "id": "b000003",
+      "kind": "html",
+      "start_line": 3,
+      "end_line": 3,
+      "raw": "<!-- workspace-docs:document-map:start -->\n"
+    },
+    {
+      "id": "b000004",
+      "kind": "heading",
+      "start_line": 4,
+      "end_line": 4,
+      "raw": "## Human and agent document map\n",
+      "level": 2,
+      "title": "Human and agent document map"
+    },
+    {
+      "id": "b000005",
+      "kind": "blank",
+      "start_line": 5,
+      "end_line": 5,
+      "raw": "\n"
+    },
+    {
+      "id": "b000006",
+      "kind": "paragraph",
+      "start_line": 6,
+      "end_line": 6,
+      "raw": "Markdown is the maintained human source. Agent JSON is a structured, source-traceable projection.\n"
+    },
+    {
+      "id": "b000007",
+      "kind": "blank",
+      "start_line": 7,
+      "end_line": 7,
+      "raw": "\n"
+    },
+    {
+      "id": "b000008",
+      "kind": "table",
+      "start_line": 8,
+      "end_line": 29,
+      "raw": "| Document | Agent JSON |\n| --- | --- |\n| [`AGENT.md`](../AGENT.md) | [JSON](entrypoints/AGENT.agent.json) |\n| [`README.md`](../README.md) | [JSON](entrypoints/README.agent.json) |\n| [`docs/Architecture.md`](Architecture.md) | [JSON](Architecture.agent.json) |\n| [`docs/EmbeddedTargets.md`](EmbeddedTargets.md) | [JSON](EmbeddedTargets.agent.json) |\n| [`docs/FILE_PROVIDER.md`](FILE_PROVIDER.md) | [JSON](FILE_PROVIDER.agent.json) |\n| [`docs/HLS.md`](HLS.md) | [JSON](HLS.agent.json) |\n| [`docs/Resources.md`](Resources.md) | [JSON](Resources.agent.json) |\n| [`docs/Usage.md`](Usage.md) | [JSON](Usage.agent.json) |\n| [`docs/Verification.md`](Verification.md) | [JSON](Verification.agent.json) |\n| [`docs/WindowsBuildAndRun.md`](WindowsBuildAndRun.md) | [JSON](WindowsBuildAndRun.agent.json) |\n| [`docs/congregation-native.md`](congregation-native.md) | [JSON](congregation-native.agent.json) |\n| [`docs/documentation-structure.md`](documentation-structure.md) | [JSON](documentation-structure.agent.json) |\n| [`docs/independent-sdk-plan.md`](independent-sdk-plan.md) | [JSON](independent-sdk-plan.agent.json) |\n| [`docs/native-kit.md`](native-kit.md) | [JSON](native-kit.agent.json) |\n| [`example/README.md`](../example/README.md) | [JSON](mirrors/example/README.agent.json) |\n| [`examples/EmbeddedHello/README.md`](../examples/EmbeddedHello/README.md) | [JSON](mirrors/examples/EmbeddedHello/README.agent.json) |\n| [`examples/FPGAHello/README.md`](../examples/FPGAHello/README.md) | [JSON](mirrors/examples/FPGAHello/README.agent.json) |\n| [`examples/HLSHello/README.md`](../examples/HLSHello/README.md) | [JSON](mirrors/examples/HLSHello/README.agent.json) |\n| [`examples/Hello/README.md`](../examples/Hello/README.md) | [JSON](mirrors/examples/Hello/README.agent.json) |\n| [`examples/HelloResources/README.md`](../examples/HelloResources/README.md) | [JSON](mirrors/examples/HelloResources/README.agent.json) |\n",
+      "columns": [
+        "Document",
+        "Agent JSON"
+      ],
+      "rows": [
+        [
+          "[`AGENT.md`](../AGENT.md)",
+          "[JSON](entrypoints/AGENT.agent.json)"
+        ],
+        [
+          "[`README.md`](../README.md)",
+          "[JSON](entrypoints/README.agent.json)"
+        ],
+        [
+          "[`docs/Architecture.md`](Architecture.md)",
+          "[JSON](Architecture.agent.json)"
+        ],
+        [
+          "[`docs/EmbeddedTargets.md`](EmbeddedTargets.md)",
+          "[JSON](EmbeddedTargets.agent.json)"
+        ],
+        [
+          "[`docs/FILE_PROVIDER.md`](FILE_PROVIDER.md)",
+          "[JSON](FILE_PROVIDER.agent.json)"
+        ],
+        [
+          "[`docs/HLS.md`](HLS.md)",
+          "[JSON](HLS.agent.json)"
+        ],
+        [
+          "[`docs/Resources.md`](Resources.md)",
+          "[JSON](Resources.agent.json)"
+        ],
+        [
+          "[`docs/Usage.md`](Usage.md)",
+          "[JSON](Usage.agent.json)"
+        ],
+        [
+          "[`docs/Verification.md`](Verification.md)",
+          "[JSON](Verification.agent.json)"
+        ],
+        [
+          "[`docs/WindowsBuildAndRun.md`](WindowsBuildAndRun.md)",
+          "[JSON](WindowsBuildAndRun.agent.json)"
+        ],
+        [
+          "[`docs/congregation-native.md`](congregation-native.md)",
+          "[JSON](congregation-native.agent.json)"
+        ],
+        [
+          "[`docs/documentation-structure.md`](documentation-structure.md)",
+          "[JSON](documentation-structure.agent.json)"
+        ],
+        [
+          "[`docs/independent-sdk-plan.md`](independent-sdk-plan.md)",
+          "[JSON](independent-sdk-plan.agent.json)"
+        ],
+        [
+          "[`docs/native-kit.md`](native-kit.md)",
+          "[JSON](native-kit.agent.json)"
+        ],
+        [
+          "[`example/README.md`](../example/README.md)",
+          "[JSON](mirrors/example/README.agent.json)"
+        ],
+        [
+          "[`examples/EmbeddedHello/README.md`](../examples/EmbeddedHello/README.md)",
+          "[JSON](mirrors/examples/EmbeddedHello/README.agent.json)"
+        ],
+        [
+          "[`examples/FPGAHello/README.md`](../examples/FPGAHello/README.md)",
+          "[JSON](mirrors/examples/FPGAHello/README.agent.json)"
+        ],
+        [
+          "[`examples/HLSHello/README.md`](../examples/HLSHello/README.md)",
+          "[JSON](mirrors/examples/HLSHello/README.agent.json)"
+        ],
+        [
+          "[`examples/Hello/README.md`](../examples/Hello/README.md)",
+          "[JSON](mirrors/examples/Hello/README.agent.json)"
+        ],
+        [
+          "[`examples/HelloResources/README.md`](../examples/HelloResources/README.md)",
+          "[JSON](mirrors/examples/HelloResources/README.agent.json)"
+        ]
+      ]
+    },
+    {
+      "id": "b000009",
+      "kind": "html",
+      "start_line": 30,
+      "end_line": 30,
+      "raw": "<!-- workspace-docs:document-map:end -->\n"
+    }
+  ],
+  "outline": [
+    {
+      "block_id": "b000001",
+      "parent_id": null,
+      "level": 1,
+      "title": "iiSDKBuilder Documentation",
+      "anchor": "iisdkbuilder-documentation",
+      "start_line": 1
+    },
+    {
+      "block_id": "b000004",
+      "parent_id": "b000001",
+      "level": 2,
+      "title": "Human and agent document map",
+      "anchor": "human-and-agent-document-map",
+      "start_line": 4
+    }
+  ],
+  "indexes": {
+    "directive_candidates": [],
+    "commands": [],
+    "links": [
+      {
+        "block_id": "b000008",
+        "label": "`AGENT.md`",
+        "target": "../AGENT.md",
+        "kind": "relative",
+        "line": 10
+      },
+      {
+        "block_id": "b000008",
+        "label": "JSON",
+        "target": "entrypoints/AGENT.agent.json",
+        "kind": "relative",
+        "line": 10
+      },
+      {
+        "block_id": "b000008",
+        "label": "`README.md`",
+        "target": "../README.md",
+        "kind": "relative",
+        "line": 11
+      },
+      {
+        "block_id": "b000008",
+        "label": "JSON",
+        "target": "entrypoints/README.agent.json",
+        "kind": "relative",
+        "line": 11
+      },
+      {
+        "block_id": "b000008",
+        "label": "`docs/Architecture.md`",
+        "target": "Architecture.md",
+        "kind": "relative",
+        "line": 12
+      },
+      {
+        "block_id": "b000008",
+        "label": "JSON",
+        "target": "Architecture.agent.json",
+        "kind": "relative",
+        "line": 12
+      },
+      {
+        "block_id": "b000008",
+        "label": "`docs/EmbeddedTargets.md`",
+        "target": "EmbeddedTargets.md",
+        "kind": "relative",
+        "line": 13
+      },
+      {
+        "block_id": "b000008",
+        "label": "JSON",
+        "target": "EmbeddedTargets.agent.json",
+        "kind": "relative",
+        "line": 13
+      },
+      {
+        "block_id": "b000008",
+        "label": "`docs/FILE_PROVIDER.md`",
+        "target": "FILE_PROVIDER.md",
+        "kind": "relative",
+        "line": 14
+      },
+      {
+        "block_id": "b000008",
+        "label": "JSON",
+        "target": "FILE_PROVIDER.agent.json",
+        "kind": "relative",
+        "line": 14
+      },
+      {
+        "block_id": "b000008",
+        "label": "`docs/HLS.md`",
+        "target": "HLS.md",
+        "kind": "relative",
+        "line": 15
+      },
+      {
+        "block_id": "b000008",
+        "label": "JSON",
+        "target": "HLS.agent.json",
+        "kind": "relative",
+        "line": 15
+      },
+      {
+        "block_id": "b000008",
+        "label": "`docs/Resources.md`",
+        "target": "Resources.md",
+        "kind": "relative",
+        "line": 16
+      },
+      {
+        "block_id": "b000008",
+        "label": "JSON",
+        "target": "Resources.agent.json",
+        "kind": "relative",
+        "line": 16
+      },
+      {
+        "block_id": "b000008",
+        "label": "`docs/Usage.md`",
+        "target": "Usage.md",
+        "kind": "relative",
+        "line": 17
+      },
+      {
+        "block_id": "b000008",
+        "label": "JSON",
+        "target": "Usage.agent.json",
+        "kind": "relative",
+        "line": 17
+      },
+      {
+        "block_id": "b000008",
+        "label": "`docs/Verification.md`",
+        "target": "Verification.md",
+        "kind": "relative",
+        "line": 18
+      },
+      {
+        "block_id": "b000008",
+        "label": "JSON",
+        "target": "Verification.agent.json",
+        "kind": "relative",
+        "line": 18
+      },
+      {
+        "block_id": "b000008",
+        "label": "`docs/WindowsBuildAndRun.md`",
+        "target": "WindowsBuildAndRun.md",
+        "kind": "relative",
+        "line": 19
+      },
+      {
+        "block_id": "b000008",
+        "label": "JSON",
+        "target": "WindowsBuildAndRun.agent.json",
+        "kind": "relative",
+        "line": 19
+      },
+      {
+        "block_id": "b000008",
+        "label": "`docs/congregation-native.md`",
+        "target": "congregation-native.md",
+        "kind": "relative",
+        "line": 20
+      },
+      {
+        "block_id": "b000008",
+        "label": "JSON",
+        "target": "congregation-native.agent.json",
+        "kind": "relative",
+        "line": 20
+      },
+      {
+        "block_id": "b000008",
+        "label": "`docs/documentation-structure.md`",
+        "target": "documentation-structure.md",
+        "kind": "relative",
+        "line": 21
+      },
+      {
+        "block_id": "b000008",
+        "label": "JSON",
+        "target": "documentation-structure.agent.json",
+        "kind": "relative",
+        "line": 21
+      },
+      {
+        "block_id": "b000008",
+        "label": "`docs/independent-sdk-plan.md`",
+        "target": "independent-sdk-plan.md",
+        "kind": "relative",
+        "line": 22
+      },
+      {
+        "block_id": "b000008",
+        "label": "JSON",
+        "target": "independent-sdk-plan.agent.json",
+        "kind": "relative",
+        "line": 22
+      },
+      {
+        "block_id": "b000008",
+        "label": "`docs/native-kit.md`",
+        "target": "native-kit.md",
+        "kind": "relative",
+        "line": 23
+      },
+      {
+        "block_id": "b000008",
+        "label": "JSON",
+        "target": "native-kit.agent.json",
+        "kind": "relative",
+        "line": 23
+      },
+      {
+        "block_id": "b000008",
+        "label": "`example/README.md`",
+        "target": "../example/README.md",
+        "kind": "relative",
+        "line": 24
+      },
+      {
+        "block_id": "b000008",
+        "label": "JSON",
+        "target": "mirrors/example/README.agent.json",
+        "kind": "relative",
+        "line": 24
+      },
+      {
+        "block_id": "b000008",
+        "label": "`examples/EmbeddedHello/README.md`",
+        "target": "../examples/EmbeddedHello/README.md",
+        "kind": "relative",
+        "line": 25
+      },
+      {
+        "block_id": "b000008",
+        "label": "JSON",
+        "target": "mirrors/examples/EmbeddedHello/README.agent.json",
+        "kind": "relative",
+        "line": 25
+      },
+      {
+        "block_id": "b000008",
+        "label": "`examples/FPGAHello/README.md`",
+        "target": "../examples/FPGAHello/README.md",
+        "kind": "relative",
+        "line": 26
+      },
+      {
+        "block_id": "b000008",
+        "label": "JSON",
+        "target": "mirrors/examples/FPGAHello/README.agent.json",
+        "kind": "relative",
+        "line": 26
+      },
+      {
+        "block_id": "b000008",
+        "label": "`examples/HLSHello/README.md`",
+        "target": "../examples/HLSHello/README.md",
+        "kind": "relative",
+        "line": 27
+      },
+      {
+        "block_id": "b000008",
+        "label": "JSON",
+        "target": "mirrors/examples/HLSHello/README.agent.json",
+        "kind": "relative",
+        "line": 27
+      },
+      {
+        "block_id": "b000008",
+        "label": "`examples/Hello/README.md`",
+        "target": "../examples/Hello/README.md",
+        "kind": "relative",
+        "line": 28
+      },
+      {
+        "block_id": "b000008",
+        "label": "JSON",
+        "target": "mirrors/examples/Hello/README.agent.json",
+        "kind": "relative",
+        "line": 28
+      },
+      {
+        "block_id": "b000008",
+        "label": "`examples/HelloResources/README.md`",
+        "target": "../examples/HelloResources/README.md",
+        "kind": "relative",
+        "line": 29
+      },
+      {
+        "block_id": "b000008",
+        "label": "JSON",
+        "target": "mirrors/examples/HelloResources/README.agent.json",
+        "kind": "relative",
+        "line": 29
+      }
+    ],
+    "tables": [
+      {
+        "block_id": "b000008",
+        "columns": [
+          "Document",
+          "Agent JSON"
+        ],
+        "rows": [
+          [
+            "[`AGENT.md`](../AGENT.md)",
+            "[JSON](entrypoints/AGENT.agent.json)"
+          ],
+          [
+            "[`README.md`](../README.md)",
+            "[JSON](entrypoints/README.agent.json)"
+          ],
+          [
+            "[`docs/Architecture.md`](Architecture.md)",
+            "[JSON](Architecture.agent.json)"
+          ],
+          [
+            "[`docs/EmbeddedTargets.md`](EmbeddedTargets.md)",
+            "[JSON](EmbeddedTargets.agent.json)"
+          ],
+          [
+            "[`docs/FILE_PROVIDER.md`](FILE_PROVIDER.md)",
+            "[JSON](FILE_PROVIDER.agent.json)"
+          ],
+          [
+            "[`docs/HLS.md`](HLS.md)",
+            "[JSON](HLS.agent.json)"
+          ],
+          [
+            "[`docs/Resources.md`](Resources.md)",
+            "[JSON](Resources.agent.json)"
+          ],
+          [
+            "[`docs/Usage.md`](Usage.md)",
+            "[JSON](Usage.agent.json)"
+          ],
+          [
+            "[`docs/Verification.md`](Verification.md)",
+            "[JSON](Verification.agent.json)"
+          ],
+          [
+            "[`docs/WindowsBuildAndRun.md`](WindowsBuildAndRun.md)",
+            "[JSON](WindowsBuildAndRun.agent.json)"
+          ],
+          [
+            "[`docs/congregation-native.md`](congregation-native.md)",
+            "[JSON](congregation-native.agent.json)"
+          ],
+          [
+            "[`docs/documentation-structure.md`](documentation-structure.md)",
+            "[JSON](documentation-structure.agent.json)"
+          ],
+          [
+            "[`docs/independent-sdk-plan.md`](independent-sdk-plan.md)",
+            "[JSON](independent-sdk-plan.agent.json)"
+          ],
+          [
+            "[`docs/native-kit.md`](native-kit.md)",
+            "[JSON](native-kit.agent.json)"
+          ],
+          [
+            "[`example/README.md`](../example/README.md)",
+            "[JSON](mirrors/example/README.agent.json)"
+          ],
+          [
+            "[`examples/EmbeddedHello/README.md`](../examples/EmbeddedHello/README.md)",
+            "[JSON](mirrors/examples/EmbeddedHello/README.agent.json)"
+          ],
+          [
+            "[`examples/FPGAHello/README.md`](../examples/FPGAHello/README.md)",
+            "[JSON](mirrors/examples/FPGAHello/README.agent.json)"
+          ],
+          [
+            "[`examples/HLSHello/README.md`](../examples/HLSHello/README.md)",
+            "[JSON](mirrors/examples/HLSHello/README.agent.json)"
+          ],
+          [
+            "[`examples/Hello/README.md`](../examples/Hello/README.md)",
+            "[JSON](mirrors/examples/Hello/README.agent.json)"
+          ],
+          [
+            "[`examples/HelloResources/README.md`](../examples/HelloResources/README.md)",
+            "[JSON](mirrors/examples/HelloResources/README.agent.json)"
+          ]
+        ]
+      }
+    ]
+  },
+  "provenance": {
+    "generator": "workspace-docs",
+    "version": "1.0.0",
+    "profile": "lossless-blocks-v1",
+    "derived": true
+  }
+}

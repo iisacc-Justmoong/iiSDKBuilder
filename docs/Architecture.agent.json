@@ -1,0 +1,579 @@
+{
+  "format": "iisacc.agent-document",
+  "schema_version": 1,
+  "document_id": "urn:iisacc:document:fcef0a5cb54b25552a8677cbad40f1cab74878c3ec16009a767f4099b39ab8d4",
+  "project": {
+    "id": "urn:iisacc:project:SDK%2FiiSDKBuilder",
+    "name": "iiSDKBuilder",
+    "root": "SDK/iiSDKBuilder",
+    "kind": "sdk"
+  },
+  "source": {
+    "path": "docs/Architecture.md",
+    "sha256": "a6ef28e9021de995b426823774f8b1fe0f8f92382f26e286a1784f8c5afe50f8",
+    "bytes": 8355,
+    "line_count": 132,
+    "encoding": "utf-8",
+    "language": "ko"
+  },
+  "document": {
+    "title": "Architecture and platform contract",
+    "role": "reference",
+    "authority": "markdown_source"
+  },
+  "blocks": [
+    {
+      "id": "b000001",
+      "kind": "heading",
+      "start_line": 1,
+      "end_line": 1,
+      "raw": "# Architecture and platform contract\n",
+      "level": 1,
+      "title": "Architecture and platform contract"
+    },
+    {
+      "id": "b000002",
+      "kind": "blank",
+      "start_line": 2,
+      "end_line": 2,
+      "raw": "\n"
+    },
+    {
+      "id": "b000003",
+      "kind": "paragraph",
+      "start_line": 3,
+      "end_line": 4,
+      "raw": "iiSDKBuilder는 앱이 선택한 독립 SDK와 대상 환경을 검증 가능한 CMake 빌드\n행렬로 구성한다. 앱은 여러 SDK를 함께 사용할 수 있다.\n"
+    },
+    {
+      "id": "b000004",
+      "kind": "blank",
+      "start_line": 5,
+      "end_line": 5,
+      "raw": "\n"
+    },
+    {
+      "id": "b000005",
+      "kind": "fenced_code",
+      "start_line": 6,
+      "end_line": 17,
+      "raw": "```text\napplication/build-tool integration\n              |\n      iiSDKBuilder library + CLI\n      /       |        |       \\\n  manifest   plan   execution   native child process\n              |\n           iiSDKCore\n       Runtime / platform\n              |\n     C++23 and native desktop APIs\n```\n",
+      "language": "text",
+      "code": "application/build-tool integration\n              |\n      iiSDKBuilder library + CLI\n      /       |        |       \\\n  manifest   plan   execution   native child process\n              |\n           iiSDKCore\n       Runtime / platform\n              |\n     C++23 and native desktop APIs\n",
+      "closed": true
+    },
+    {
+      "id": "b000006",
+      "kind": "blank",
+      "start_line": 18,
+      "end_line": 18,
+      "raw": "\n"
+    },
+    {
+      "id": "b000007",
+      "kind": "paragraph",
+      "start_line": 19,
+      "end_line": 23,
+      "raw": "Core 0.13 has no storage-SDK dependency. Builder publishes manifests and reports\nthrough its direct iiFileProvider Native dependency using atomic `File::write`.\nThe JSON publication contract checks full replacement and original preservation\nwhen a parent path cannot be used. Core is selected as a separate project, not\nas a declared dependency of every other SDK.\n"
+    },
+    {
+      "id": "b000008",
+      "kind": "blank",
+      "start_line": 24,
+      "end_line": 24,
+      "raw": "\n"
+    },
+    {
+      "id": "b000009",
+      "kind": "paragraph",
+      "start_line": 25,
+      "end_line": 31,
+      "raw": "Public data is ordinary final value records and standard containers. `Builder`\ncomposes an executor function; it has no inheritance hierarchy or global task\nregistry. Core does not reference Builder. Manifest and File API JSON are a\nprivate replaceable boundary. The JSON reader is deliberately limited to the\ndata needed at these boundaries, rather than becoming a new Core serialization\nAPI. It checks syntax, numeric ranges, duplicate keys, string escapes, Unicode\nsurrogates, depth and input size. Reports share that encoder.\n"
+    },
+    {
+      "id": "b000010",
+      "kind": "blank",
+      "start_line": 32,
+      "end_line": 32,
+      "raw": "\n"
+    },
+    {
+      "id": "b000011",
+      "kind": "paragraph",
+      "start_line": 33,
+      "end_line": 37,
+      "raw": "계획은 소스·이름·경로를 확인하고 SDK 간 `depends`를 거부한 뒤 파일을 쓰지 않고\n선택 순서의 명시적 명령 인자를 만든다. SDK마다 설치 prefix와 CMake 캐시를 따로\n사용하고 앱 구성에만 선택 SDK들의 prefix를 모은다. 앱에는 여러 선택 SDK를 허용한다. 네이티브\n사전 확인은 예비 검사이며 컴파일러와 라이브러리 호환성은 실제 CMake 구성과\n빌드에서 확인한다. 같은 키트 설정은 각 SDK와 소비 앱에 적용한다.\n"
+    },
+    {
+      "id": "b000012",
+      "kind": "blank",
+      "start_line": 38,
+      "end_line": 38,
+      "raw": "\n"
+    },
+    {
+      "id": "b000013",
+      "kind": "paragraph",
+      "start_line": 39,
+      "end_line": 48,
+      "raw": "Execution owns a root lock, stores target identity, and schedules one sequential\nchain per kit through `ii::runtime::Runtime`. SDK project failures block their\nown remaining commands and the app, while unrelated SDK projects continue;\ncancellation stops later projects. A configure hook verifies the\nfinal `CMAKE_SYSTEM_NAME` and writes a fresh marker. The builder requires the\nmarker before proceeding. This catches a foreign-kit toolchain that accidentally\nproduces host binaries. CMake's client-owned File API query identifies actual\napplication artifact paths; absence of existing app artifacts fails the kit.\nXcode's `EFFECTIVE_PLATFORM_NAME` placeholder is resolved for the kit's selected\niPhone device/simulator SDK before checking artifact existence.\n"
+    },
+    {
+      "id": "b000014",
+      "kind": "blank",
+      "start_line": 49,
+      "end_line": 49,
+      "raw": "\n"
+    },
+    {
+      "id": "b000015",
+      "kind": "paragraph",
+      "start_line": 50,
+      "end_line": 59,
+      "raw": "Post-link inspection is mandatory for successful app builds. Only executable,\nshared-library and module-library targets provide primary app images; debug\nsymbols and import archives are auxiliary artifacts. PE headers must identify\nnative CPU code and an executable section, and a CLR runtime directory is\nrejected. ELF headers must identify executable/shared code, a matching CPU class\nand executable load segments. Mach-O thin/universal images must contain executable\nsegments and the correct macOS, iOS-device or iOS-simulator deployment command.\nRequested CPU families are matched against the image, including all requested\nuniversal slices and Android's ABI. When the kit leaves its architecture empty,\nthe app's configured CMake processor/Apple architecture list supplies it.\n"
+    },
+    {
+      "id": "b000016",
+      "kind": "blank",
+      "start_line": 60,
+      "end_line": 60,
+      "raw": "\n"
+    },
+    {
+      "id": "b000017",
+      "kind": "paragraph",
+      "start_line": 61,
+      "end_line": 64,
+      "raw": "This inspects image metadata, not arbitrary application behavior, every instruction\nor the complete transitive dependency tree. External toolchains still own their\nsysroot/library ABI correctness; device execution and deployment signing require\ntheir separate validation.\n"
+    },
+    {
+      "id": "b000018",
+      "kind": "blank",
+      "start_line": 65,
+      "end_line": 65,
+      "raw": "\n"
+    },
+    {
+      "id": "b000019",
+      "kind": "heading",
+      "start_line": 66,
+      "end_line": 66,
+      "raw": "## Native execution contract\n",
+      "level": 2,
+      "title": "Native execution contract"
+    },
+    {
+      "id": "b000020",
+      "kind": "blank",
+      "start_line": 67,
+      "end_line": 67,
+      "raw": "\n"
+    },
+    {
+      "id": "b000021",
+      "kind": "paragraph",
+      "start_line": 68,
+      "end_line": 74,
+      "raw": "Five OS targets produce target-specific CPU machine code and OS-loader images.\nThe builder does not introduce a common VM, bytecode interpreter, emulator or\ninterpreter launcher into those applications. iiSDKCore Runtime is a native C++\nthread/task executor; it is not an application virtual machine. Native static\nand shared libraries, the C/C++ standard runtime and OS frameworks are permitted.\nCMake, Core's Python architecture check and test scripts run only on the build\nhost and are not application runtime dependencies.\n"
+    },
+    {
+      "id": "b000022",
+      "kind": "blank",
+      "start_line": 75,
+      "end_line": 75,
+      "raw": "\n"
+    },
+    {
+      "id": "b000023",
+      "kind": "paragraph",
+      "start_line": 76,
+      "end_line": 82,
+      "raw": "WebAssembly is a virtual ISA with an engine-provided execution environment.\nIts kit is explicitly `executionModel=webassembly`, never `native`, in both plans\nand reports. JS/HTML glue is accepted only with a companion module carrying a\nvalid WebAssembly magic/version; plain JavaScript or asm.js cannot substitute\nfor that module. Embedded single-file WASM output is not supported by this\ninspection contract. The original six-target matrix is retained, and callers\nrequiring only OS-native outputs select the five OS platforms explicitly.\n"
+    },
+    {
+      "id": "b000024",
+      "kind": "blank",
+      "start_line": 83,
+      "end_line": 83,
+      "raw": "\n"
+    },
+    {
+      "id": "b000025",
+      "kind": "paragraph",
+      "start_line": 84,
+      "end_line": 95,
+      "raw": "Native execution is delegated to `ii::process::Process` from iiSDKCore 0.15.\nCore owns literal argv, child-local environment/cwd, standard pipe Channels,\nexit status and process-tree lifetime. Its POSIX spawn/group and Windows\nCreateProcessW/Job Object implementations are shared SDK infrastructure.\nBuilder owns command policy and uses a synchronous streaming sink to write\nmerged stdout/stderr through `iiFileProvider::native::OutputFile`. Capture\nlimits are zero; even large build logs are drained without in-memory growth.\nNo process backend remains in Builder. Timeout and stop tokens terminate and\nreap through Core; sink failures also retire the process before reporting error.\nThe host cwd and environment are preserved. See the\n[Core process contract](../../iiSDKCore/docs/process.md) for platform limits,\nidentity protection, pipe ownership and cleanup semantics.\n"
+    },
+    {
+      "id": "b000026",
+      "kind": "blank",
+      "start_line": 96,
+      "end_line": 96,
+      "raw": "\n"
+    },
+    {
+      "id": "b000027",
+      "kind": "heading",
+      "start_line": 97,
+      "end_line": 97,
+      "raw": "## Platform requirements\n",
+      "level": 2,
+      "title": "Platform requirements"
+    },
+    {
+      "id": "b000028",
+      "kind": "blank",
+      "start_line": 98,
+      "end_line": 98,
+      "raw": "\n"
+    },
+    {
+      "id": "b000029",
+      "kind": "table",
+      "start_line": 99,
+      "end_line": 106,
+      "raw": "| Target | Build environment | Default result scope |\n| --- | --- | --- |\n| Windows | Native Windows compiler/SDK, or an explicit compatible cross toolchain | Native PE executable/DLL, no CLR header |\n| macOS | macOS host, selected Xcode/Command Line Tools | Native Mach-O executable/dylib |\n| Linux | Native Linux compiler and a libc with Core process extensions (for example glibc 2.34+), or a complete target sysroot/toolchain | Native ELF executable/shared object |\n| Android | Android NDK CMake toolchain and ABI/API-specific target packages | Native ELF application/SDK code for the selected ABI |\n| iOS | macOS host and Xcode iOS SDK | Native Mach-O app code; deployment signing disabled by default |\n| WASM | Activated Emscripten and compatible C++23 libraries | WebAssembly module and optional web glue; separate engine execution |\n",
+      "columns": [
+        "Target",
+        "Build environment",
+        "Default result scope"
+      ],
+      "rows": [
+        [
+          "Windows",
+          "Native Windows compiler/SDK, or an explicit compatible cross toolchain",
+          "Native PE executable/DLL, no CLR header"
+        ],
+        [
+          "macOS",
+          "macOS host, selected Xcode/Command Line Tools",
+          "Native Mach-O executable/dylib"
+        ],
+        [
+          "Linux",
+          "Native Linux compiler and a libc with Core process extensions (for example glibc 2.34+), or a complete target sysroot/toolchain",
+          "Native ELF executable/shared object"
+        ],
+        [
+          "Android",
+          "Android NDK CMake toolchain and ABI/API-specific target packages",
+          "Native ELF application/SDK code for the selected ABI"
+        ],
+        [
+          "iOS",
+          "macOS host and Xcode iOS SDK",
+          "Native Mach-O app code; deployment signing disabled by default"
+        ],
+        [
+          "WASM",
+          "Activated Emscripten and compatible C++23 libraries",
+          "WebAssembly module and optional web glue; separate engine execution"
+        ]
+      ]
+    },
+    {
+      "id": "b000030",
+      "kind": "blank",
+      "start_line": 107,
+      "end_line": 107,
+      "raw": "\n"
+    },
+    {
+      "id": "b000031",
+      "kind": "paragraph",
+      "start_line": 108,
+      "end_line": 114,
+      "raw": "Android OS entry glue/NativeActivity/JNI, APK/AAB packaging, iOS signing,\nprovisioning, Store uploads, browser hosting, and device deployment remain the\napplication's build/deployment responsibilities. A project may include packaging\nin its chosen CMake targets; the builder does not manufacture those packages.\nThis keeps app packaging policy separate from SDK compilation.\nAndroid application/SDK logic is compiled by the NDK; OS entry glue does not\nmake a JVM application an accepted replacement for native application code.\n"
+    },
+    {
+      "id": "b000032",
+      "kind": "blank",
+      "start_line": 115,
+      "end_line": 115,
+      "raw": "\n"
+    },
+    {
+      "id": "b000033",
+      "kind": "paragraph",
+      "start_line": 116,
+      "end_line": 119,
+      "raw": "Qt Creator's documented grouping of compiler, device/target and build settings\ninto a Kit informed the configuration boundary. No Qt source, runtime, SDK,\ntool or API is used by iiSDKBuilder. It does not invoke qmake, qt-cmake,\nandroiddeployqt, or macdeployqt.\n"
+    },
+    {
+      "id": "b000034",
+      "kind": "blank",
+      "start_line": 120,
+      "end_line": 120,
+      "raw": "\n"
+    },
+    {
+      "id": "b000035",
+      "kind": "heading",
+      "start_line": 121,
+      "end_line": 121,
+      "raw": "## Primary references\n",
+      "level": 2,
+      "title": "Primary references"
+    },
+    {
+      "id": "b000036",
+      "kind": "blank",
+      "start_line": 122,
+      "end_line": 122,
+      "raw": "\n"
+    },
+    {
+      "id": "b000037",
+      "kind": "list",
+      "start_line": 123,
+      "end_line": 132,
+      "raw": "- [Qt Creator: Add kits](https://doc.qt.io/qtcreator/creator-targets.html)\n- [CMake toolchains](https://cmake.org/cmake/help/latest/manual/cmake-toolchains.7.html)\n- [CMake File API](https://cmake.org/cmake/help/latest/manual/cmake-file-api.7.html)\n- [CMake Xcode effective platform names](https://cmake.org/cmake/help/latest/prop_gbl/XCODE_EMIT_EFFECTIVE_PLATFORM_NAME.html)\n- [Android NDK CMake guide](https://developer.android.com/ndk/guides/cmake)\n- [Emscripten: Building Projects](https://emscripten.org/docs/compiling/Building-Projects.html)\n- [Microsoft PE/COFF specification](https://learn.microsoft.com/en-us/windows/win32/debug/pe-format)\n- [Apple Mach-O format definitions](https://github.com/apple-oss-distributions/xnu/blob/main/EXTERNAL_HEADERS/mach-o/loader.h)\n- [ELF header specification](https://gabi.xinuos.com/elf/02-eheader.html)\n- [WebAssembly execution model](https://webassembly.github.io/spec/core/intro/introduction.html)\n",
+      "items": [
+        {
+          "marker": "-",
+          "text": "[Qt Creator: Add kits](https://doc.qt.io/qtcreator/creator-targets.html)",
+          "checked": null
+        },
+        {
+          "marker": "-",
+          "text": "[CMake toolchains](https://cmake.org/cmake/help/latest/manual/cmake-toolchains.7.html)",
+          "checked": null
+        },
+        {
+          "marker": "-",
+          "text": "[CMake File API](https://cmake.org/cmake/help/latest/manual/cmake-file-api.7.html)",
+          "checked": null
+        },
+        {
+          "marker": "-",
+          "text": "[CMake Xcode effective platform names](https://cmake.org/cmake/help/latest/prop_gbl/XCODE_EMIT_EFFECTIVE_PLATFORM_NAME.html)",
+          "checked": null
+        },
+        {
+          "marker": "-",
+          "text": "[Android NDK CMake guide](https://developer.android.com/ndk/guides/cmake)",
+          "checked": null
+        },
+        {
+          "marker": "-",
+          "text": "[Emscripten: Building Projects](https://emscripten.org/docs/compiling/Building-Projects.html)",
+          "checked": null
+        },
+        {
+          "marker": "-",
+          "text": "[Microsoft PE/COFF specification](https://learn.microsoft.com/en-us/windows/win32/debug/pe-format)",
+          "checked": null
+        },
+        {
+          "marker": "-",
+          "text": "[Apple Mach-O format definitions](https://github.com/apple-oss-distributions/xnu/blob/main/EXTERNAL_HEADERS/mach-o/loader.h)",
+          "checked": null
+        },
+        {
+          "marker": "-",
+          "text": "[ELF header specification](https://gabi.xinuos.com/elf/02-eheader.html)",
+          "checked": null
+        },
+        {
+          "marker": "-",
+          "text": "[WebAssembly execution model](https://webassembly.github.io/spec/core/intro/introduction.html)",
+          "checked": null
+        }
+      ]
+    }
+  ],
+  "outline": [
+    {
+      "block_id": "b000001",
+      "parent_id": null,
+      "level": 1,
+      "title": "Architecture and platform contract",
+      "anchor": "architecture-and-platform-contract",
+      "start_line": 1
+    },
+    {
+      "block_id": "b000019",
+      "parent_id": "b000001",
+      "level": 2,
+      "title": "Native execution contract",
+      "anchor": "native-execution-contract",
+      "start_line": 66
+    },
+    {
+      "block_id": "b000027",
+      "parent_id": "b000001",
+      "level": 2,
+      "title": "Platform requirements",
+      "anchor": "platform-requirements",
+      "start_line": 97
+    },
+    {
+      "block_id": "b000035",
+      "parent_id": "b000001",
+      "level": 2,
+      "title": "Primary references",
+      "anchor": "primary-references",
+      "start_line": 121
+    }
+  ],
+  "indexes": {
+    "directive_candidates": [
+      {
+        "block_id": "b000015",
+        "line": 52,
+        "text": "symbols and import archives are auxiliary artifacts. PE headers must identify",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      },
+      {
+        "block_id": "b000015",
+        "line": 54,
+        "text": "rejected. ELF headers must identify executable/shared code, a matching CPU class",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      },
+      {
+        "block_id": "b000015",
+        "line": 55,
+        "text": "and executable load segments. Mach-O thin/universal images must contain executable",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      },
+      {
+        "block_id": "b000023",
+        "line": 77,
+        "text": "Its kit is explicitly `executionModel=webassembly`, never `native`, in both plans",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      }
+    ],
+    "commands": [],
+    "links": [
+      {
+        "block_id": "b000025",
+        "label": "Core process contract",
+        "target": "../../iiSDKCore/docs/process.md",
+        "kind": "relative",
+        "line": 94
+      },
+      {
+        "block_id": "b000037",
+        "label": "Qt Creator: Add kits",
+        "target": "https://doc.qt.io/qtcreator/creator-targets.html",
+        "kind": "external",
+        "line": 123
+      },
+      {
+        "block_id": "b000037",
+        "label": "CMake toolchains",
+        "target": "https://cmake.org/cmake/help/latest/manual/cmake-toolchains.7.html",
+        "kind": "external",
+        "line": 124
+      },
+      {
+        "block_id": "b000037",
+        "label": "CMake File API",
+        "target": "https://cmake.org/cmake/help/latest/manual/cmake-file-api.7.html",
+        "kind": "external",
+        "line": 125
+      },
+      {
+        "block_id": "b000037",
+        "label": "CMake Xcode effective platform names",
+        "target": "https://cmake.org/cmake/help/latest/prop_gbl/XCODE_EMIT_EFFECTIVE_PLATFORM_NAME.html",
+        "kind": "external",
+        "line": 126
+      },
+      {
+        "block_id": "b000037",
+        "label": "Android NDK CMake guide",
+        "target": "https://developer.android.com/ndk/guides/cmake",
+        "kind": "external",
+        "line": 127
+      },
+      {
+        "block_id": "b000037",
+        "label": "Emscripten: Building Projects",
+        "target": "https://emscripten.org/docs/compiling/Building-Projects.html",
+        "kind": "external",
+        "line": 128
+      },
+      {
+        "block_id": "b000037",
+        "label": "Microsoft PE/COFF specification",
+        "target": "https://learn.microsoft.com/en-us/windows/win32/debug/pe-format",
+        "kind": "external",
+        "line": 129
+      },
+      {
+        "block_id": "b000037",
+        "label": "Apple Mach-O format definitions",
+        "target": "https://github.com/apple-oss-distributions/xnu/blob/main/EXTERNAL_HEADERS/mach-o/loader.h",
+        "kind": "external",
+        "line": 130
+      },
+      {
+        "block_id": "b000037",
+        "label": "ELF header specification",
+        "target": "https://gabi.xinuos.com/elf/02-eheader.html",
+        "kind": "external",
+        "line": 131
+      },
+      {
+        "block_id": "b000037",
+        "label": "WebAssembly execution model",
+        "target": "https://webassembly.github.io/spec/core/intro/introduction.html",
+        "kind": "external",
+        "line": 132
+      }
+    ],
+    "tables": [
+      {
+        "block_id": "b000029",
+        "columns": [
+          "Target",
+          "Build environment",
+          "Default result scope"
+        ],
+        "rows": [
+          [
+            "Windows",
+            "Native Windows compiler/SDK, or an explicit compatible cross toolchain",
+            "Native PE executable/DLL, no CLR header"
+          ],
+          [
+            "macOS",
+            "macOS host, selected Xcode/Command Line Tools",
+            "Native Mach-O executable/dylib"
+          ],
+          [
+            "Linux",
+            "Native Linux compiler and a libc with Core process extensions (for example glibc 2.34+), or a complete target sysroot/toolchain",
+            "Native ELF executable/shared object"
+          ],
+          [
+            "Android",
+            "Android NDK CMake toolchain and ABI/API-specific target packages",
+            "Native ELF application/SDK code for the selected ABI"
+          ],
+          [
+            "iOS",
+            "macOS host and Xcode iOS SDK",
+            "Native Mach-O app code; deployment signing disabled by default"
+          ],
+          [
+            "WASM",
+            "Activated Emscripten and compatible C++23 libraries",
+            "WebAssembly module and optional web glue; separate engine execution"
+          ]
+        ]
+      }
+    ]
+  },
+  "provenance": {
+    "generator": "workspace-docs",
+    "version": "1.0.0",
+    "profile": "lossless-blocks-v1",
+    "derived": true
+  }
+}

@@ -1,5 +1,6 @@
 #include <iiSDKBuilder/Builder.h>
 #include <iiSDKBuilder/Resources.h>
+#include <iiSDKBuilder/Hls.h>
 #include <algorithm>
 #include <atomic>
 #include <charconv>
@@ -27,21 +28,53 @@ unsigned integer(const std::string& value) {
 }
 void help() {
     std::cout << "iiSDKBuilder " IISDKBUILDER_VERSION " - Qt-free CMake SDK/application matrix builder\n"
-        "Usage: iisdk-builder <init|doctor|plan|build|resources> [options]\n"
+        "Usage: iisdk-builder <targets|init|doctor|plan|build|resources|hls> [options]\n"
+        "  hls --source CPP --entry FUNCTION --output DIR [--compiler CLANG] [--interface ready-valid|combinational]\n"
+        "  targets              List commercial/embedded profiles as JSON\n"
         "  resources --manifest FILE --platform TARGET --cpp FILE --header FILE [--pack FILE] [--depfile FILE]\n"
         "  resources --manifest FILE --platform TARGET --pack FILE\n"
         "  --manifest FILE       Read/write manifest (default iiSDKBuilder.json)\n"
         "  --app DIRECTORY       App CMake source (required without a manifest)\n"
         "  --sdk-root DIRECTORY  iiSDK sources, including iiSDKCore\n"
-        "  --platform LIST       windows,macos,linux,android,ios,wasm or host\n"
+        "  --platform LIST       windows,macos,linux,android,ios,wasm,automotive,arduino,fpga or host\n"
         "  --build-root DIR      Output under build/ (default APP/build/iiSDKBuilder)\n"
         "  --configuration NAME  CMake configuration (default Release)\n"
         "  --jobs N              Compiler jobs per kit (default 2)\n"
         "  --parallel-kits N     Concurrent kits (default 2)\n"
         "  --timeout N           Per-command timeout in seconds (default 1800)\n"
+        "  --deploy             Program/upload using the explicit kit contract\n"
+        "  --run                Execute/monitor using the explicit kit runner\n"
         "  --cmake EXECUTABLE    CMake program\n"
         "Five OS targets require native machine-code images; WASM is a separate web target.\n"
         "All six platforms are requested by default. Missing kits fail the matrix.\n";
+}
+int hls_command(int argc,char** argv) {
+    HlsRequest request;
+    std::set<std::string> seen;
+    for(int i=2;i<argc;++i) {
+        const std::string key=argv[i];
+        if(key=="--help"){help();return 0;}
+        if(++i==argc)throw std::invalid_argument("Missing HLS option value");
+        const std::string value=argv[i];
+        if(key!="--include"&&key!="--define"&&!seen.insert(key).second)throw std::invalid_argument("Repeated HLS option: "+key);
+        if(key=="--source")request.source=path(value);
+        else if(key=="--entry")request.entry=value;
+        else if(key=="--module")request.module=value;
+        else if(key=="--output")request.output_directory=path(value);
+        else if(key=="--compiler")request.compiler=path(value);
+        else if(key=="--include")request.includes.push_back(path(value));
+        else if(key=="--define"){const auto at=value.find('=');request.definitions[value.substr(0,at)]=at==value.npos?"1":value.substr(at+1);}
+        else if(key=="--max-unroll")request.max_unroll=integer(value);
+        else if(key=="--max-nodes")request.max_nodes=integer(value);
+        else if(key=="--clock-period-ps")request.clock_period_ps=integer(value);
+        else if(key=="--timeout")request.timeout=std::chrono::seconds(integer(value));
+        else if(key=="--interface"){if(value=="ready-valid")request.interface=HlsInterface::ready_valid;else if(value=="combinational")request.interface=HlsInterface::combinational;else throw std::invalid_argument("Unknown HLS interface");}
+        else throw std::invalid_argument("Unknown HLS option: "+key);
+    }
+    if(request.source.empty()||request.entry.empty())throw std::invalid_argument("hls requires --source and --entry");
+    if(request.output_directory.empty())request.output_directory=request.source.parent_path()/"build/hls";
+    auto result=synthesize_hls(request);if(!result)throw std::runtime_error(result.error().message);
+    std::cout<<hls_report_json(*result);return 0;
 }
 int resource_command(int argc,char** argv) {
     ResourceOutputs outputs;fs::path manifest;
@@ -77,13 +110,16 @@ int run_cli(int argc,char** argv) {
     try {
         if (argc<2 || std::string_view(argv[1])=="--help" || std::string_view(argv[1])=="-h") { help();return 0; }
         const std::string action=argv[1];
+        if(action=="targets"){if(argc!=2)throw std::invalid_argument("targets takes no options");std::cout<<target_profiles_json();return 0;}
         if (action=="resources") return resource_command(argc,argv);
+        if (action=="hls") return hls_command(argc,argv);
         if (action=="--version") { std::cout << "iiSDKBuilder " IISDKBUILDER_VERSION "\n";return 0; }
         if (action!="init" && action!="doctor" && action!="plan" && action!="build") throw std::invalid_argument("Unknown command: "+action);
         std::map<std::string,std::string> options;
         for (int i=2;i<argc;++i) {
             const std::string key=argv[i];
             if (key=="--help") { help();return 0; }
+            if(key=="--deploy"||key=="--run"){if(!options.emplace(key,"1").second)throw std::invalid_argument("Repeated option: "+key);continue;}
             if (key!="--manifest" && key!="--app" && key!="--sdk-root" && key!="--platform" &&
                 key!="--build-root" && key!="--configuration" && key!="--jobs" &&
                 key!="--parallel-kits" && key!="--timeout" && key!="--cmake") throw std::invalid_argument("Unknown option: "+key);
@@ -97,6 +133,8 @@ int run_cli(int argc,char** argv) {
             if (!read) throw std::runtime_error(read.error().message);
             r=std::move(*read);
         }
+        if(options.contains("--deploy"))r.deploy=true;
+        if(options.contains("--run"))r.run=true;
         if (options.contains("--app")) {
             r.app.source=fs::absolute(path(options.at("--app"))).lexically_normal();
             r.app.name=r.app.source.filename().string();
@@ -141,7 +179,7 @@ int run_cli(int argc,char** argv) {
         if (action=="doctor") {
             bool available=true;
             for (const auto& kit:plan->kits) {
-                std::cout << kit.kit.id << " [" << execution_model_name(execution_model(kit.kit.platform)) << "]: " <<
+                std::cout << kit.kit.id << " [" << execution_model_name(execution_model(kit.kit)) << "]: " <<
                     (kit.unavailable_reason.empty()?"ready (preflight only)":kit.unavailable_reason) << '\n';
                 available=available && kit.unavailable_reason.empty();
             }

@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.31)
+project(IndependentConsumerFixture LANGUAGES CXX)
+find_package(iiSDKCore CONFIG REQUIRED)
+find_package(Addon CONFIG REQUIRED)
+add_executable(independent_consumer main.cpp)
+target_link_libraries(independent_consumer PRIVATE iiSDKCore::iiSDKCore Addon::Addon)

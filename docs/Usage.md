@@ -49,7 +49,7 @@ files or another project's existing build tree.
     {
       "name": "MyFeature",
       "source": "../../SDK/MyFeature",
-      "depends": ["iiSDKCore"],
+      "depends": [],
       "cache": {"MYFEATURE_BUILD_TOOLS": "OFF"}
     }
   ],
@@ -69,17 +69,14 @@ unknown schema fields, incorrect field types, and NUL strings are rejected.
 Cache and environment values are strings; booleans use CMake strings such as
 `"ON"` and `"OFF"`.
 
-`app.name` and every SDK name are explicit labels, independent of directory
-names. SDKs are the application's selected dependencies, not every sibling
-directory on disk. `iiSDKCore` is automatically inserted from
-`<sdkRoot>/iiSDKCore`. Declare each additional local SDK and its dependencies;
-the builder uses iiSDKCore's dependency graph to order them and rejects unknown
-dependencies and cycles. Every selected SDK is built before the application.
-An explicit `iiSDKCore` entry may supply its source/cache settings but cannot
-depend on higher modules. `depends` on the app validates named dependencies;
-it does not prune the selected SDK set. Empty `targets` builds CMake's default
-target. SDKs must provide CMake install rules because their installed packages
-are used by later SDKs and the application.
+`app.name`과 각 SDK 이름은 디렉터리명과 무관한 명시적 식별자이다. 선택한 SDK만
+구성하며 `iiSDKCore`는 `<sdkRoot>/iiSDKCore`에서 별도 프로젝트로 자동 선택한다.
+다른 SDK는 manifest 순서로 추가하되 각 SDK의 `depends`는 비워야 한다. 다른 SDK를
+선행 조건으로 선언하면 계획 단계에서 오류가 발생한다. 앱의 `depends`는 선택한
+SDK 이름들을 검증하며 선택 목록 자체를 줄이지 않는다. 선택한 SDK들의 빌드·설치가
+끝난 뒤 앱을 빌드하고, 순서는 SDK 사이의 의존 관계를 뜻하지 않는다. Core의 명시적
+항목으로 소스·캐시 설정을 지정할 수 있다. 빈 `targets`는 CMake 기본 대상을 빌드한다.
+SDK들은 앱이 독립적으로 사용할 설치 규칙을 제공해야 한다.
 
 Create the six-kit starter manifest without overwriting an existing file:
 
@@ -110,7 +107,7 @@ must be unique even when case is ignored. This example shows kit fields:
 }
 ```
 
-`platform` is exactly `windows`, `macos`, `linux`, `android`, `ios`, or `wasm`.
+`platform`은 `windows`, `macos`, `linux`, `android`, `ios`, `wasm`, `automotive`, `arduino`, `fpga`이다. 새 장치 타겟의 BSP·합성·실행 계약은 [EmbeddedTargets.md](EmbeddedTargets.md)를 따른다.
 `toolchain` names a CMake toolchain file. On a foreign desktop target it is
 required. `architecture` is an Apple architecture list (for example
 `arm64;x86_64`) or the Visual Studio `-A` value. Other cross architectures
@@ -130,12 +127,22 @@ environment explicitly. iiSDKCore uses WASM threads by default. A kit cache
 entry `"IISDKCORE_WASM_THREADS": "OFF"` requests its explicit single-thread
 variant. Browser execution is a separate application test.
 
-`prefixes` contains **target** dependency prefixes. The builder supplies its
-isolated SDK prefix first, unsets the inherited `CMAKE_PREFIX_PATH` for child
-commands, pins the installed `iiSDKCore_DIR`, and disables CMake user/system
-package registries. A cross toolchain must still configure its sysroot, native
-libraries, pkg-config environment and CMake root-path policy correctly. The
-builder does not download or emulate missing compilers, SDKs, or sysroots.
+`prefixes`는 **대상 플랫폼용** 외부 의존성 경로이다. 빌드 도구는 SDK 구성에 그
+SDK의 개별 설치 prefix만, 앱 구성에는 선택한 각 SDK의 prefix를 제공한다. 명시적
+외부 경로는 그 뒤에 추가한다. 자식 명령에서는 상속된 `CMAKE_PREFIX_PATH`,
+`CMAKE_INCLUDE_PATH`, `CMAKE_LIBRARY_PATH`, `CMAKE_FRAMEWORK_PATH`,
+`CMAKE_APPBUNDLE_PATH`, `CPATH`, `C_INCLUDE_PATH`, `CPLUS_INCLUDE_PATH`,
+`OBJC_INCLUDE_PATH`, `LIBRARY_PATH`, `PKG_CONFIG_PATH`, `PKG_CONFIG_LIBDIR`,
+`DYLD_LIBRARY_PATH`, `DYLD_FALLBACK_LIBRARY_PATH`, `DYLD_FRAMEWORK_PATH`,
+`LD_LIBRARY_PATH`를 비운다. 필요한 값은 키트 `environment`에 명시하면 제거 후
+다시 적용된다. `CMAKE_PREFIX_PATH`는 `environment`가 아니라 `prefixes`로 지정한다.
+CMake 사용자·시스템 패키지 레지스트리와 설치 prefix 자동 검색도 비활성화한다.
+`iiSDKCore_DIR`는 앱 구성에만 지정한다. 외부 경로나 시스템 위치의 패키지가
+다른 SDK를 노출하지 않는지는 해당 모듈의 별도 경계 검사로 확인해야 한다.
+`PATH`와 Windows의 `INCLUDE`·`LIB`는 컴파일러 및 시스템 SDK 검색을 위해 유지하므로
+이 환경 정리만으로 모든 우발적 SDK 검색을 차단한다고 보장하지 않는다.
+크로스 툴체인은 sysroot·네이티브 라이브러리·pkg-config 환경과 CMake 루트 경로
+정책을 별도로 정확히 설정해야 한다. 누락된 컴파일러나 SDK를 다운로드·에뮬레이션하지 않는다.
 
 Kit cache values are applied before per-project cache overrides. The builder
 owns the configuration, toolchain, target system, platform ABI/SDK fields,
@@ -150,7 +157,7 @@ to `ON` in their cache and supply the scanner.
 
 ## Results, cancellation, and reuse
 
-Each kit runs SDK configure → build → install in dependency order, then app
+Each kit runs independent SDK configure → build → install in selection order, then app
 configure → build. Kits run concurrently through iiSDKCore Runtime. `jobs`
 limits compiler jobs per kit, so an upper bound is `jobs × parallelKits` active
 compiler jobs. Commands use argument vectors and per-child environment settings.
@@ -163,19 +170,21 @@ build/iiSDKBuilder/
   report.json
   kits/<kit-id>/<configuration>/
     kit-identity.json
-    prefix/
-    sdk/<sdk-name>/build/
-    app/build/
+    prefix/<sdk-name>/
+    sdk/<sdk-name>/isolated/build/
+    app/isolated/build/
     logs/sdk/<sdk-name>/<configure|build|install>.log
     logs/app/<configure|build>.log
 ```
 
 `report.json` records every kit, every planned command, its status, original
 arguments, exit code, elapsed time, log path and existing app artifacts from the
-CMake File API. A failed SDK blocks the remaining SDK/app stages in its kit;
-independent kits continue. Missing kits remain `unavailable`, and their commands
-are `blocked`. The overall `succeeded` field is true only if every requested
-kit succeeds. Report writes use iiFileProvider Native atomic publication.
+CMake File API. A failed SDK blocks its remaining stages and the app, while the
+other selected SDKs in that kit continue. The first SDK failure remains the kit
+error and the kit fails even if later SDKs succeed. Cancellation blocks all later
+stages. Independent kits continue. Missing kits remain `unavailable`, and their
+commands are `blocked`. The overall `succeeded` field is true only if every
+requested kit succeeds. Report writes use iiFileProvider Native atomic publication.
 
 The report includes `executionModel` for each kit and `verifiedArtifacts` for
 images that pass mandatory post-link format/CPU checks. Each verified entry
@@ -201,7 +210,9 @@ Incremental builds reuse the same paths. A kit's platform, generator, toolchain
 timestamp, architecture/SDK/ABI, selected compiler cache and explicit environment
 form its stored identity. Change the kit ID or build root when these change;
 the builder fails rather than silently reusing an incompatible CMake cache.
-Configurations use separate directories and prefixes. CMake handles ordinary
+Configurations use separate directories and prefixes. The `isolated/build`
+layout leaves older shared-prefix builds and caches untouched; applications
+must rebuild against the newly installed SDK packages. CMake handles ordinary
 source changes and other cache updates incrementally.
 
 A `.iisdkbuilder.lock` directory prevents concurrent runs against the same

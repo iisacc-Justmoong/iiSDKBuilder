@@ -46,7 +46,7 @@ assert report["succeeded"] and len(kit["steps"]) == 5
 assert all(s["status"] == "succeeded" for s in kit["steps"])
 assert kit["verifiedArtifacts"][0]["executionModel"] == "native"
 executable = Path(kit["verifiedArtifacts"][0]["file"])
-app_build = output / "matrix/kits/native/Release/app/build"
+app_build = output / "matrix/kits/native/Release/app/isolated/build"
 pack = next((app_build / "resources").glob("*/*.iirp"))
 native_env = environment.copy()
 native_env["PATH"] = ""

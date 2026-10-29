@@ -1,0 +1,72 @@
+# 자동차·Arduino·FPGA AOT 타겟
+
+빌드 호스트는 C++23 iiSDKCore 런타임으로 프로세스·취소·병렬 실행을 관리한다. 새 플랫폼 식별자는 `automotive`, `arduino`, `fpga`이다. 기존 6개 기본 kit은 유지하며, 장치 대상은 BSP를 명시한 매니페스트로 선택한다. `iisdk-builder targets`는 상용 제품군과 어댑터 계약을 JSON으로 반환한다.
+
+## 프로파일과 상용 제품군
+
+- 자동차: AGL·Yocto·일반 Linux, QNX, Android Automotive OS, AUTOSAR Adaptive·Classic, VxWorks, INTEGRITY, PikeOS, LynxOS, RTEMS, FreeRTOS, Zephyr, ThreadX, SAFERTOS, Nucleus, embOS, uC/OS, OSEK 및 베어메탈이다. AUTOSAR·RTOS의 시작 코드와 운영체제는 각 공급자의 BSP·CMake 툴체인이 제공한다.
+- Arduino: 공식·서드파티 보드 패키지의 FQBN을 사용한다. AVR·megaAVR, SAM·SAMD, Mbed·Portenta, Renesas, ESP32·ESP8266, STM32, nRF52, RP2040·RP2350, Teensy, PIC32, Silicon Labs와 호환 TI BSP를 포함한다. 제품명이 고정된 허용 목록으로 보드를 제한하지 않는다.
+- FPGA 내장 어댑터: AMD Vivado, Altera/Intel Quartus, Yosys·nextpnr·IceStorm iCE40와 Verilator이다. Vivado는 구현·배치·배선·비트스트림 생성을, Quartus는 새 빌드 디렉터리의 프로젝트 생성·컴파일·vendor 검증을 수행한다. iCE40은 합성·배치배선·패킹을 모두 수행한다.
+- 외부 상용 합성 계약: Lattice Radiant·Diamond·iCEcube2, AMD ISE, Microchip Libero, GOWIN, Efinix, Achronix, QuickLogic, Anlogic, Pango, NanoXplore, GateMate, Raptor 및 Vitis HLS·Intel HLS·SmartHLS·Catapult·Stratus·Synplify이다. 실제 공급자의 프로젝트와 빌드·검증 argv를 BSP가 제공한다. 다른 상용 공급자도 `external` 계약으로 등록한다.
+- FPGA CPU: MicroBlaze, Nios II·V, RISC-V, LEON 및 SoC CPU는 `fpga-softcore` CMake 프로파일과 CPU BSP를 사용한다.
+
+프로파일 등록은 해당 상용 도구·보드·라이선스의 실기 검증을 의미하지 않는다. `doctor`는 구성과 도구의 초기 준비 여부를 표시하고, 실제 컴파일·프로그램 업로드·실행 결과는 보고서의 서로 다른 필드로 기록한다. 도구·BSP·장치 실행 계약이 없으면 성공으로 대체하지 않는다.
+
+## 매니페스트의 target
+
+```json
+{
+  "id": "vehicle-mcu",
+  "platform": "automotive",
+  "toolchain": "toolchains/vendor.cmake",
+  "architecture": "arm32",
+  "target": {
+    "profile": "automotive-baremetal",
+    "artifact": "EmbeddedHello.elf",
+    "runner": "emulator",
+    "run": [["qemu-system-arm", "-M", "lm3s6965evb", "-nographic", "-monitor", "none", "-semihosting", "-kernel", "{artifact}"]],
+    "expectedOutput": "Hello, iiSDK native AOT!"
+  }
+}
+```
+
+`profile`의 기본 adapter·system·foundation을 명시적으로 재정의할 수 있다. 등록되지 않은 사내·상용 프로파일에는 이 세 값을 모두 지정한다. `system`은 툴체인이 실제 보고하는 CMake 시스템과 같아야 한다. 다른 호스트의 컴파일러로 성공한 것처럼 처리하지 않는다.
+
+`foundation=embedded`는 `iiSDKCore::Embedded`만 구성한다. 일반 Linux·Android의 `runtime`은 기존 Core를 사용한다. RTL·Arduino 도구 경로에서는 Core의 호스트 정책 검사를 먼저 수행한다. Arduino는 대상 보드에서 Core Embedded 소스도 다시 컴파일하며, FPGA RTL은 하드웨어 구성물을 만든다.
+
+`tool`은 실행 파일 경로 또는 PATH 이름이다. `sources`·`constraints`는 매니페스트 기준 입력 경로이다. `artifact`는 kit 빌드 디렉터리 안의 상대 출력 경로이다. `part`, `family`, `top`, Arduino `board`·`port`, 공급자 `properties`를 지정한다. 물리 FPGA의 part·핀·타이밍 제약은 BSP가 제공한다.
+
+외부 `commands`, `verify`, `deploy`, `run`은 각각 argv 배열의 목록이다. 셸 문자열을 생성하지 않는다. `{source}`, `{build}`, `{prefix}`, `{artifact}`, `{core}`, `{board}`, `{part}`, `{top}`, `{port}`를 개별 인자 안에서 치환한다. 도구는 kit 빌드 디렉터리에서 실행하고 생성 파일은 iiFileProvider를 통해 준비한다. `environment`는 기존 kit의 자식 프로세스 환경 계약을 따른다.
+
+Arduino는 `arduino-cli compile --fqbn … --build-path … --library …`를 사용한다. `compiler.cpp.extra_flags=-std=gnu++23`은 Core가 소유한다. BSP의 구형 GCC가 이를 지원하지 않으면 최신 C++23 컴파일러가 연결된 BSP를 제공해야 한다. `compiler.path` 같은 공급자 properties는 허용하되 C++23 플래그를 낮추지 않는다. board-manager 패키지 설치·추가 URL과 다운로드 위치는 사용자가 관리하는 Arduino CLI 환경을 사용한다.
+
+## 산출물과 실행
+
+CPU 타겟은 ELF의 실행 가능 세그먼트와 실제 CPU·비트 수를 검사한다. ARM, AArch64, x86, AVR, RISC-V, TriCore, PowerPC, Xtensa, Nios II, MicroBlaze, RX, V850/RH850, MSP430, MIPS와 SPARC를 구분한다. CPU 바이너리·스크립트·압축 파일을 FPGA 구성물로 받아들이지 않는다. iCE40·Xilinx 비트스트림은 헤더를 확인하며 불투명한 공급자 구성물은 현재 빌드의 vendor verifier 성공도 요구한다.
+
+FPGA의 RTL 합성은 `hardware-configuration`, FPGA 내 CPU는 `native`, Verilator의 C++ AOT 모델은 `native-simulation`으로 기록한다. 상용 HLS의 합성 가능 언어 범위는 그 도구의 계약이다. C++23 CPU 프로그램 전체를 임의로 HDL로 변환한다고 선언하지 않는다.
+
+`build --deploy`는 명시된 프로그래머·업로드 계약을 수행한다. Arduino는 port와 FQBN으로 업로드한다. `build --run`은 지정된 유한 장치·에뮬레이터·검증 runner를 실행한다. Arduino의 자동 serial monitor에는 port와 `expectedOutput`이 필요하며 업로드 후 실제 출력이 관측되면 모니터 프로세스만 정리한다. 일반 runner는 정상 종료와 지정된 출력 조건을 모두 만족해야 한다. `runner`는 device·emulator 등 증거의 해석을 명시한다. 연결된 실기에서 실행한 결과와 에뮬레이션 결과를 섞지 않는다.
+
+보고서의 `deployment`·`execution`은 미요청·차단·성공·실패를 구분하며 빌드 성공을 장치 실행 성공으로 표시하지 않는다. 실제 실패·취소·마감은 전체 요청 실패로 전파한다. 서로 다른 보드·CPU·합성 설정은 독립 kit ID와 빌드 캐시를 사용한다.
+
+## BSP 표준 플래그와 재현
+
+Arduino 예제는 `<iiSDKCore.h>`를 직접 포함하여 Arduino 라이브러리 탐색기가 중첩 공개 헤더를 찾도록 한다. 생성 브리지에는 소스와 루트 탐색 헤더가 함께 존재한다. BSP의 response file이나 후행 옵션이 표준을 다시 낮추면 헤더 검사가 빌드를 거절한다. 예를 들어 ESP32 3.3.2는 원래 `compiler.cpp.flags` 끝에 `-std=gnu++23`을 추가한 값을 `target.properties`로 제공한다. 기존 CPU·ABI·최적화 플래그는 유지해야 한다.
+
+`examples/EmbeddedHello`의 `App.h`는 Arduino와 CMake MCU 실행 파일이 함께 사용한다. `cmake/toolchains/llvm-cortex-m3.cmake`는 `arm-none-eabi` 네이티브 ELF를 만든다. `CMAKE_CXX_COMPILER`와 `IISDK_EMBEDDED_LLD`로 실제 LLVM 크로스 컴파일러·링커를 지정하며 링커 변수는 CMake의 컴파일러 탐색에도 전달한다. 예제 BSP는 LM3S6965 메모리 맵·시작 코드·semihosting 출력을 제공한다. 다른 장치에서는 이 BSP만 교체한다. 이 예제의 유한 검증은 BSP 시각을 0·10·20·30으로 공급하여 콜백과 타이머 결과를 확인한다.
+
+`examples/FPGAHello`에는 합성 가능한 회로, iCEstick HX1K 핀 제약과 유한 RTL 테스트벤치가 있다. 테스트벤치는 실제 출력 전환을 검사한 뒤 `II_FPGA_AOT_OK`를 출력한다. Verilator 모델 실행과 물리 FPGA 프로그래밍은 보고서에서 서로 다른 증거이다.
+
+## 공식 도구 계약
+
+- [Arduino compile](https://docs.arduino.cc/arduino-cli/commands-reference/arduino-cli_compile) 및 [플랫폼 recipe 명세](https://docs.arduino.cc/arduino-cli/platform-specification)
+- [Arduino 라이브러리 명세](https://docs.arduino.cc/arduino-cli/library-specification)
+- [CMake QNX 크로스 컴파일](https://cmake.org/cmake/help/latest/manual/cmake-toolchains.7.html#cross-compiling-for-qnx)
+- [AMD Vivado Non-Project Tcl 흐름](https://docs.amd.com/r/en-US/ug892-vivado-design-flows-overview/Using-Non-Project-Mode-Tcl-Commands)
+- [Quartus Scripting](https://www.intel.com/programmable/technical-pdfs/683325.pdf)
+- [Verilator 실행 옵션](https://verilator.org/guide/latest/exe_verilator.html)
+
+Arduino 컴파일 후에는 CLI가 생성한 `compile_commands.json`의 Core 번역 단위 argv를 읽어 실제 BSP 컴파일러·매크로·include·response file 옵션으로 `iiSDKCoreArchitectureCheck`를 다시 실행한다. 검사 훅과 임시 CMake 구성은 해당 kit의 build/에 생성한다. 컴파일 DB가 없거나 셸 문자열만 제공하면 검증을 거절한다. 호스트 정책 검사와 대상 전처리 검사가 모두 성공해야 업로드·실행 단계로 진행한다. 이 경로는 검사 비활성 옵션을 제공하지 않는다.
+
+C++ 함수에서 논리 회로를 생성하는 자체 HLS 경로는 [C++ 논리 회로 합성](HLS.md)을 따른다. `fpga-hls`와 `synthesize` 단계를 사용하며 기존 RTL·소프트코어 CPU·네이티브 시뮬레이션과 구분한다.

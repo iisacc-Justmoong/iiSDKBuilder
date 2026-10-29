@@ -1,0 +1,71 @@
+{
+  "format": "iisacc.agent-document",
+  "schema_version": 1,
+  "document_id": "urn:iisacc:document:7c80e44db3b41c6123a8fff6f288f748a1bb89a89602156cb311731da55928f6",
+  "project": {
+    "id": "urn:iisacc:project:SDK%2FiiSDKBuilder",
+    "name": "iiSDKBuilder",
+    "root": "SDK/iiSDKBuilder",
+    "kind": "sdk"
+  },
+  "source": {
+    "path": "examples/FPGAHello/README.md",
+    "sha256": "5332f7f813ac95532b3e6ed04da7d86b8edfc5c4c448e3d18d1ef8e28ad33798",
+    "bytes": 390,
+    "line_count": 3,
+    "encoding": "utf-8",
+    "language": "en"
+  },
+  "document": {
+    "title": "FPGAHello",
+    "role": "overview",
+    "authority": "markdown_source"
+  },
+  "blocks": [
+    {
+      "id": "b000001",
+      "kind": "heading",
+      "start_line": 1,
+      "end_line": 1,
+      "raw": "# FPGAHello\n",
+      "level": 1,
+      "title": "FPGAHello"
+    },
+    {
+      "id": "b000002",
+      "kind": "blank",
+      "start_line": 2,
+      "end_line": 2,
+      "raw": "\n"
+    },
+    {
+      "id": "b000003",
+      "kind": "paragraph",
+      "start_line": 3,
+      "end_line": 3,
+      "raw": "`blinker.v` implements a clocked LED counter. The iCE40 flow compiles it through Yosys, nextpnr and IceStorm into an HX1K TQ144 configuration bitstream using the explicit iCEstick pin constraints. `tb.sv` executes the same logic through a Verilator C++ AOT simulation and checks four transitions. The native simulation and physical FPGA programming are separate report states.\n"
+    }
+  ],
+  "outline": [
+    {
+      "block_id": "b000001",
+      "parent_id": null,
+      "level": 1,
+      "title": "FPGAHello",
+      "anchor": "fpgahello",
+      "start_line": 1
+    }
+  ],
+  "indexes": {
+    "directive_candidates": [],
+    "commands": [],
+    "links": [],
+    "tables": []
+  },
+  "provenance": {
+    "generator": "workspace-docs",
+    "version": "1.0.0",
+    "profile": "lossless-blocks-v1",
+    "derived": true
+  }
+}

@@ -1,7 +1,7 @@
 #include <iiSDKBuilder/Builder.h>
-#include <iiSDKCore/Graph/DependencyGraph.h>
 #include <iiSDKCore/Runtime/EventLoop.h>
 #include "Json.h"
+#include "Targets.h"
 #include <algorithm>
 #include <cctype>
 #include <cstdlib>
@@ -77,7 +77,7 @@ fs::path executable(const fs::path& input) {
 }
 void cache_valid(const Variables& variables) {
     static const std::set<std::string> reserved={"CMAKE_TOOLCHAIN_FILE","CMAKE_SYSTEM_NAME","CMAKE_INSTALL_PREFIX",
-        "CMAKE_PREFIX_PATH","CMAKE_BUILD_TYPE","CMAKE_GENERATOR","CMAKE_GENERATOR_PLATFORM",
+        "CMAKE_PREFIX_PATH","CMAKE_FIND_NO_INSTALL_PREFIX","CMAKE_BUILD_TYPE","CMAKE_GENERATOR","CMAKE_GENERATOR_PLATFORM",
         "CMAKE_OSX_ARCHITECTURES","CMAKE_OSX_SYSROOT","CMAKE_ANDROID_ARCH_ABI","ANDROID_ABI",
         "ANDROID_PLATFORM","CMAKE_SYSTEM_VERSION"};
     for (const auto& [key,value]:variables) {
@@ -85,11 +85,11 @@ void cache_valid(const Variables& variables) {
         no_nul(value);
     }
 }
-void validate(CMakeProject& project,const fs::path& root) {
+void validate(CMakeProject& project,const fs::path& root,bool cmake=true) {
     if (!portable_name(project.name)) invalid("Invalid project name: "+project.name);
     if (project.source.empty()) invalid("Missing source for "+project.name);
     project.source=normalized_path(project.source);
-    if (!fs::is_regular_file(project.source/"CMakeLists.txt")) invalid("Missing CMakeLists.txt for "+project.name+": "+path_string(project.source));
+    if (cmake && !fs::is_regular_file(project.source/"CMakeLists.txt")) invalid("Missing CMakeLists.txt for "+project.name+": "+path_string(project.source));
     if (within(project.source,root)) invalid("Build root must not contain source: "+path_string(project.source));
     cache_valid(project.cache);
     for (const auto& target:project.targets) if (!identifier(target) || target.front()=='-') invalid("Invalid build target: "+target);
@@ -102,6 +102,20 @@ std::string preliminary(Kit& kit,const fs::path& cmake) {
     if (kit.generator=="Ninja" || kit.generator=="Ninja Multi-Config") {
         const auto make=kit.cache.find("CMAKE_MAKE_PROGRAM");
         if (executable(make==kit.cache.end()?fs::path{"ninja"}:detail::utf8_path(make->second)).empty()) return "Ninja executable not found";
+    }
+    if(detail::extended_target(kit)) {
+        if(detail::adapter_target(kit))return detail::target_preflight(kit);
+        if(kit.target.system=="Android") {
+            auto android=kit;android.platform=Platform::android;android.target={};
+            const auto reason=preliminary(android,cmake);kit.toolchain=android.toolchain;return reason;
+        }
+        if(kit.toolchain.empty() && !(kit.target.system=="Linux"&&*host==Platform::linux_os))
+            return "Provide the vendor/BSP CMake toolchain for "+kit.target.profile;
+        if(!kit.toolchain.empty()) {
+            kit.toolchain=normalized_path(kit.toolchain);
+            if(!fs::is_regular_file(kit.toolchain))return "Vendor/BSP toolchain does not exist: "+path_string(kit.toolchain);
+        }
+        return {};
     }
     if ((kit.platform==Platform::macos || kit.platform==Platform::ios) && *host!=Platform::macos)
         return "Apple targets require a macOS host with Xcode";
@@ -139,7 +153,16 @@ std::string preliminary(Kit& kit,const fs::path& cmake) {
     return {};
 }
 std::vector<std::string> prefix_command(const Request& r,const Kit& kit,std::vector<std::string> args) {
-    std::vector<std::string> out{path_string(r.cmake),"-E","env","--unset=CMAKE_PREFIX_PATH"};
+    std::vector<std::string> out{path_string(r.cmake),"-E","env"};
+    // The host's shell may expose installed SDKs to CMake, the compiler,
+    // pkg-config or the dynamic loader. A kit may explicitly restore paths
+    // it owns after these inherited values have been removed.
+    for (const auto* name:{"CMAKE_PREFIX_PATH","CMAKE_INCLUDE_PATH","CMAKE_LIBRARY_PATH",
+            "CMAKE_FRAMEWORK_PATH","CMAKE_APPBUNDLE_PATH","CPATH","C_INCLUDE_PATH",
+            "CPLUS_INCLUDE_PATH","OBJC_INCLUDE_PATH","LIBRARY_PATH","PKG_CONFIG_PATH",
+            "PKG_CONFIG_LIBDIR","DYLD_LIBRARY_PATH","DYLD_FALLBACK_LIBRARY_PATH",
+            "DYLD_FRAMEWORK_PATH","LD_LIBRARY_PATH"})
+        out.push_back(std::string("--unset=")+name);
     for (const auto& [key,value]:kit.environment) out.push_back(key+"="+value);
     out.push_back("--"); out.push_back(path_string(r.cmake));
     out.insert(out.end(),args.begin(),args.end());
@@ -147,7 +170,9 @@ std::vector<std::string> prefix_command(const Request& r,const Kit& kit,std::vec
 }
 ProjectPlan project_plan(const Request& r,const KitPlan& kp,const CMakeProject& p,bool sdk) {
     const auto kitroot=r.build_root/"kits"/kp.kit.id/r.configuration;
-    ProjectPlan plan{p,kitroot/(sdk?"sdk":"app")/(sdk?p.name:"")/"build",{}};
+    // Keep the previous shared-prefix CMake caches untouched. A cached
+    // <Package>_DIR from that layout could otherwise silently reconnect SDKs.
+    ProjectPlan plan{p,kitroot/(sdk?"sdk":"app")/(sdk?p.name:"")/"isolated"/"build",{}};
     const auto& k=kp.kit;
     Variables vars=k.cache;
     for (const auto& [key,value]:p.cache) vars[key]=value;
@@ -157,18 +182,31 @@ ProjectPlan project_plan(const Request& r,const KitPlan& kp,const CMakeProject& 
     // NDK/Emscripten distributions may omit clang-scan-deps. Ordinary SDK
     // headers/sources need no C++ module scanning; module projects opt in.
     vars.try_emplace("CMAKE_CXX_SCAN_FOR_MODULES","OFF");
+    if(detail::extended_target(k)) {
+        vars["CMAKE_CXX_STANDARD"]="23";vars["CMAKE_CXX_STANDARD_REQUIRED"]="ON";vars["CMAKE_CXX_EXTENSIONS"]="OFF";
+        if(sdk&&p.name=="iiSDKCore"&&k.target.foundation=="embedded")vars["IISDKCORE_EMBEDDED_ONLY"]="ON";
+    }
     vars["CMAKE_BUILD_TYPE"]=r.configuration;
-    vars["CMAKE_INSTALL_PREFIX"]=path_string(kp.prefix);
+    const auto project_prefix=sdk ? kp.prefix/p.name : kp.prefix;
+    vars["CMAKE_INSTALL_PREFIX"]=path_string(project_prefix);
     vars["CMAKE_INSTALL_LIBDIR"]="lib";
     vars["CMAKE_FIND_USE_PACKAGE_REGISTRY"]="OFF";
     vars["CMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY"]="OFF";
-    std::string prefixes=path_string(kp.prefix);
+    // The app prefix was formerly shared by every SDK. Do not let CMake
+    // implicitly add it as a system search prefix and find stale packages.
+    vars["CMAKE_FIND_NO_INSTALL_PREFIX"]="ON";
+    std::string prefixes;
+    if (sdk) prefixes=path_string(project_prefix);
+    else for (const auto& selected:kp.projects) {
+        if (!prefixes.empty()) prefixes+=';';
+        prefixes+=path_string(kp.prefix/selected.project.name);
+    }
     for (const auto& prefix:k.prefixes) prefixes+=';'+path_string(normalized_path(prefix));
     vars["CMAKE_PREFIX_PATH"]=prefixes;
     auto& includes=vars["CMAKE_PROJECT_TOP_LEVEL_INCLUDES"];
     if (!includes.empty()) includes+=';';
     includes+=path_string(plan.binary_dir/"iisdkbuilder-verify.cmake");
-    if (!sdk || p.name!="iiSDKCore") vars["iiSDKCore_DIR"]=path_string(kp.prefix/"lib/cmake/iiSDKCore");
+    if (!sdk) vars["iiSDKCore_DIR"]=path_string(kp.prefix/"iiSDKCore/lib/cmake/iiSDKCore");
     if (!k.toolchain.empty()) vars["CMAKE_TOOLCHAIN_FILE"]=path_string(k.toolchain);
     if ((k.platform==Platform::macos || k.platform==Platform::ios) && !k.architecture.empty()) vars["CMAKE_OSX_ARCHITECTURES"]=k.architecture;
     if (!k.sysroot.empty()) vars["CMAKE_OSX_SYSROOT"]=k.sysroot;
@@ -177,7 +215,7 @@ ProjectPlan project_plan(const Request& r,const KitPlan& kp,const CMakeProject& 
         vars.try_emplace("CMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED","NO");
         vars.try_emplace("CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY","");
     }
-    if (k.platform==Platform::android) {
+    if (k.platform==Platform::android || (detail::extended_target(k)&&k.target.system=="Android")) {
         vars["ANDROID_ABI"]=k.android_abi;
         vars["ANDROID_PLATFORM"]="android-"+std::to_string(k.android_api);
     }
@@ -190,7 +228,7 @@ ProjectPlan project_plan(const Request& r,const KitPlan& kp,const CMakeProject& 
     if (!p.targets.empty()) { args.push_back("--target"); args.insert(args.end(),p.targets.begin(),p.targets.end()); }
     plan.commands.push_back({Phase::build,p.name,prefix_command(r,k,std::move(args)),logroot/"build.log",r.timeout});
     if (sdk) plan.commands.push_back({Phase::install,p.name,prefix_command(r,k,
-        {"--install",path_string(plan.binary_dir),"--config",r.configuration,"--prefix",path_string(kp.prefix)}),logroot/"install.log",r.timeout});
+        {"--install",path_string(plan.binary_dir),"--config",r.configuration,"--prefix",path_string(project_prefix)}),logroot/"install.log",r.timeout});
     return plan;
 }
 }
@@ -203,11 +241,12 @@ std::string_view platform_name(Platform platform) {
     case Platform::android:return "android";
     case Platform::ios:return "ios";
     case Platform::wasm:return "wasm";
+    case Platform::automotive:return "automotive";case Platform::arduino:return "arduino";case Platform::fpga:return "fpga";
     }
     return "unknown";
 }
 core::Result<Platform> parse_platform(std::string_view name) {
-    for (const auto p:{Platform::windows,Platform::macos,Platform::linux_os,Platform::android,Platform::ios,Platform::wasm})
+    for (const auto p:{Platform::windows,Platform::macos,Platform::linux_os,Platform::android,Platform::ios,Platform::wasm,Platform::automotive,Platform::arduino,Platform::fpga})
         if (name==platform_name(p)) return p;
     return core::fail(core::ErrorCode::invalid_argument,"Unknown platform: "+std::string(name));
 }
@@ -226,7 +265,7 @@ std::vector<Kit> default_kits() {
     return kits;
 }
 std::string_view phase_name(Phase phase) {
-    switch (phase) { case Phase::configure:return "configure";case Phase::build:return "build";case Phase::install:return "install"; }
+    switch (phase) { case Phase::configure:return "configure";case Phase::build:return "build";case Phase::install:return "install";case Phase::verify:return "verify";case Phase::deploy:return "deploy";case Phase::run:return "run";case Phase::synthesize:return "synthesize"; }
     return "unknown";
 }
 core::Result<Plan> make_plan(const Request& input) {
@@ -242,7 +281,9 @@ core::Result<Plan> make_plan(const Request& input) {
         if (r.build_root.empty()) r.build_root=r.app.source/"build/iiSDKBuilder";
         r.build_root=normalized_path(r.build_root);
         if (std::ranges::none_of(r.build_root,[](const auto& part) { return part=="build"; })) invalid("Build root must be inside a directory named build");
-        validate(r.app,r.build_root);
+        r.app.source=normalized_path(r.app.source);
+        for(auto& kit:r.kits)detail::validate_target(kit,r);
+        validate(r.app,r.build_root,std::ranges::any_of(r.kits,[](const Kit& k){return !detail::adapter_target(k);}));
         if (r.build_root==r.app.source) invalid("Build root cannot be the app source");
         auto resolved_cmake=executable(r.cmake);
         if (!resolved_cmake.empty()) r.cmake=resolved_cmake;
@@ -255,31 +296,14 @@ core::Result<Plan> make_plan(const Request& input) {
             }
             else projects.push_back(sdk);
         }
-        if (!projects[0].depends.empty()) invalid("iiSDKCore cannot depend on upper SDK modules");
-        ii::graph::DependencyGraph graph(projects.size());
-        std::vector<ii::graph::NodeId> nodes;
         std::map<std::string,std::size_t> indexes;
         for (std::size_t i=0;i<projects.size();++i) {
             validate(projects[i],r.build_root);
             if (!indexes.emplace(lower(projects[i].name),i).second) invalid("Duplicate SDK name: "+projects[i].name);
-            auto node=graph.add(); if (!node) return std::unexpected(node.error());
-            nodes.push_back(*node);
-        }
-        for (std::size_t i=1;i<projects.size();++i) {
-            auto dependencies=projects[i].depends;
-            dependencies.push_back("iiSDKCore");
-            std::set<std::size_t> unique;
-            for (const auto& name:dependencies) {
-                const auto found=indexes.find(lower(name));
-                if (found==indexes.end()) invalid("Unknown dependency "+name+" in "+projects[i].name);
-                if (unique.insert(found->second).second) {
-                    auto connected=graph.connect(nodes[found->second],nodes[i]);
-                    if (!connected) return core::fail(connected.error().code,"SDK dependency cycle involving "+projects[i].name+" and "+name);
-                }
-            }
+            if (!projects[i].depends.empty())
+                invalid("SDK projects cannot depend on other SDK projects: "+projects[i].name);
         }
         for (const auto& name:r.app.depends) if (!indexes.contains(lower(name))) invalid("Unknown application SDK dependency: "+name);
-        auto order=graph.order(); if (!order) return std::unexpected(order.error());
         std::set<std::string> ids;
         for (auto kit:r.kits) {
             if (!portable_name(kit.id) || !ids.insert(lower(kit.id)).second) invalid("Invalid or duplicate kit id: "+kit.id);
@@ -299,14 +323,23 @@ core::Result<Plan> make_plan(const Request& input) {
             kp.prefix=r.build_root/"kits"/kp.kit.id/r.configuration/"prefix";
             kp.unavailable_reason=preliminary(kp.kit,resolved_cmake);
             if (!kp.kit.architecture.empty() && kp.kit.platform!=Platform::macos && kp.kit.platform!=Platform::ios &&
-                !kp.kit.generator.starts_with("Visual Studio"))
+                !kp.kit.generator.starts_with("Visual Studio") && !detail::extended_target(kp.kit))
                 invalid("architecture requires an Apple target or Visual Studio generator; use androidAbi or a target toolchain for "+kp.kit.id);
-            for (const auto node:*order) {
-                const auto found=std::ranges::find(nodes,node);
-                const auto index=static_cast<std::size_t>(std::distance(nodes.begin(),found));
-                kp.projects.push_back(project_plan(r,kp,projects[index],true));
+            if(detail::adapter_target(kp.kit)) {
+                auto host=kp;host.kit.platform=*host_platform();host.kit.target={};host.kit.toolchain.clear();host.kit.architecture.clear();host.kit.sysroot.clear();host.kit.cache.clear();host.kit.generator="Ninja";
+                auto core=projects.front();core.cache["IISDKCORE_EMBEDDED_ONLY"]="ON";
+                auto policy=project_plan(r,host,core,true);policy.host_validation=true;
+                std::erase_if(policy.commands,[](const Command& c){return c.phase==Phase::install;});
+                kp.projects.push_back(std::move(policy));kp.projects.push_back(detail::adapter_plan(r,kp));
+            }else {
+                for (const auto& project:projects)
+                    kp.projects.push_back(project_plan(r,kp,project,true));
+                kp.projects.push_back(project_plan(r,kp,r.app,false));
             }
-            kp.projects.push_back(project_plan(r,kp,r.app,false));
+            if(kp.unavailable_reason.empty()&&r.deploy&&kp.kit.target.deploy.empty()&&!(kp.kit.target.adapter=="arduino"&&!kp.kit.target.port.empty()))
+                kp.unavailable_reason="Deployment requested without an explicit board/programmer contract";
+            if(kp.unavailable_reason.empty()&&r.run&&kp.kit.target.run.empty()&&kp.kit.target.adapter!="verilator"&&!(kp.kit.target.adapter=="arduino"&&!kp.kit.target.port.empty()&&!kp.kit.target.expected_output.empty()))
+                kp.unavailable_reason="Execution requested without a finite device/emulator/serial runner";
             plan.kits.push_back(std::move(kp));
         }
         return plan;

@@ -2,6 +2,7 @@
 #include <iiSDKBuilder/Builder.h>
 #include <iiSDKCore/Runtime/Runtime.h>
 #include "Json.h"
+#include "Targets.h"
 #include <algorithm>
 #include <cctype>
 #include <fstream>
@@ -13,20 +14,9 @@ namespace {
 namespace fs=std::filesystem;
 using detail::Json;
 using detail::path_string;
-std::string system_name(Platform platform) {
-    switch (platform) {
-    case Platform::windows:return "Windows";
-    case Platform::macos:return "Darwin";
-    case Platform::linux_os:return "Linux";
-    case Platform::android:return "Android";
-    case Platform::ios:return "iOS";
-    case Platform::wasm:return "Emscripten";
-    }
-    throw std::invalid_argument("Invalid target platform");
-}
-core::Result<void> prepare(const ProjectPlan& project,Platform platform) {
+core::Result<void> prepare(const ProjectPlan& project,const Kit& kit) {
     const auto verify=project.binary_dir/"iisdkbuilder-verify.cmake";
-    const auto expected=system_name(platform);
+    const auto expected=detail::target_system(kit,project.host_validation);
     std::error_code ec;
     fs::remove(project.binary_dir/"iisdkbuilder-system.txt",ec);
     if (ec) return core::fail(core::ErrorCode::failed,"Cannot clear target verification marker: "+ec.message());
@@ -117,10 +107,15 @@ core::Result<void> kit_identity(const KitPlan& plan) {
     std::string toolchain_time;
     if (!k.toolchain.empty()) toolchain_time=std::to_string(std::chrono::duration_cast<std::chrono::microseconds>(
         fs::last_write_time(k.toolchain).time_since_epoch()).count());
-    const auto identity=detail::dump_json(Json::Object{{"platform",platform_name(k.platform)},
+    auto identity_object=Json::Object{{"platform",platform_name(k.platform)},
         {"toolchain",path_string(k.toolchain)},{"toolchainModified",toolchain_time},{"generator",k.generator},
         {"architecture",k.architecture},{"sysroot",k.sysroot},{"androidAbi",k.android_abi},
-        {"androidApi",k.android_api},{"environment",std::move(environment)},{"compilerCache",std::move(cache)}});
+        {"androidApi",k.android_api},{"environment",std::move(environment)},{"compilerCache",std::move(cache)}};
+    if(detail::extended_target(k)||!k.target.run.empty()||!k.target.deploy.empty()) {
+        auto compile=k.target;compile.deploy.clear();compile.run.clear();compile.port.clear();compile.runner.clear();compile.expected_output.clear();compile.monitor=false;
+        identity_object.emplace("target",detail::target_json(compile));
+    }
+    const auto identity=detail::dump_json(identity_object);
     const auto file=plan.prefix.parent_path()/"kit-identity.json";
     if (fs::exists(file)) {
         auto previous=detail::read_json(file);
@@ -130,87 +125,205 @@ core::Result<void> kit_identity(const KitPlan& plan) {
     }
     return detail::write_text(file,identity);
 }
-KitReport build_kit(const KitPlan& kit,const Request& request,const Executor& executor,std::stop_token stop) {
-    KitReport report{kit.kit.id,kit.kit.platform,Status::succeeded,{},{},{}};
-    if (stop.stop_requested()) { report.status=Status::cancelled;report.message="Build cancelled before execution"; }
-    else if (!kit.unavailable_reason.empty()) { report.status=Status::unavailable;report.message=kit.unavailable_reason; }
-    if (report.status==Status::succeeded) {
-        auto identity=kit_identity(kit);
-        if (!identity) { report.status=Status::failed;report.message=identity.error().message; }
+KitReport build_kit(const KitPlan &kit, const Request &request, const Executor &executor, std::stop_token stop) {
+    KitReport report{kit.kit.id, kit.kit.platform, Status::succeeded, {}, {}, {}};
+    report.execution = execution_model(kit.kit);
+    report.profile = kit.kit.target.profile;
+    report.runner = kit.kit.target.runner;
+    report.deployment =
+        request.deploy || (request.run && kit.kit.target.adapter == "arduino" && !kit.kit.target.port.empty())
+            ? "blocked"
+            : "not_requested";
+    report.execution_status = request.run ? "blocked" : "not_requested";
+    if (stop.stop_requested()) {
+        report.status = Status::cancelled;
+        report.message = "Build cancelled before execution";
+    } else if (!kit.unavailable_reason.empty()) {
+        report.status = Status::unavailable;
+        report.message = kit.unavailable_reason;
     }
-    for (const auto& project:kit.projects) {
-        for (const auto& command:project.commands) {
-            StepReport step{command,Status::blocked,-1,{},report.message};
-            if (report.status==Status::succeeded && stop.stop_requested()) {
-                report.status=Status::cancelled;report.message="Build cancelled before next command";
-            }
-            if (report.status!=Status::succeeded) { step.message=report.message;report.steps.push_back(std::move(step));continue; }
-            const auto started=std::chrono::steady_clock::now();
-            if (command.phase==Phase::configure) {
-                auto prepared=prepare(project,kit.kit.platform);
-                if (!prepared) {
-                    report.status=step.status=Status::failed;
-                    report.message=step.message=prepared.error().message;
-                    report.steps.push_back(std::move(step));continue;
-                }
-            }
-            auto result=[&]() -> core::Result<ProcessOutcome> {
-                try { return executor(command,stop); }
-                catch (const std::exception& e) { return core::fail(core::ErrorCode::failed,"Executor threw: "+std::string(e.what())); }
-                catch (...) { return core::fail(core::ErrorCode::failed,"Executor threw an unknown exception"); }
-            }();
-            step.elapsed=std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()-started);
-            if (!result) { step.status=Status::failed;step.message=result.error().message; }
-            else {
-                step.exit_code=result->exit_code;
-                if (result->cancelled) { step.status=Status::cancelled;step.message="Child command cancelled"; }
-                else if (result->timed_out) { step.status=Status::failed;step.message="Child command exceeded timeout"; }
-                else if (result->exit_code!=0) { step.status=Status::failed;step.message="Child exited with code "+std::to_string(result->exit_code); }
-                else step.status=Status::succeeded;
-                if (step.status==Status::succeeded && command.phase==Phase::configure) {
-                    std::ifstream marker(project.binary_dir/"iisdkbuilder-system.txt");
-                    std::string system;std::getline(marker,system);
-                    if (!system.empty() && system.back()=='\r') system.pop_back();
-                    if (system!=system_name(kit.kit.platform)) {
-                        step.status=Status::failed;
-                        step.message="CMake did not verify the requested target system";
-                    }
-                }
-            }
-            if (step.status!=Status::succeeded) { report.status=step.status;report.message=step.message; }
+    if (report.status == Status::succeeded) {
+        auto identity = kit_identity(kit);
+        if (!identity) {
+            report.status = Status::failed;
+            report.message = identity.error().message;
+        }
+    }
+    auto execute = [&](const Command &command, const ProjectPlan *project = nullptr) {
+        StepReport step{command, Status::blocked, -1, {}, report.message};
+        if (report.status == Status::succeeded && stop.stop_requested()) {
+            report.status = Status::cancelled;
+            report.message = "Build cancelled before next command";
+        }
+        if (report.status != Status::succeeded) {
+            step.message = report.message;
             report.steps.push_back(std::move(step));
+            return false;
+        }
+        const auto started = std::chrono::steady_clock::now();
+        if (command.phase == Phase::configure && project) {
+            auto prepared = prepare(*project, kit.kit);
+            if (!prepared) {
+                report.status = step.status = Status::failed;
+                report.message = step.message = prepared.error().message;
+                report.steps.push_back(std::move(step));
+                return false;
+            }
+        }
+        auto result = [&]() -> core::Result<ProcessOutcome> {
+            try {
+                return executor(command, stop);
+            } catch (const std::exception &e) {
+                return core::fail(core::ErrorCode::failed, "Executor threw: " + std::string(e.what()));
+            } catch (...) {
+                return core::fail(core::ErrorCode::failed, "Executor threw an unknown exception");
+            }
+        }();
+        step.elapsed =
+            std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - started);
+        if (!result) {
+            step.status = Status::failed;
+            step.message = result.error().message;
+        } else {
+            step.exit_code = result->exit_code;
+            if (result->cancelled) {
+                step.status = Status::cancelled;
+                step.message = "Child command cancelled";
+            } else if (result->timed_out) {
+                step.status = Status::failed;
+                step.message = "Child command exceeded timeout";
+            } else if (result->exit_code) {
+                step.status = Status::failed;
+                step.message = "Child exited with code " + std::to_string(result->exit_code);
+            } else if (!command.expected_output.empty() && !result->matched_output) {
+                step.status = Status::failed;
+                step.message = "Device/runner did not emit the required output";
+            } else
+                step.status = Status::succeeded;
+            if (step.status == Status::succeeded && command.phase == Phase::configure && project) {
+                std::ifstream marker(project->binary_dir / "iisdkbuilder-system.txt");
+                std::string system;
+                std::getline(marker, system);
+                if (!system.empty() && system.back() == '\r')
+                    system.pop_back();
+                if (system != detail::target_system(kit.kit, project->host_validation)) {
+                    step.status = Status::failed;
+                    step.message = "CMake did not verify the requested target system";
+                }
+            }
+        }
+        if (step.status != Status::succeeded) {
+            report.status = step.status;
+            report.message = step.message;
+        }
+        const bool success = step.status == Status::succeeded;
+        report.steps.push_back(std::move(step));
+        return success;
+    };
+    // SDK projects are independent. A failure in one project blocks its own
+    // remaining commands and the application, but not other selected SDKs.
+    const bool kit_ready = report.status == Status::succeeded;
+    bool sdk_failed = false;
+    std::string first_sdk_failure;
+    for (std::size_t index = 0; index < kit.projects.size(); ++index) {
+        const auto &project = kit.projects[index];
+        const bool app = index + 1 == kit.projects.size();
+        if (kit_ready && report.status != Status::cancelled) {
+            if (stop.stop_requested()) {
+                report.status = Status::cancelled;
+                report.message = "Build cancelled before next project";
+            } else if (sdk_failed) {
+                report.status = app ? Status::failed : Status::succeeded;
+                report.message = app ? first_sdk_failure : std::string{};
+            }
+        }
+        if (report.status == Status::succeeded && !project.host_validation && detail::adapter_target(kit.kit)) {
+            auto prepared = detail::prepare_adapter(project, kit.kit, request);
+            if (!prepared) {
+                report.status = Status::failed;
+                report.message = prepared.error().message;
+            }
+        }
+        for (const auto &command : project.commands)
+            execute(command, &project);
+        if (!app && report.status == Status::failed && !sdk_failed) {
+            sdk_failed = true;
+            first_sdk_failure = report.message;
         }
     }
-    if (report.status==Status::succeeded) {
-        try {
-            const auto& app=kit.projects.back();
-            report.artifacts=artifacts(app,request.configuration,kit.kit);
-            auto target=kit.kit;
-            if (target.architecture.empty() && target.platform!=Platform::android && target.platform!=Platform::wasm) {
-                std::ifstream marker(app.binary_dir/"iisdkbuilder-system.txt");
-                std::string system,processor,apple_architectures;
-                std::getline(marker,system);std::getline(marker,processor);std::getline(marker,apple_architectures);
-                for (auto* text:{&processor,&apple_architectures}) if (!text->empty() && text->back()=='\r') text->pop_back();
-                target.architecture=apple_architectures.empty()?processor:apple_architectures;
-            }
-            for (const auto& file:report.artifacts) {
-                auto inspected=inspect_artifact(file,target);
-                if (!inspected) throw std::runtime_error(inspected.error().message);
-                report.verified_artifacts.push_back(std::move(*inspected));
-            }
+    if (report.status != Status::succeeded)
+        return report;
+    try {
+        const auto &app = kit.projects.back();
+        auto executing = kit;
+        report.artifacts = detail::adapter_target(kit.kit) ? detail::adapter_artifacts(app, kit.kit)
+                                                           : artifacts(app, request.configuration, kit.kit);
+        if (executing.kit.target.artifact.empty() && report.artifacts.size() == 1)
+            executing.kit.target.artifact = report.artifacts.front();
+        auto checks = detail::after_commands(request, executing, Phase::verify);
+        for (const auto &command : checks)
+            if (!execute(command))
+                return report;
+        auto target = kit.kit;
+        if (target.architecture.empty() && target.platform != Platform::android && target.platform != Platform::wasm &&
+            !detail::adapter_target(target)) {
+            std::ifstream marker(app.binary_dir / "iisdkbuilder-system.txt");
+            std::string system, processor, apple;
+            std::getline(marker, system);
+            std::getline(marker, processor);
+            std::getline(marker, apple);
+            for (auto *value : {&processor, &apple})
+                if (!value->empty() && value->back() == '\r')
+                    value->pop_back();
+            target.architecture = apple.empty() ? processor : apple;
         }
-        catch (const std::exception& e) { report.status=Status::failed;report.message=e.what(); }
+        for (const auto &file : report.artifacts) {
+            auto inspected = inspect_artifact(file, target, !checks.empty());
+            if (!inspected)
+                throw std::runtime_error(inspected.error().message);
+            report.verified_artifacts.push_back(std::move(*inspected));
+        }
+        const bool upload =
+            request.deploy || (request.run && kit.kit.target.adapter == "arduino" && !kit.kit.target.port.empty());
+        if (upload) {
+            report.deployment = "failed";
+            auto commands = detail::after_commands(request, executing, Phase::deploy);
+            if (commands.empty())
+                throw std::runtime_error("No explicit deployment contract");
+            for (const auto &command : commands)
+                if (!execute(command))
+                    return report;
+            report.deployment = "succeeded";
+        }
+        if (request.run) {
+            report.execution_status = "failed";
+            auto commands = detail::after_commands(request, executing, Phase::run);
+            if (commands.empty())
+                throw std::runtime_error("No explicit device/emulator execution contract");
+            for (const auto &command : commands)
+                if (!execute(command))
+                    return report;
+            report.execution_status = "succeeded";
+        }
+    } catch (const std::exception &e) {
+        report.status = Status::failed;
+        report.message = e.what();
     }
     return report;
 }
-}
+
+} // namespace
 
 std::string_view status_name(Status status) {
     switch (status) {
-    case Status::succeeded:return "succeeded";
-    case Status::failed:return "failed";
-    case Status::unavailable:return "unavailable";
-    case Status::cancelled:return "cancelled";
+    case Status::succeeded:
+        return "succeeded";
+    case Status::failed:
+        return "failed";
+    case Status::unavailable:
+        return "unavailable";
+    case Status::cancelled:
+        return "cancelled";
     case Status::blocked:return "blocked";
     }
     return "unknown";
@@ -235,7 +348,7 @@ std::string report_json(const Report& report) {
                 {"executionModel",execution_model_name(image.execution)},{"architectures",std::move(architectures)}});
         }
         kits.emplace_back(Json::Object{{"id",k.id},{"platform",platform_name(k.platform)},
-            {"executionModel",execution_model_name(execution_model(k.platform))},
+            {"executionModel",execution_model_name(k.execution)},{"profile",k.profile},{"runner",k.runner},{"deployment",k.deployment},{"execution",k.execution_status},
             {"status",status_name(k.status)},{"message",k.message},{"steps",std::move(steps)},
             {"artifacts",std::move(paths)},{"verifiedArtifacts",std::move(images)}});
     }
@@ -264,6 +377,7 @@ core::Result<Report> Builder::build(const Request& request,std::stop_token stop)
                 } catch (...) {
                     report.kits[i]={plan->kits[i].kit.id,plan->kits[i].kit.platform,Status::failed,"Executor threw an unknown exception",{},{}};
                 }
+                report.kits[i].execution=execution_model(plan->kits[i].kit);report.kits[i].profile=plan->kits[i].kit.target.profile;report.kits[i].runner=plan->kits[i].kit.target.runner;
             });
             if (!admitted) return core::fail(core::ErrorCode::failed,"Runtime rejected a kit build");
         }

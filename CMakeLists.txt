@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.31)
-project(iiSDKBuilder VERSION 0.2.1 LANGUAGES CXX)
+project(iiSDKBuilder VERSION 0.4.0 LANGUAGES CXX)
 set(CMAKE_CXX_EXTENSIONS OFF)
 # File creation is owned by iiFileProvider.
 find_package(iiFileProviderNative 0.6 CONFIG REQUIRED HINTS "$ENV{IIFILEPROVIDER_PREFIX}" "$ENV{HOME}/.local/SDK/iiFileProvider")
@@ -13,7 +13,7 @@ include(CMakePackageConfigHelpers)
 include(GenerateExportHeader)
 include(CTest)
 option(BUILD_SHARED_LIBS "Build a shared iiSDKBuilder library" OFF)
-set(IISDKBUILDER_CORE_SOURCE_DIR "" CACHE PATH "Optional iiSDKCore source checkout (0.18.1 or newer)")
+set(IISDKBUILDER_CORE_SOURCE_DIR "" CACHE PATH "Optional iiSDKCore source checkout (0.20.0 or newer)")
 
 if(IISDKBUILDER_CORE_SOURCE_DIR)
     get_filename_component(IISDKBUILDER_CORE_SOURCE_DIR "${IISDKBUILDER_CORE_SOURCE_DIR}" ABSOLUTE
@@ -28,11 +28,11 @@ if(IISDKBUILDER_CORE_SOURCE_DIR)
     set(BUILD_TESTING "${_builder_testing}")
     set(BUILD_SHARED_LIBS "${_builder_shared}")
 else()
-    find_package(iiSDKCore 0.18.1 CONFIG REQUIRED)
+    find_package(iiSDKCore 0.20.0 CONFIG REQUIRED)
 endif()
 
 add_library(iiSDKBuilder src/iiSDKBuilder/Json.cpp src/iiSDKBuilder/Manifest.cpp src/iiSDKBuilder/Plan.cpp src/iiSDKBuilder/Process.cpp src/iiSDKBuilder/Builder.cpp src/iiSDKBuilder/Artifact.cpp)
-target_sources(iiSDKBuilder PRIVATE src/iiSDKBuilder/Resources.cpp)
+target_sources(iiSDKBuilder PRIVATE src/iiSDKBuilder/Resources.cpp src/iiSDKBuilder/Targets.cpp src/iiSDKBuilder/Hls.cpp src/iiSDKBuilder/HlsIR.cpp src/iiSDKBuilder/HlsRtl.cpp)
 add_library(iiSDKBuilder::iiSDKBuilder ALIAS iiSDKBuilder)
 target_compile_features(iiSDKBuilder PUBLIC cxx_std_23)
 target_link_libraries(iiSDKBuilder PUBLIC iiSDKCore::iiSDKCore)
@@ -79,6 +79,7 @@ install(TARGETS iiSDKBuilder iiSDKBuilderCLI EXPORT iiSDKBuilderTargets
 install(FILES
     src/iiSDKBuilder/Builder.h
     src/iiSDKBuilder/Resources.h
+    src/iiSDKBuilder/Hls.h
     src/iiSDKBuilder/iiSDKBuilder.h
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/iiSDKBuilder)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/include/iiSDKBuilder/Export.h"
@@ -88,6 +89,10 @@ configure_package_config_file(cmake/iiSDKBuilderConfig.cmake.in
     "${CMAKE_CURRENT_BINARY_DIR}/iiSDKBuilderConfig.cmake" INSTALL_DESTINATION "${_package_dir}")
 write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/iiSDKBuilderConfigVersion.cmake"
     VERSION ${PROJECT_VERSION} COMPATIBILITY SameMajorVersion)
+install(DIRECTORY cmake/toolchains/ DESTINATION "${_package_dir}/toolchains"
+    PATTERN "*.iisacc-preview" EXCLUDE PATTERN ".iisacc-temporary.lock" EXCLUDE PATTERN ".DS_Store" EXCLUDE)
+install(DIRECTORY examples/EmbeddedHello examples/FPGAHello examples/HLSHello DESTINATION ${CMAKE_INSTALL_DATADIR}/iiSDKBuilder/examples
+    PATTERN "*.iisacc-preview" EXCLUDE PATTERN ".iisacc-temporary.lock" EXCLUDE PATTERN ".DS_Store" EXCLUDE)
 install(FILES cmake/iiSDKBuilderResources.cmake DESTINATION "${_package_dir}")
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/iiSDKBuilderConfig.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/iiSDKBuilderConfigVersion.cmake"
@@ -103,9 +108,39 @@ foreach(dependency IN ITEMS iiSDKCore::iiSDKCore iiFileProvider::Native)
     endif()
 endforeach()
 install(FILES README.md DESTINATION ${CMAKE_INSTALL_DATADIR}/iiSDKBuilder)
-install(DIRECTORY docs/ DESTINATION ${CMAKE_INSTALL_DATADIR}/iiSDKBuilder/docs)
+install(DIRECTORY docs/ DESTINATION ${CMAKE_INSTALL_DATADIR}/iiSDKBuilder/docs
+    PATTERN "*.iisacc-preview" EXCLUDE PATTERN ".iisacc-temporary.lock" EXCLUDE PATTERN ".DS_Store" EXCLUDE)
 
 if(BUILD_TESTING)
+    find_program(IISDK_HLS_CLANG NAMES clang++ HINTS /opt/homebrew/opt/llvm/bin REQUIRED)
+    add_executable(iiSDKBuilderHlsContracts tests/hls/contracts.cpp)
+    target_link_libraries(iiSDKBuilderHlsContracts PRIVATE iiSDKBuilder::iiSDKBuilder)
+    add_test(NAME iiSDKBuilder.hls_contracts COMMAND iiSDKBuilderHlsContracts)
+    add_executable(iiSDKBuilderHlsTests tests/hls/tests.cpp src/iiSDKBuilder/Json.cpp)
+    target_link_libraries(iiSDKBuilderHlsTests PRIVATE iiSDKBuilder::iiSDKBuilder iiFileProvider::Native)
+    target_compile_definitions(iiSDKBuilderHlsTests PRIVATE IISDK_HLS_SOURCE="${CMAKE_CURRENT_SOURCE_DIR}" IISDK_HLS_CLANG="${IISDK_HLS_CLANG}" IISDK_HLS_CMAKE="${CMAKE_COMMAND}")
+    foreach(case synthesis reject manifest pipeline)
+        add_test(NAME iiSDKBuilder.hls_${case} COMMAND iiSDKBuilderHlsTests ${case} "${CMAKE_CURRENT_BINARY_DIR}/tests/hls-${case}")
+        set_tests_properties(iiSDKBuilder.hls_${case} PROPERTIES TIMEOUT 60)
+    endforeach()
+    find_program(IISDK_HLS_VERILATOR NAMES verilator)
+    find_program(IISDK_HLS_YOSYS NAMES yosys)
+    if(IISDK_HLS_VERILATOR AND IISDK_HLS_YOSYS)
+        find_package(Python3 3.9 COMPONENTS Interpreter REQUIRED)
+        add_test(NAME iiSDKBuilder.hls_equivalence COMMAND "${Python3_EXECUTABLE}" -B
+            "${CMAKE_CURRENT_SOURCE_DIR}/tests/hls/verify.py"
+            --builder "$<TARGET_FILE:iiSDKBuilderCLI>" --source "${CMAKE_CURRENT_SOURCE_DIR}"
+            --output "${CMAKE_CURRENT_BINARY_DIR}/tests/hls-equivalence"
+            --clang "${IISDK_HLS_CLANG}" --verilator "${IISDK_HLS_VERILATOR}" --yosys "${IISDK_HLS_YOSYS}")
+        set_tests_properties(iiSDKBuilder.hls_equivalence PROPERTIES TIMEOUT 300 LABELS "hls-execution")
+    endif()
+    add_executable(iiSDKBuilderEmbeddedTests tests/embedded_targets.cpp)
+    target_link_libraries(iiSDKBuilderEmbeddedTests PRIVATE iiSDKBuilder::iiSDKBuilder iiFileProvider::Native)
+    target_compile_definitions(iiSDKBuilderEmbeddedTests PRIVATE IISDK_TEST_SDK="${CMAKE_CURRENT_SOURCE_DIR}/.." IISDK_TEST_CMAKE="${CMAKE_COMMAND}")
+    foreach(case profiles plans binary manifest deployment arduino)
+        add_test(NAME iiSDKBuilder.embedded_${case} COMMAND iiSDKBuilderEmbeddedTests ${case} "${CMAKE_CURRENT_BINARY_DIR}/tests/embedded-${case}")
+        set_tests_properties(iiSDKBuilder.embedded_${case} PROPERTIES TIMEOUT 60)
+    endforeach()
     add_executable(iiSDKBuilderResourceTests tests/resources.cpp)
     target_link_libraries(iiSDKBuilderResourceTests PRIVATE iiSDKBuilder::iiSDKBuilder iiFileProvider::Native)
     add_test(NAME iiSDKBuilder.resources COMMAND iiSDKBuilderResourceTests
@@ -121,6 +156,19 @@ if(BUILD_TESTING)
     add_executable(iiSDKBuilderTests tests/contracts.cpp src/iiSDKBuilder/Json.cpp)
     target_include_directories(iiSDKBuilderTests PRIVATE src/iiSDKBuilder)
     target_link_libraries(iiSDKBuilderTests PRIVATE iiSDKBuilder::iiSDKBuilder iiFileProvider::Native)
+    add_executable(iiSDKBuilderIndependentProjects tests/independent_projects.cpp)
+    target_link_libraries(iiSDKBuilderIndependentProjects PRIVATE iiSDKBuilder::iiSDKBuilder)
+    add_test(NAME iiSDKBuilder.independent_projects COMMAND iiSDKBuilderIndependentProjects
+        "${CMAKE_CURRENT_SOURCE_DIR}" "${_builder_test_core}"
+        "${CMAKE_CURRENT_BINARY_DIR}/tests/independent-projects/build" "${CMAKE_COMMAND}")
+    set_tests_properties(iiSDKBuilder.independent_projects PROPERTIES TIMEOUT 60)
+    add_executable(iiSDKBuilderIndependentBuild tests/independent_build.cpp)
+    target_link_libraries(iiSDKBuilderIndependentBuild PRIVATE iiSDKBuilder::iiSDKBuilder)
+    add_test(NAME iiSDKBuilder.independent_build COMMAND iiSDKBuilderIndependentBuild
+        "${CMAKE_CURRENT_SOURCE_DIR}/resources/independent-projects"
+        "${CMAKE_CURRENT_BINARY_DIR}/tests/independent-build/build" "${CMAKE_COMMAND}")
+    set_tests_properties(iiSDKBuilder.independent_build PROPERTIES TIMEOUT 180
+        ENVIRONMENT "CPATH=${CMAKE_CURRENT_SOURCE_DIR}/resources/independent-projects/sdk/iiSDKCore;CPLUS_INCLUDE_PATH=${CMAKE_CURRENT_SOURCE_DIR}/resources/independent-projects/sdk/iiSDKCore;CMAKE_INCLUDE_PATH=${CMAKE_CURRENT_SOURCE_DIR}/resources/independent-projects/sdk/iiSDKCore")
     add_executable(iiSDKBuilderArtifactTests tests/artifacts.cpp)
     target_link_libraries(iiSDKBuilderArtifactTests PRIVATE iiSDKBuilder::iiSDKBuilder)
     add_test(NAME iiSDKBuilder.native_contract COMMAND iiSDKBuilderArtifactTests

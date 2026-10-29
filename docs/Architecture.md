@@ -1,7 +1,7 @@
 # Architecture and platform contract
 
-iiSDKBuilder has one responsibility: turn an application's declared SDK graph
-and target environments into a verifiable CMake build matrix.
+iiSDKBuilder는 앱이 선택한 독립 SDK와 대상 환경을 검증 가능한 CMake 빌드
+행렬로 구성한다. 앱은 여러 SDK를 함께 사용할 수 있다.
 
 ```text
 application/build-tool integration
@@ -11,7 +11,7 @@ application/build-tool integration
   manifest   plan   execution   native child process
               |
            iiSDKCore
-  dependency graph / Runtime / platform
+       Runtime / platform
               |
      C++23 and native desktop APIs
 ```
@@ -19,7 +19,8 @@ application/build-tool integration
 Core 0.13 has no storage-SDK dependency. Builder publishes manifests and reports
 through its direct iiFileProvider Native dependency using atomic `File::write`.
 The JSON publication contract checks full replacement and original preservation
-when a parent path cannot be used. This keeps Core first in the build graph.
+when a parent path cannot be used. Core is selected as a separate project, not
+as a declared dependency of every other SDK.
 
 Public data is ordinary final value records and standard containers. `Builder`
 composes an executor function; it has no inheritance hierarchy or global task
@@ -29,14 +30,16 @@ data needed at these boundaries, rather than becoming a new Core serialization
 API. It checks syntax, numeric ranges, duplicate keys, string escapes, Unicode
 surrogates, depth and input size. Reports share that encoder.
 
-Planning resolves sources, validates names and paths, constructs the selected
-SDK graph using `ii::graph::DependencyGraph`, and emits explicit command
-arguments without writing files. Native prerequisite detection is preliminary;
-compiler/library compatibility is established by CMake configuration and build.
-The same kit settings apply to every SDK and its consumer app.
+계획은 소스·이름·경로를 확인하고 SDK 간 `depends`를 거부한 뒤 파일을 쓰지 않고
+선택 순서의 명시적 명령 인자를 만든다. SDK마다 설치 prefix와 CMake 캐시를 따로
+사용하고 앱 구성에만 선택 SDK들의 prefix를 모은다. 앱에는 여러 선택 SDK를 허용한다. 네이티브
+사전 확인은 예비 검사이며 컴파일러와 라이브러리 호환성은 실제 CMake 구성과
+빌드에서 확인한다. 같은 키트 설정은 각 SDK와 소비 앱에 적용한다.
 
 Execution owns a root lock, stores target identity, and schedules one sequential
-chain per kit through `ii::runtime::Runtime`. A configure hook verifies the
+chain per kit through `ii::runtime::Runtime`. SDK project failures block their
+own remaining commands and the app, while unrelated SDK projects continue;
+cancellation stops later projects. A configure hook verifies the
 final `CMAKE_SYSTEM_NAME` and writes a fresh marker. The builder requires the
 marker before proceeding. This catches a foreign-kit toolchain that accidentally
 produces host binaries. CMake's client-owned File API query identifies actual

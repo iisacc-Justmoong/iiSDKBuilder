@@ -1,0 +1,200 @@
+{
+  "format": "iisacc.agent-document",
+  "schema_version": 1,
+  "document_id": "urn:iisacc:document:bf60cc23aaf39a58f869f21836cefee453747c21c4603efae604fdb6c412edb7",
+  "project": {
+    "id": "urn:iisacc:project:SDK%2FiiSDKBuilder",
+    "name": "iiSDKBuilder",
+    "root": "SDK/iiSDKBuilder",
+    "kind": "sdk"
+  },
+  "source": {
+    "path": "examples/Hello/README.md",
+    "sha256": "4049555b4663c27abc639528de28fbee728358d6b5fd9d01ea68c71f19557beb",
+    "bytes": 2182,
+    "line_count": 45,
+    "encoding": "utf-8",
+    "language": "en"
+  },
+  "document": {
+    "title": "Native Hello World",
+    "role": "overview",
+    "authority": "markdown_source"
+  },
+  "blocks": [
+    {
+      "id": "b000001",
+      "kind": "heading",
+      "start_line": 1,
+      "end_line": 1,
+      "raw": "# Native Hello World\n",
+      "level": 1,
+      "title": "Native Hello World"
+    },
+    {
+      "id": "b000002",
+      "kind": "blank",
+      "start_line": 2,
+      "end_line": 2,
+      "raw": "\n"
+    },
+    {
+      "id": "b000003",
+      "kind": "paragraph",
+      "start_line": 3,
+      "end_line": 5,
+      "raw": "This C++23 console application uses iiSDKCore's EventLoop to dispatch one task,\nchecks its result, then calls Core's `hello()` API. Successful execution prints\nexactly `Hello, World!` followed by a newline and returns zero.\n"
+    },
+    {
+      "id": "b000004",
+      "kind": "blank",
+      "start_line": 6,
+      "end_line": 6,
+      "raw": "\n"
+    },
+    {
+      "id": "b000005",
+      "kind": "paragraph",
+      "start_line": 7,
+      "end_line": 12,
+      "raw": "The application finds only iiSDKCore 0.15 Runtime. iiSDKBuilder is the host build\ntool; it builds and installs Core into its kit prefix before compiling the app.\nThe builder defaults to a static Core, so the resulting host executable needs\nonly the platform's C/C++ system runtime. No other iiSDK module is linked into\nthe application. The existing builder tool's file/log implementation separately\nuses iiFileProvider Native.\n"
+    },
+    {
+      "id": "b000006",
+      "kind": "blank",
+      "start_line": 13,
+      "end_line": 13,
+      "raw": "\n"
+    },
+    {
+      "id": "b000007",
+      "kind": "paragraph",
+      "start_line": 14,
+      "end_line": 14,
+      "raw": "To repeat the verified local build from the iiSDKBuilder checkout:\n"
+    },
+    {
+      "id": "b000008",
+      "kind": "blank",
+      "start_line": 15,
+      "end_line": 15,
+      "raw": "\n"
+    },
+    {
+      "id": "b000009",
+      "kind": "fenced_code",
+      "start_line": 16,
+      "end_line": 19,
+      "raw": "```sh\nbuild/core-foundation/package/relocated/bin/iisdk-builder build \\\n  --manifest build/hello-world.json\n```\n",
+      "language": "sh",
+      "code": "build/core-foundation/package/relocated/bin/iisdk-builder build \\\n  --manifest build/hello-world.json\n",
+      "closed": true
+    },
+    {
+      "id": "b000010",
+      "kind": "blank",
+      "start_line": 20,
+      "end_line": 20,
+      "raw": "\n"
+    },
+    {
+      "id": "b000011",
+      "kind": "paragraph",
+      "start_line": 21,
+      "end_line": 22,
+      "raw": "The exact executable path and verified native image/CPU are in\n`build/hello-world/report.json`. On a macOS host the executable is:\n"
+    },
+    {
+      "id": "b000012",
+      "kind": "blank",
+      "start_line": 23,
+      "end_line": 23,
+      "raw": "\n"
+    },
+    {
+      "id": "b000013",
+      "kind": "fenced_code",
+      "start_line": 24,
+      "end_line": 26,
+      "raw": "```sh\nbuild/hello-world/kits/macos/Release/app/build/iiSDKBuilderHello\n```\n",
+      "language": "sh",
+      "code": "build/hello-world/kits/macos/Release/app/build/iiSDKBuilderHello\n",
+      "closed": true
+    },
+    {
+      "id": "b000014",
+      "kind": "blank",
+      "start_line": 27,
+      "end_line": 27,
+      "raw": "\n"
+    },
+    {
+      "id": "b000015",
+      "kind": "paragraph",
+      "start_line": 28,
+      "end_line": 31,
+      "raw": "A fresh project can also use `build --app examples/Hello --sdk-root ..\n--platform host` with the CLI and a working host toolchain/Python on PATH. Its\ndefault build root is examples/Hello/build/iiSDKBuilder; it does not reuse the\nverified local manifest's separate kit identity.\n"
+    },
+    {
+      "id": "b000016",
+      "kind": "blank",
+      "start_line": 32,
+      "end_line": 32,
+      "raw": "\n"
+    },
+    {
+      "id": "b000017",
+      "kind": "paragraph",
+      "start_line": 33,
+      "end_line": 39,
+      "raw": "To enable this example's CTest check when building from a manifest, set\n`app.cache.BUILD_TESTING` to `\"ON\"`, then run CTest in the app's reported build\ndirectory. `build/hello-world.json` is the verified local manifest from the\n2026-10-16 run. It selects only Core and the host kit, enables the app test, pins\nthe host Python used for Core's build-time architecture check and disables\nQt/FileProvider discovery for both Core and the app. Python and the build tool\nare not application runtime requirements.\n"
+    },
+    {
+      "id": "b000018",
+      "kind": "blank",
+      "start_line": 40,
+      "end_line": 40,
+      "raw": "\n"
+    },
+    {
+      "id": "b000019",
+      "kind": "paragraph",
+      "start_line": 41,
+      "end_line": 45,
+      "raw": "The local verification record is `build/hello-world-verification.json`. It\nrecords the build report, exact output/exit status with an empty PATH, binary\nformat, system-library dependencies and static Core symbols. Cross-platform\nsource support does not establish execution on other operating systems; this\nrun verifies macOS arm64.\n"
+    }
+  ],
+  "outline": [
+    {
+      "block_id": "b000001",
+      "parent_id": null,
+      "level": 1,
+      "title": "Native Hello World",
+      "anchor": "native-hello-world",
+      "start_line": 1
+    }
+  ],
+  "indexes": {
+    "directive_candidates": [],
+    "commands": [
+      {
+        "block_id": "b000009",
+        "language": "sh",
+        "code": "build/core-foundation/package/relocated/bin/iisdk-builder build \\\n  --manifest build/hello-world.json\n"
+      },
+      {
+        "block_id": "b000013",
+        "language": "sh",
+        "code": "build/hello-world/kits/macos/Release/app/build/iiSDKBuilderHello\n"
+      }
+    ],
+    "links": [],
+    "tables": []
+  },
+  "provenance": {
+    "generator": "workspace-docs",
+    "version": "1.0.0",
+    "profile": "lossless-blocks-v1",
+    "derived": true
+  }
+}

@@ -1,5 +1,9 @@
 # iiSDKBuilder
 
+The implementation under `src/` separates build orchestration, common JSON,
+resource compilation, target rules, and HLS. Interfaces and implementations
+remain together; the existing `<iiSDKBuilder/...>` include names are unchanged.
+
 [Windows build and execution](docs/WindowsBuildAndRun.md)
 
 Package release: **0.4.0** (2026-10-26). This patch packages the current

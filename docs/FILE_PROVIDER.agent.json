@@ -10,11 +10,11 @@
   },
   "source": {
     "path": "docs/FILE_PROVIDER.md",
-    "sha256": "1f72c209b9ab39f51ddfe4159526d9561722a400a84aa2a0ca2b32d1f747ea7e",
-    "bytes": 1425,
-    "line_count": 29,
+    "sha256": "8257d630b79b5517895d3813ef6d977f09677af8a4ce78192097de492aa21173",
+    "bytes": 1644,
+    "line_count": 33,
     "encoding": "utf-8",
-    "language": "en"
+    "language": "ko"
   },
   "document": {
     "title": "File creation ownership in iiSDKBuilder",
@@ -42,119 +42,133 @@
       "id": "b000003",
       "kind": "paragraph",
       "start_line": 3,
-      "end_line": 3,
-      "raw": "CMake query files, project identity/report JSON and platform process logs use native provider streams and provider atomic publication. Build orchestration and platform-kit rules stay in Builder.\n"
+      "end_line": 5,
+      "raw": "소스는 `src/Build/`, `src/Core/`, `src/Resources/`, `src/Targets/`,\n`src/HLS/`로 책임에 따라 구분한다. 공개 헤더와 대응 구현은 함께 두며,\n빌드와 설치 소비자의 `<iiSDKBuilder/...>` 경로는 유지한다.\n"
     },
     {
       "id": "b000004",
       "kind": "blank",
-      "start_line": 4,
-      "end_line": 4,
+      "start_line": 6,
+      "end_line": 6,
       "raw": "\n"
     },
     {
       "id": "b000005",
       "kind": "paragraph",
-      "start_line": 5,
-      "end_line": 8,
-      "raw": "The common [ownership contract](../../iiFileProvider/docs/FILE_OWNERSHIP.md) defines stream, staging, control-file and\ninstalled-package rules. Source regression tests remain with this module; the\nworkspace creation audit also checks these boundaries. Build/deployment and target\nruntime validation are separate evidence.\n"
+      "start_line": 7,
+      "end_line": 7,
+      "raw": "CMake query files, project identity/report JSON and platform process logs use native provider streams and provider atomic publication. Build orchestration and platform-kit rules stay in Builder.\n"
     },
     {
       "id": "b000006",
       "kind": "blank",
-      "start_line": 9,
-      "end_line": 9,
+      "start_line": 8,
+      "end_line": 8,
       "raw": "\n"
     },
     {
       "id": "b000007",
       "kind": "paragraph",
-      "start_line": 10,
-      "end_line": 10,
-      "raw": "Changed boundaries:\n"
+      "start_line": 9,
+      "end_line": 12,
+      "raw": "The common [ownership contract](../../iiFileProvider/docs/FILE_OWNERSHIP.md) defines stream, staging, control-file and\ninstalled-package rules. Source regression tests remain with this module; the\nworkspace creation audit also checks these boundaries. Build/deployment and target\nruntime validation are separate evidence.\n"
     },
     {
       "id": "b000008",
       "kind": "blank",
-      "start_line": 11,
-      "end_line": 12,
-      "raw": "\n\n"
+      "start_line": 13,
+      "end_line": 13,
+      "raw": "\n"
     },
     {
       "id": "b000009",
+      "kind": "paragraph",
+      "start_line": 14,
+      "end_line": 14,
+      "raw": "Changed boundaries:\n"
+    },
+    {
+      "id": "b000010",
+      "kind": "blank",
+      "start_line": 15,
+      "end_line": 16,
+      "raw": "\n\n"
+    },
+    {
+      "id": "b000011",
       "kind": "list",
-      "start_line": 13,
-      "end_line": 15,
-      "raw": "- `src/iiSDKBuilder/Builder.cpp`\n- `src/iiSDKBuilder/Json.cpp`\n- `src/iiSDKBuilder/Process.cpp`\n",
+      "start_line": 17,
+      "end_line": 19,
+      "raw": "- `src/Build/Builder.cpp`\n- `src/Core/Json.cpp`\n- `src/Build/Process.cpp`\n",
       "items": [
         {
           "marker": "-",
-          "text": "`src/iiSDKBuilder/Builder.cpp`",
+          "text": "`src/Build/Builder.cpp`",
           "checked": null
         },
         {
           "marker": "-",
-          "text": "`src/iiSDKBuilder/Json.cpp`",
+          "text": "`src/Core/Json.cpp`",
           "checked": null
         },
         {
           "marker": "-",
-          "text": "`src/iiSDKBuilder/Process.cpp`",
+          "text": "`src/Build/Process.cpp`",
           "checked": null
         }
       ]
     },
     {
-      "id": "b000010",
+      "id": "b000012",
       "kind": "heading",
-      "start_line": 16,
-      "end_line": 16,
+      "start_line": 20,
+      "end_line": 20,
       "raw": "# Core foundation migration (0.13)\n",
       "level": 1,
       "title": "Core foundation migration (0.13)"
     },
     {
-      "id": "b000011",
-      "kind": "blank",
-      "start_line": 17,
-      "end_line": 17,
-      "raw": "\n"
-    },
-    {
-      "id": "b000012",
-      "kind": "paragraph",
-      "start_line": 18,
-      "end_line": 22,
-      "raw": "Builder's JSON/manifests/reports use `iiFileProvider::native::File::write` directly.\nAtomic file implementation no longer comes from iiSDKCore. The existing Native\ndependency supplies atomic publication and file presentation; Core remains a\nlower runtime dependency. `iiSDKBuilder.json` verifies replacement and failure\npreservation in addition to JSON parsing.\n"
-    },
-    {
       "id": "b000013",
       "kind": "blank",
-      "start_line": 23,
-      "end_line": 23,
+      "start_line": 21,
+      "end_line": 21,
       "raw": "\n"
     },
     {
       "id": "b000014",
+      "kind": "paragraph",
+      "start_line": 22,
+      "end_line": 26,
+      "raw": "Builder's JSON/manifests/reports use `iiFileProvider::native::File::write` directly.\nAtomic file implementation no longer comes from iiSDKCore. The existing Native\ndependency supplies atomic publication and file presentation; Core remains a\nlower runtime dependency. `iiSDKBuilder.json` verifies replacement and failure\npreservation in addition to JSON parsing.\n"
+    },
+    {
+      "id": "b000015",
+      "kind": "blank",
+      "start_line": 27,
+      "end_line": 27,
+      "raw": "\n"
+    },
+    {
+      "id": "b000016",
       "kind": "heading",
-      "start_line": 24,
-      "end_line": 24,
+      "start_line": 28,
+      "end_line": 28,
       "raw": "## Shared process runner (0.1.1)\n",
       "level": 2,
       "title": "Shared process runner (0.1.1)"
     },
     {
-      "id": "b000015",
+      "id": "b000017",
       "kind": "blank",
-      "start_line": 25,
-      "end_line": 25,
+      "start_line": 29,
+      "end_line": 29,
       "raw": "\n"
     },
     {
-      "id": "b000016",
+      "id": "b000018",
       "kind": "paragraph",
-      "start_line": 26,
-      "end_line": 29,
+      "start_line": 30,
+      "end_line": 33,
       "raw": "Core 0.15 owns the child process and nonblocking standard pipes. Builder writes\nthe merged output sink through Native OutputFile, including close/presentation\nnotification, and flushes before reporting success. No raw file handles are\npassed to Core and no log file creation is moved into the foundation module.\n"
     }
   ],
@@ -168,20 +182,20 @@
       "start_line": 1
     },
     {
-      "block_id": "b000010",
+      "block_id": "b000012",
       "parent_id": null,
       "level": 1,
       "title": "Core foundation migration (0.13)",
       "anchor": "core-foundation-migration-013",
-      "start_line": 16
+      "start_line": 20
     },
     {
-      "block_id": "b000014",
-      "parent_id": "b000010",
+      "block_id": "b000016",
+      "parent_id": "b000012",
       "level": 2,
       "title": "Shared process runner (0.1.1)",
       "anchor": "shared-process-runner-011",
-      "start_line": 24
+      "start_line": 28
     }
   ],
   "indexes": {
@@ -189,11 +203,11 @@
     "commands": [],
     "links": [
       {
-        "block_id": "b000005",
+        "block_id": "b000007",
         "label": "ownership contract",
         "target": "../../iiFileProvider/docs/FILE_OWNERSHIP.md",
         "kind": "relative",
-        "line": 5
+        "line": 9
       }
     ],
     "tables": []

@@ -31,8 +31,18 @@ else()
     find_package(iiSDKCore 0.20.0 CONFIG REQUIRED)
 endif()
 
-add_library(iiSDKBuilder src/iiSDKBuilder/Json.cpp src/iiSDKBuilder/Manifest.cpp src/iiSDKBuilder/Plan.cpp src/iiSDKBuilder/Process.cpp src/iiSDKBuilder/Builder.cpp src/iiSDKBuilder/Artifact.cpp)
-target_sources(iiSDKBuilder PRIVATE src/iiSDKBuilder/Resources.cpp src/iiSDKBuilder/Targets.cpp src/iiSDKBuilder/Hls.cpp src/iiSDKBuilder/HlsIR.cpp src/iiSDKBuilder/HlsRtl.cpp)
+set(_builder_public_headers
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/Build/Builder.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/Build/iiSDKBuilder.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/Resources/Resources.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/HLS/Hls.h")
+foreach(_header IN LISTS _builder_public_headers)
+    get_filename_component(_name "${_header}" NAME)
+    file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/include/iiSDKBuilder/${_name}"
+        CONTENT "#pragma once\n#include \"${_header}\"\n")
+endforeach()
+add_library(iiSDKBuilder src/Core/Json.cpp src/Build/Manifest.cpp src/Build/Plan.cpp src/Build/Process.cpp src/Build/Builder.cpp src/Build/Artifact.cpp)
+target_sources(iiSDKBuilder PRIVATE src/Resources/Resources.cpp src/Targets/Targets.cpp src/HLS/Hls.cpp src/HLS/HlsIR.cpp src/HLS/HlsRtl.cpp)
 add_library(iiSDKBuilder::iiSDKBuilder ALIAS iiSDKBuilder)
 target_compile_features(iiSDKBuilder PUBLIC cxx_std_23)
 target_link_libraries(iiSDKBuilder PUBLIC iiSDKCore::iiSDKCore)
@@ -41,6 +51,10 @@ target_include_directories(iiSDKBuilder PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+target_include_directories(iiSDKBuilder PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/Build" "${CMAKE_CURRENT_SOURCE_DIR}/src/Core"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/Resources" "${CMAKE_CURRENT_SOURCE_DIR}/src/Targets"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/HLS")
 generate_export_header(iiSDKBuilder BASE_NAME IISDKBUILDER
     EXPORT_FILE_NAME "${CMAKE_CURRENT_BINARY_DIR}/include/iiSDKBuilder/Export.h")
 if(NOT BUILD_SHARED_LIBS)
@@ -77,10 +91,10 @@ install(TARGETS iiSDKBuilder iiSDKBuilderCLI EXPORT iiSDKBuilderTargets
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(FILES
-    src/iiSDKBuilder/Builder.h
-    src/iiSDKBuilder/Resources.h
-    src/iiSDKBuilder/Hls.h
-    src/iiSDKBuilder/iiSDKBuilder.h
+    src/Build/Builder.h
+    src/Resources/Resources.h
+    src/HLS/Hls.h
+    src/Build/iiSDKBuilder.h
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/iiSDKBuilder)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/include/iiSDKBuilder/Export.h"
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/iiSDKBuilder)
@@ -112,11 +126,13 @@ install(DIRECTORY docs/ DESTINATION ${CMAKE_INSTALL_DATADIR}/iiSDKBuilder/docs
     PATTERN "*.iisacc-preview" EXCLUDE PATTERN ".iisacc-temporary.lock" EXCLUDE PATTERN ".DS_Store" EXCLUDE)
 
 if(BUILD_TESTING)
+    add_test(NAME iiSDKBuilder.source_layout COMMAND "${CMAKE_COMMAND}"
+        "-DSOURCE_ROOT=${CMAKE_CURRENT_SOURCE_DIR}" -P "${CMAKE_CURRENT_SOURCE_DIR}/tests/source_layout.cmake")
     find_program(IISDK_HLS_CLANG NAMES clang++ HINTS /opt/homebrew/opt/llvm/bin REQUIRED)
     add_executable(iiSDKBuilderHlsContracts tests/hls/contracts.cpp)
     target_link_libraries(iiSDKBuilderHlsContracts PRIVATE iiSDKBuilder::iiSDKBuilder)
     add_test(NAME iiSDKBuilder.hls_contracts COMMAND iiSDKBuilderHlsContracts)
-    add_executable(iiSDKBuilderHlsTests tests/hls/tests.cpp src/iiSDKBuilder/Json.cpp)
+    add_executable(iiSDKBuilderHlsTests tests/hls/tests.cpp src/Core/Json.cpp)
     target_link_libraries(iiSDKBuilderHlsTests PRIVATE iiSDKBuilder::iiSDKBuilder iiFileProvider::Native)
     target_compile_definitions(iiSDKBuilderHlsTests PRIVATE IISDK_HLS_SOURCE="${CMAKE_CURRENT_SOURCE_DIR}" IISDK_HLS_CLANG="${IISDK_HLS_CLANG}" IISDK_HLS_CMAKE="${CMAKE_COMMAND}")
     foreach(case synthesis reject manifest pipeline)
@@ -153,8 +169,8 @@ if(BUILD_TESTING)
     if(NOT _builder_test_core)
         set(_builder_test_core "${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures/sdk/iiSDKCore")
     endif()
-    add_executable(iiSDKBuilderTests tests/contracts.cpp src/iiSDKBuilder/Json.cpp)
-    target_include_directories(iiSDKBuilderTests PRIVATE src/iiSDKBuilder)
+    add_executable(iiSDKBuilderTests tests/contracts.cpp src/Core/Json.cpp)
+    target_include_directories(iiSDKBuilderTests PRIVATE src/Core)
     target_link_libraries(iiSDKBuilderTests PRIVATE iiSDKBuilder::iiSDKBuilder iiFileProvider::Native)
     add_executable(iiSDKBuilderIndependentProjects tests/independent_projects.cpp)
     target_link_libraries(iiSDKBuilderIndependentProjects PRIVATE iiSDKBuilder::iiSDKBuilder)

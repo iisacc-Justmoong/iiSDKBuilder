@@ -1,4 +1,5 @@
 #include "HlsIR.h"
+#include "ChildIOPolicy.h"
 #include <fstream>
 #include <iiFileProviderStorage.h>
 #include <iiSDKCore/Process/Process.h>
@@ -107,6 +108,7 @@ core::Result<HlsReport> synthesize_hls(const HlsRequest &input, std::stop_token 
         if (!child)
             return std::unexpected(child.error());
         process::CommunicationOptions options;
+        detail::apply_child_io_policy(options);
         options.stop = stop;
         options.deadline = deadline;
         options.output_limit = 16 * 1024 * 1024;

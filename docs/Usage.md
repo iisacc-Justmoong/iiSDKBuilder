@@ -5,8 +5,9 @@ The CLI is `iisdk-builder`; the library target is
 The build host must be Windows, macOS, or Linux. The six target platforms are
 independent entries in a single matrix.
 
-Five OS targets compile to native machine code. Build-host tooling, including
-CMake/Python, does not become an application interpreter. WASM is a separate
+Five OS targets compile to native machine code. Build-host tooling does not
+become an application launcher; explicitly selected CPython AOT modules require
+the matching CPython runtime in the application. WASM is a separate
 web-engine target, identified as `executionModel=webassembly`; every OS target
 is identified as `native`. These fields are derived from the platform and cannot
 be overridden through the manifest. A strictly native matrix selects
@@ -219,6 +220,14 @@ A `.iisdkbuilder.lock` directory prevents concurrent runs against the same
 root and is removed after a normal return. An abruptly killed builder can
 leave a stale lock. Remove that **specific lock directory** only after verifying
 that no build for that root is running. No automatic cleanup/reset is performed.
+
+## 앱별 동적 런타임 패키지
+
+기본 빌드는 대상에 맞는 패키지에 연결된 공유 라이브러리와 연쇄 의존성을
+넣는다. 보고서의 `packaging`, `packageSigning`, `packages`는 컴파일 산출물
+`artifacts`와 구별한다. Android APK와 iOS 앱 번들은 미서명이다. 플랫폼별
+입력과 제약은 [모바일·웹 패키징](MobileWebPackaging.md), 정적 SDK 예외와
+명시적 AOT는 [앱의 동적 SDK 패키징](DynamicAppPackaging.md)을 참고한다.
 
 ## Library consumption
 

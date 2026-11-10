@@ -257,6 +257,13 @@ void cancellation_test(Request r) {
 }
 void file_api_test(Request r) {
     auto fake=[&](const Command& c,std::stop_token) -> ii::core::Result<ProcessOutcome> {
+        if (c.phase==Phase::package) {
+            for (const auto& arg:c.arguments) if(arg.starts_with("-DDESTINATION=")) {
+                auto destination=fs::path(arg.substr(std::string("-DDESTINATION=").size()));
+                fs::create_directories(destination);
+                std::ofstream(destination/".iisdkbuilder-package") << "fixture";
+            }
+        }
         if (c.phase!=Phase::configure) return ProcessOutcome{0};
         const auto where=std::ranges::find(c.arguments,"-B");
         const fs::path binary=*(where+1);
@@ -316,6 +323,98 @@ void file_api_test(Request r) {
     good(unverified,"missing marker report");
     require(!unverified->succeeded && unverified->kits[0].steps[0].status==Status::failed,
         "successful process exit cannot bypass system verification");
+}
+void windows_library_policy_test(Request r,const fs::path& output) {
+    fs::create_directories(output);
+    const auto toolchain=output/"windows-toolchain.cmake";
+    std::ofstream(toolchain) << "# fake toolchain for injected executor\n";
+    r.kits={{.id="windows",.platform=Platform::windows,.toolchain=toolchain,.generator="Ninja"}};
+    auto plan=make_plan(r);good(plan,"Windows library test plan");
+    const auto lib=plan->kits.front().prefix/"Addon/lib/Addon.lib";
+    const auto second_lib=plan->kits.front().prefix/"Addon/lib/Second.lib";
+    bool is_import=true, corrupt=false, combined=false;
+    auto fake=[&](const Command& command,std::stop_token) -> ii::core::Result<ProcessOutcome> {
+        if(command.phase==Phase::package) {
+            for(const auto& arg:command.arguments)if(arg.starts_with("-DDESTINATION=")) {
+                const auto dest=fs::path(arg.substr(std::string("-DDESTINATION=").size()));
+                fs::create_directories(dest);std::ofstream(dest/".iisdkbuilder-package") << "fixture";
+            }
+        }
+        if(command.phase!=Phase::configure)return ProcessOutcome{0};
+        const auto where=std::ranges::find(command.arguments,"-B");const fs::path binary=*(where+1);
+        std::ofstream(binary/"iisdkbuilder-system.txt") << "Windows\nx86_64\n\n";
+        if(command.project=="Hello") {
+            fixture::write(lib,corrupt?fixture::Bytes{'b','a','d'}:fixture::coff_library(is_import));
+            if(combined)fixture::write(second_lib,fixture::coff_library(false));
+            const auto replies=binary/".cmake/api/v1/reply";fs::create_directories(replies);
+            std::ofstream(replies/"index-fixture.json") <<
+                R"({"reply":{"client-iiSDKBuilder":{"codemodel-v2":{"jsonFile":"model.json"}}}})";
+            std::ofstream(replies/"model.json") <<
+                R"({"configurations":[{"name":"Release","targets":[{"name":"hello","jsonFile":"target.json"}]}]})";
+            std::ofstream(replies/"target.json") <<
+                R"({"type":"EXECUTABLE","nameOnDisk":"hello.exe","artifacts":[{"path":"hello.exe"}],"link":{"commandFragments":[{"fragment":)"
+                << dump_json(path_string(lib)+(combined?" "+path_string(second_lib):"")) << R"(}]}})";
+            fixture::write(binary/"hello.exe",fixture::pe());
+        }
+        return ProcessOutcome{0};
+    };
+    r.app.cache["IISDKBUILDER_PACKAGE"]="OFF";
+    auto imported=Builder{fake}.build(r);good(imported,"import archive report");
+    require(imported->succeeded && imported->kits[0].static_sdk_links.empty(),"DLL import library is not static");
+    combined=true;
+    auto multi=Builder{fake}.build(r);good(multi,"combined archive report");
+    require(multi->succeeded && multi->kits[0].linkage=="contains_static_sdk",
+            "static library after import library in one link fragment is identified");
+    combined=false;
+    is_import=false;
+    auto stat=Builder{fake}.build(r);good(stat,"static archive report");
+    require(stat->succeeded && stat->kits[0].linkage=="contains_static_sdk","static .lib is identified");
+    r.app.cache.erase("IISDKBUILDER_PACKAGE");
+    stat=Builder{fake}.build(r);good(stat,"static archive policy report");
+    require(!stat->succeeded && stat->kits[0].message.find("statically")!=std::string::npos,"static .lib blocked by default");
+    corrupt=true;
+    auto invalid=Builder{fake}.build(r);good(invalid,"invalid archive report");
+    require(!invalid->succeeded && invalid->kits[0].message.find("classify Windows SDK")!=std::string::npos,
+            "malformed .lib cannot be silently accepted");
+}
+void mobile_packaging_test(Request r) {
+    if (*host_platform()!=Platform::macos) return;
+    r.kits={{.id="ios",.platform=Platform::ios}};
+    auto fake=[](const Command& command,std::stop_token) -> ii::core::Result<ProcessOutcome> {
+        if(command.phase==Phase::package) {
+            for(const auto& arg:command.arguments) if(arg.starts_with("-DDESTINATION=")) {
+                const auto destination=fs::path(arg.substr(std::string("-DDESTINATION=").size()));
+                fs::create_directories(destination);
+                std::ofstream(destination/".iisdkbuilder-package") << "fixture";
+            }
+        }
+        if(command.phase!=Phase::configure)return ProcessOutcome{0};
+        const auto at=std::ranges::find(command.arguments,"-B");
+        const fs::path binary=*(at+1);
+        std::ofstream(binary/"iisdkbuilder-system.txt") << "iOS\narm64\narm64\n";
+        if(command.project=="Hello") {
+            const auto replies=binary/".cmake/api/v1/reply";
+            fs::create_directories(replies);
+            std::ofstream(replies/"index-fixture.json") <<
+                R"({"reply":{"client-iiSDKBuilder":{"codemodel-v2":{"jsonFile":"model.json"}}}})";
+            std::ofstream(replies/"model.json") <<
+                R"({"configurations":[{"name":"Release","targets":[{"name":"hello","jsonFile":"target.json"}]}]})";
+            std::ofstream(replies/"target.json") <<
+                R"({"type":"EXECUTABLE","nameOnDisk":"hello","artifacts":[{"path":"hello"}]})";
+            fixture::write(binary/"hello",fixture::mach(true));
+        }
+        return ProcessOutcome{0};
+    };
+    auto packaged=Builder{fake}.build(r);
+    good(packaged,"mobile packaging report");
+    require(packaged->succeeded && packaged->kits.front().packaging=="succeeded" &&
+            packaged->kits.front().package_signing=="unsigned",
+            "iOS package state must be distinct from deployment signing");
+    r.app.cache["IISDKBUILDER_PACKAGE"]="OFF";
+    auto compile_only=Builder{fake}.build(r);
+    good(compile_only,"compile-only mobile report");
+    require(compile_only->succeeded && compile_only->kits.front().packaging=="not_requested" &&
+            compile_only->kits.front().packages.empty(),"explicit mobile compile-only result");
 }
 void process_test(const fs::path& output, const fs::path& cmake) {
     fs::create_directories(output);
@@ -390,6 +489,8 @@ int main(int argc, char** argv) {
         else if (which == "failure") failure_test(r);
         else if (which == "cancellation") cancellation_test(r);
         else if (which == "file_api") file_api_test(r);
+        else if (which == "mobile_packaging") mobile_packaging_test(r);
+        else if (which == "windows_library_policy") windows_library_policy_test(r,output);
         else if (which == "process") process_test(output, cmake);
         else throw std::runtime_error("unknown test case");
         std::cout << which << ": passed\n";

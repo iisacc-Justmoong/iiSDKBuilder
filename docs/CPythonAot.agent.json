@@ -1,0 +1,166 @@
+{
+  "format": "iisacc.agent-document",
+  "schema_version": 1,
+  "document_id": "urn:iisacc:document:685963af70f4a900bfe2c49f63dae130b7fda74ff6aed3cf6e7fe17b37a031e4",
+  "project": {
+    "id": "urn:iisacc:project:SDK%2FiiSDKBuilder",
+    "name": "iiSDKBuilder",
+    "root": "SDK/iiSDKBuilder",
+    "kind": "sdk"
+  },
+  "source": {
+    "path": "docs/CPythonAot.md",
+    "sha256": "2f044acdf9d845612410d1d7170ffabf040ac581b0842c67b1bcc7bfd7066c89",
+    "bytes": 3724,
+    "line_count": 55,
+    "encoding": "utf-8",
+    "language": "ko"
+  },
+  "document": {
+    "title": "CPython 스크립트 AOT 빌드",
+    "role": "guide",
+    "authority": "markdown_source"
+  },
+  "blocks": [
+    {
+      "id": "b000001",
+      "kind": "heading",
+      "start_line": 1,
+      "end_line": 1,
+      "raw": "# CPython 스크립트 AOT 빌드\n",
+      "level": 1,
+      "title": "CPython 스크립트 AOT 빌드"
+    },
+    {
+      "id": "b000002",
+      "kind": "blank",
+      "start_line": 2,
+      "end_line": 2,
+      "raw": "\n"
+    },
+    {
+      "id": "b000003",
+      "kind": "paragraph",
+      "start_line": 3,
+      "end_line": 6,
+      "raw": "iiSDKBuilder의 CMake 함수 `iisdk_builder_cpython_aot`는 지정한 CPython\n스크립트마다 네이티브 확장 모듈을 빌드한다. 생성 모듈을 iiSDKCore의 선택적\n`iiSDKCore::CPython` 호스트가 애플리케이션 소유 `SerialQueue`에 부착하여 호출한다.\nCore가 Builder나 iiXml에 역의존하지 않으며 앱이 구성요소를 조합한다.\n"
+    },
+    {
+      "id": "b000004",
+      "kind": "blank",
+      "start_line": 7,
+      "end_line": 7,
+      "raw": "\n"
+    },
+    {
+      "id": "b000005",
+      "kind": "paragraph",
+      "start_line": 8,
+      "end_line": 18,
+      "raw": "첫 백엔드는 Apache 2.0 라이선스의 Nuitka 2.8.9와 CPython 3.9–3.13을 사용한다.\nNuitka는 Builder에 포함되지 않으며, 해당 버전 소스 배포판의 `bin/nuitka` Python\n스크립트를 준비해 `NUITKA_LAUNCHER`로 지정한다. 선택한 CPython의 헤더와\n네이티브 C 컴파일러도 빌드 환경에 필요하다.\nCPython 구현체·버전·컴파일러 버전을 확인하고 일치하지 않으면 빌드를 실패시킨다.\n`iiSDKCore::CPython`을 먼저 구성한 경우 Core와 AOT 인터프리터의 확장 모듈 ABI도\nCMake 구성 단계에서 비교한다.\n생성 코드는 대상 CPython 라이브러리와 일치해야 한다. Nuitka 확장 모듈 컴파일은\n호스트 네이티브 빌드이며 별도의 교차 컴파일 성공을 암시하지 않는다. 스크립트의\n동적 import·eval·exec와 외부 모듈은 동일 CPython 런타임에서 동작한다. 입력으로\n지정한 모듈만 AOT 대상으로 보장하며 동적 의존성은 앱이 제공한다.\n"
+    },
+    {
+      "id": "b000006",
+      "kind": "blank",
+      "start_line": 19,
+      "end_line": 19,
+      "raw": "\n"
+    },
+    {
+      "id": "b000007",
+      "kind": "paragraph",
+      "start_line": 20,
+      "end_line": 28,
+      "raw": "함수의 `SOURCES`는 원본 `.py` 경로이며 `OUTPUT_DIRECTORY`는 빌드 산출물\n디렉터리다. `PYTHON_EXECUTABLE`과 `NUITKA_LAUNCHER`는 같은 호스트 CPython에\n연결된 도구를 가리킨다. 동일한 모듈 이름의 중복 입력은 오류다. AOT 결과는\nCPython 확장 모듈이므로 파일 이름을 바꾸지 않는다. 출력 경로와 모듈 의존성은\n생성 소비자 대상의 CMake 의존성에 연결된다.\n현재 입력은 유효한 최상위 모듈 이름을 가진 개별 `.py` 파일이다. 패키지 계층을\n보존하는 AOT 구성과 스크립트의 `__main__` 진입점 실행은 제공하지 않는다.\nCore에서는 컴파일된 모듈의 함수를 호출하며 패키지 의존성은 앱이 제공한다.\n`RUNTIME_TARGETS`로 전달한 공유 라이브러리는 컴파일된 모듈 옆에 복사된다.\n"
+    },
+    {
+      "id": "b000008",
+      "kind": "blank",
+      "start_line": 29,
+      "end_line": 29,
+      "raw": "\n"
+    },
+    {
+      "id": "b000009",
+      "kind": "fenced_code",
+      "start_line": 30,
+      "end_line": 44,
+      "raw": "```cmake\nfind_package(iiSDKBuilder CONFIG REQUIRED)\nfind_package(iiSDKCoreCPython CONFIG REQUIRED)\nfind_package(iiXmlNative CONFIG REQUIRED)\n\niisdk_builder_cpython_aot(TARGET app_cpython_modules\n    PYTHON_EXECUTABLE \"${APP_CPYTHON_EXECUTABLE}\"\n    NUITKA_LAUNCHER \"${APP_NUITKA_LAUNCHER}\"\n    OUTPUT_DIRECTORY \"${CMAKE_CURRENT_BINARY_DIR}/cpython-modules\"\n    SOURCES \"${iiXmlNative_MATRIX_PYTHON_SOURCE}\"\n            \"${CMAKE_CURRENT_SOURCE_DIR}/src/app_logic.py\"\n    RUNTIME_TARGETS iiXml::MatrixC)\nadd_dependencies(app app_cpython_modules)\ntarget_link_libraries(app PRIVATE iiSDKCore::CPython)\n```\n",
+      "language": "cmake",
+      "code": "find_package(iiSDKBuilder CONFIG REQUIRED)\nfind_package(iiSDKCoreCPython CONFIG REQUIRED)\nfind_package(iiXmlNative CONFIG REQUIRED)\n\niisdk_builder_cpython_aot(TARGET app_cpython_modules\n    PYTHON_EXECUTABLE \"${APP_CPYTHON_EXECUTABLE}\"\n    NUITKA_LAUNCHER \"${APP_NUITKA_LAUNCHER}\"\n    OUTPUT_DIRECTORY \"${CMAKE_CURRENT_BINARY_DIR}/cpython-modules\"\n    SOURCES \"${iiXmlNative_MATRIX_PYTHON_SOURCE}\"\n            \"${CMAKE_CURRENT_SOURCE_DIR}/src/app_logic.py\"\n    RUNTIME_TARGETS iiXml::MatrixC)\nadd_dependencies(app app_cpython_modules)\ntarget_link_libraries(app PRIVATE iiSDKCore::CPython)\n",
+      "closed": true
+    },
+    {
+      "id": "b000010",
+      "kind": "blank",
+      "start_line": 45,
+      "end_line": 45,
+      "raw": "\n"
+    },
+    {
+      "id": "b000011",
+      "kind": "paragraph",
+      "start_line": 46,
+      "end_line": 49,
+      "raw": "앱은 `CPythonHost::attach`에 위 출력 디렉터리를 전달하고 `queries()`에\n모듈명·함수명·`core::Value` 인자를 전송한다. 모듈 탐색과 Python 객체 호출은\nCore 직렬 큐에서 수행된다. 내장 CPython 라이브러리와 표준 라이브러리는 대상\n앱의 배포 구성에서 제공해야 하며 Builder 실행 파일은 런타임에 필요하지 않다.\n"
+    },
+    {
+      "id": "b000012",
+      "kind": "blank",
+      "start_line": 50,
+      "end_line": 50,
+      "raw": "\n"
+    },
+    {
+      "id": "b000013",
+      "kind": "paragraph",
+      "start_line": 51,
+      "end_line": 55,
+      "raw": "iiXml의 `iixml_matrix.py`도 이 함수의 입력으로 컴파일하며, 앱이 iiXml의 C\n라이브러리를 제공하고 Core 호스트의 검색 경로에 AOT 출력 디렉터리를 전달한다.\n별도 플랫폼과 장치 실행은 각각 검증되어야 한다.\n통합 테스트는 컴파일된 iiXml에서 배치 행렬 곱, 축소, 텐서 곱과 XML 왕복,\n비수치 입력 오류 및 동적 Python 실행을 함께 확인한다.\n"
+    }
+  ],
+  "outline": [
+    {
+      "block_id": "b000001",
+      "parent_id": null,
+      "level": 1,
+      "title": "CPython 스크립트 AOT 빌드",
+      "anchor": "cpython-스크립트-aot-빌드",
+      "start_line": 1
+    }
+  ],
+  "indexes": {
+    "directive_candidates": [
+      {
+        "block_id": "b000005",
+        "line": 15,
+        "text": "생성 코드는 대상 CPython 라이브러리와 일치해야 한다. Nuitka 확장 모듈 컴파일은",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      },
+      {
+        "block_id": "b000005",
+        "line": 16,
+        "text": "호스트 네이티브 빌드이며 별도의 교차 컴파일 성공을 암시하지 않는다. 스크립트의",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      },
+      {
+        "block_id": "b000007",
+        "line": 26,
+        "text": "보존하는 AOT 구성과 스크립트의 `__main__` 진입점 실행은 제공하지 않는다.",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      }
+    ],
+    "commands": [],
+    "links": [],
+    "tables": []
+  },
+  "provenance": {
+    "generator": "workspace-docs",
+    "version": "1.0.0",
+    "profile": "lossless-blocks-v1",
+    "derived": true
+  }
+}

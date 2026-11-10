@@ -111,6 +111,12 @@ int main(int argc, char **argv) {
             auto plan = make_plan(r);
             check(bool(plan), "Arduino sketch does not need CMakeLists");
             check(!plan->kits.front().unavailable_reason.empty(), "absent Arduino CLI must be explicit");
+            r.app.cache["IISDKBUILDER_STATIC_NATIVE_AOT"]="ON";
+            std::ofstream(r.app.source / "plugin.cpp")
+                << "extern \"C\" void* ii_sdk_plugin_v1() noexcept { return nullptr; }\n";
+            plan = make_plan(r);
+            check(plan && plan->kits.front().unavailable_reason.find("static plugin") != std::string::npos,
+                  "embedded adapter must not silently drop static plugins");
             r.kits.front().target.board = "missing";
             check(!make_plan(r), "malformed board rejected");
             r.kits.front() = {.id = "fpga", .platform = Platform::fpga};

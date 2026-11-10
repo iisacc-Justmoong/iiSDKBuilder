@@ -9,4 +9,5 @@ find_dependency(iiFileProviderNative 0.6 CONFIG HINTS "$ENV{IIFILEPROVIDER_PREFI
 
 find_dependency(iiSDKCore 0.20.0 CONFIG)
 include("${CMAKE_CURRENT_LIST_DIR}/iiSDKBuilderTargets.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/iiSDKBuilderCPython.cmake")
 check_required_components(iiSDKBuilder)

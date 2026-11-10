@@ -29,8 +29,10 @@ provider dependencies. See [the independent SDK planning contract](docs/independ
 
 Windows, macOS, Linux, Android and iOS targets compile to each platform's native
 CPU machine code and OS ABI. Target applications do not require iiSDKBuilder,
-Python, Node, a JVM or a shared interpreter/VM runtime supplied by the builder.
-iiSDKCore Runtime is a native C++ worker/task executor. Standard C/C++ runtime
+Node, a JVM or a shared interpreter/VM runtime supplied by the builder. Pure
+C++ applications do not require Python; applications explicitly using CPython
+AOT supply the matching CPython runtime and standard library. iiSDKCore Runtime
+is a native C++ worker/task executor. Standard C/C++ runtime
 libraries and native OS frameworks retain their normal role.
 
 WebAssembly is an explicit **web** target with `executionModel=webassembly`;
@@ -48,7 +50,7 @@ cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
   -DIISDKBUILDER_CORE_SOURCE_DIR=../iiSDKCore
 cmake --build build --parallel 2
 ctest --test-dir build --output-on-failure
-cmake --install build --prefix "$PWD/build/install"
+cmake --install build --prefix "$HOME/.local/SDK/iiSDKBuilder"
 ```
 
 An installed `iiSDKCore` package can be used instead by omitting the source
@@ -57,18 +59,24 @@ Windows, macOS or Linux host; mobile and browser targets are build outputs.
 
 ```sh
 build/iisdk-builder init --app examples/Hello --sdk-root .. \
-  --manifest build/hello.json
-build/iisdk-builder doctor --manifest build/hello.json
-build/iisdk-builder plan --manifest build/hello.json
-build/iisdk-builder build --manifest build/hello.json
+  --manifest resources/hello.json
+build/iisdk-builder doctor --manifest resources/hello.json
+build/iisdk-builder plan --manifest resources/hello.json
+build/iisdk-builder build --manifest resources/hello.json
 ```
 
 All six target platforms are requested by default. `--platform host` selects
 only the current desktop platform; `--platform macos,ios,android,wasm` selects
 an explicit subset. Missing prerequisites are reported as `unavailable` and
 make the matrix return a nonzero exit code. A partial matrix is never reported
-as complete. `doctor` only checks initial prerequisites; successful configuration,
-compilation, native execution, and device/browser execution are separate evidence.
+as complete. Automatic packaging covers desktop applications, Android APKs,
+iOS app bundles and WebAssembly loaders with their linked SDK modules. Android
+and iOS results are unsigned and require the app's platform manifest, entry
+point and distribution signing; see [mobile and web packaging](docs/MobileWebPackaging.md).
+Set `IISDKBUILDER_PACKAGE=OFF` in a kit or app cache for an
+explicit compile-only result. `doctor` only checks initial
+prerequisites; successful configuration, compilation, packaging, native
+execution, and device/browser execution are separate evidence.
 For a strictly OS-native matrix, select
 `--platform windows,macos,linux,android,ios`. WASM remains available separately
 to preserve the original six-target build request.
@@ -93,6 +101,30 @@ The `automotive`, `arduino`, and `fpga` target domains add vendor/BSP profiles, 
 
 See [embedded targets](docs/EmbeddedTargets.md), [EmbeddedHello](examples/EmbeddedHello/README.md), and [FPGAHello](examples/FPGAHello/README.md).
 
+## CPython script AOT
+
+The optional CPython AOT helper compiles selected Python modules to native
+extensions for the Core CPython host and can stage their native dependencies.
+The first backend is Apache-2.0 Nuitka 2.8.9 with a matching CPython ABI.
+See [CPython AOT](docs/CPythonAot.md) for integration and target limitations.
+
+## App-specific native source compilation
+
+By default the Builder requests shared SDK libraries and creates a private,
+relocatable package containing the linked SDK runtime dependencies. The build
+report identifies packaged paths and signing status. Explicitly
+selected static AOT instead discovers native plugin entry points and supported
+Python source in an application's source tree and compiles them into a private
+static Core. Set `IISDKBUILDER_STATIC_NATIVE_AOT=ON` in the app manifest cache
+to opt in. See [dynamic app packaging](docs/DynamicAppPackaging.md) for system
+libraries, plugins, platform-specific gaps, signing and granularity limitations.
+The static-mode Python compiler supports a deliberately small,
+bounded integer expression subset; unsupported code fails without an interpreter
+fallback. It does not convert arbitrary Python, GPU shaders, or undeclared dynamic
+dependencies. See [static native AOT](docs/StaticNativeAot.md). A Python client
+for the native Builder CLI is installed under `share/iiSDKBuilder/python`; target
+applications do not need that client or Python to run.
+
 ## License
 
 SPDX-License-Identifier: MIT
@@ -116,6 +148,8 @@ and verify a staged installed consumer after changing source/header paths.
 ## Native C++ high-level synthesis
 
 `iisdk-builder hls` and `synthesize_hls()` compile a bounded C++23 integer kernel into synthesizable SystemVerilog. The native path uses Clang semantic analysis, typed dataflow, constant folding, common-subexpression reuse and static loop unrolling. Ready/valid backpressure or a combinational interface is emitted without a software runtime on the FPGA. The `fpga-hls` profile connects the generated RTL to Yosys verification or iCE40, Vivado and Quartus implementation. See [HLS](docs/HLS.md) and [HLSHello](examples/HLSHello/README.md) for the exact supported subset and reproducible validation.
+
+Each test that generates files uses a unique temporary workspace below `resources/.state/`; it is removed after the test, including failure. Compiler output remains in `build/`. See [build layout](docs/BuildLayout.md).
 
 <!-- workspace-docs:readme:start -->
 ## Documentation entry points

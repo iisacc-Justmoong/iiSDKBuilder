@@ -10,8 +10,8 @@
   },
   "source": {
     "path": "docs/congregation-native.md",
-    "sha256": "c0ac0757b96ef05023f3ff9b6ff13b9b9ccac68522dbd795dacf6e1979520478",
-    "bytes": 2244,
+    "sha256": "89b9cadecf67f7131471e7d3fe3f01dfe07b113f4d9173fce0fec9698c47ef2f",
+    "bytes": 2505,
     "line_count": 11,
     "encoding": "utf-8",
     "language": "ko"
@@ -57,7 +57,7 @@
       "kind": "paragraph",
       "start_line": 5,
       "end_line": 5,
-      "raw": "설치 순서는 iiSDKCore → iiJson → iiFileProvider Native/CoreIO/Compatibility → iiPaintEngine → iiVisualCodec → iiNetwork → iiAccountManager Native → iiLicenseManager Native → iiUpdateManager Native → iiSharedCanvas Native → LVUI → iiGUI → LVRS Native이다. 각 수정 모듈의 `install-native.sh`는 저장소의 build/에서 구성·빌드·검사·설치를 수행한다. `IISDK_NATIVE_PREFIX`로 같은 설치 위치를 지정한다. iiNetwork는 기존 `install.sh`를 유지하며 `INSTALL_PREFIX`와 `CMAKE_PREFIX_PATH`로 같은 키트를 선택한다. 운영체제의 libcurl·libxml2, 정적 OpenSSL과 이미지 코덱을 선택하는 CMake 인수는 해당 설치 환경에 맞춘다.\n"
+      "raw": "현재 Congregation의 키트에는 iiSDKCore, iiJson, iiFileProvider Native/CoreIO/Compatibility, iiPaintEngine과 iiBrushTools, iiVisualCodec, iiNetwork, iiAccountManager Native, iiLicenseManager Native, iiUpdateManager Native, iiSharedCanvas Native, iiGraphicAdjust, iiColorManager, 독립 LVUI와 iiGUI가 필요하다. 각 모듈의 의존 순서에 따라 조립하고 iiColorManager를 먼저 설치한 뒤 `LVUI_BUILD_COLOR_ADAPTER=ON`으로 LVUI 색상 어댑터를 빌드한다. LVRS나 Qt는 현재 앱의 의존성이 아니다. 각 수정 모듈의 `install-native.sh`는 저장소의 build/에서 구성·빌드·검사·설치를 수행한다. `IISDK_NATIVE_PREFIX`로 같은 설치 위치를 지정한다. iiNetwork는 기존 `install.sh`를 유지하며 `INSTALL_PREFIX`와 `CMAKE_PREFIX_PATH`로 같은 키트를 선택한다. 운영체제의 libcurl·libxml2, 정적 OpenSSL과 이미지 코덱을 선택하는 CMake 인수는 해당 설치 환경에 맞춘다.\n"
     },
     {
       "id": "b000006",
@@ -71,7 +71,7 @@
       "kind": "paragraph",
       "start_line": 7,
       "end_line": 7,
-      "raw": "공개 헤더나 값 타입을 바꾸면 그 헤더를 소비하는 정적 라이브러리도 다시 빌드해야 한다. 기존 LVRS와 새 iiGUI의 WidgetSnapshot ABI를 혼합하면 구성 성공 뒤에도 스택 손상이 발생할 수 있다. 모든 소비 모듈을 같은 키트로 다시 빌드한 뒤 `tools/freeze_native_kit.py --prefix <prefix>`로 헤더·패키지·라이브러리·도구·라이선스 해시를 고정한다. `--check`는 누락·추가·변경 파일을 감지한다. Qt 공개 헤더와 Qt 패키지 탐색도 거부한다.\n"
+      "raw": "공개 헤더나 값 타입을 바꾸면 그 헤더를 소비하는 정적 라이브러리도 다시 빌드해야 한다. 서로 다른 빌드의 iiGUI 헤더와 라이브러리를 혼합하면 구성 성공 뒤에도 ABI 손상이 발생할 수 있다. 모든 소비 모듈을 같은 키트로 다시 빌드한 뒤 `tools/freeze_native_kit.py --prefix <prefix>`로 헤더·패키지·라이브러리·도구·라이선스 해시를 고정한다. `--check`는 누락·추가·변경 파일을 감지한다. Qt 공개 헤더와 Qt 패키지 탐색도 거부한다.\n"
     },
     {
       "id": "b000008",
@@ -117,7 +117,7 @@
       {
         "block_id": "b000007",
         "line": 7,
-        "text": "공개 헤더나 값 타입을 바꾸면 그 헤더를 소비하는 정적 라이브러리도 다시 빌드해야 한다. 기존 LVRS와 새 iiGUI의 WidgetSnapshot ABI를 혼합하면 구성 성공 뒤에도 스택 손상이 발생할 수 있다. 모든 소비 모듈을 같은 키트로 다시 빌드한 뒤 `tools/freeze_native_kit.py --prefix <prefix>`로 헤더·패키지·라이브러리·도구·라이선스 해시를 고정한다. `--check`는 누락·추가·변경 파일을 감지한다. Qt 공개 헤더와 Qt 패키지 탐색도 거부한다.",
+        "text": "공개 헤더나 값 타입을 바꾸면 그 헤더를 소비하는 정적 라이브러리도 다시 빌드해야 한다. 서로 다른 빌드의 iiGUI 헤더와 라이브러리를 혼합하면 구성 성공 뒤에도 ABI 손상이 발생할 수 있다. 모든 소비 모듈을 같은 키트로 다시 빌드한 뒤 `tools/freeze_native_kit.py --prefix <prefix>`로 헤더·패키지·라이브러리·도구·라이선스 해시를 고정한다. `--check`는 누락·추가·변경 파일을 감지한다. Qt 공개 헤더와 Qt 패키지 탐색도 거부한다.",
         "basis": "lexical_match",
         "context": "paragraph"
       },

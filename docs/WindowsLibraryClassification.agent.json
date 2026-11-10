@@ -1,0 +1,128 @@
+{
+  "format": "iisacc.agent-document",
+  "schema_version": 1,
+  "document_id": "urn:iisacc:document:5c34bdd8dc338598ca561c42412ffb8e3226deed8c4607932aca8573c971c2c1",
+  "project": {
+    "id": "urn:iisacc:project:SDK%2FiiSDKBuilder",
+    "name": "iiSDKBuilder",
+    "root": "SDK/iiSDKBuilder",
+    "kind": "sdk"
+  },
+  "source": {
+    "path": "docs/WindowsLibraryClassification.md",
+    "sha256": "356ef6f2c99b5e25f66e590a3d6e5de383ae7dca78b9cba057e3930a561bb601",
+    "bytes": 1693,
+    "line_count": 22,
+    "encoding": "utf-8",
+    "language": "ko"
+  },
+  "document": {
+    "title": "Windows 라이브러리 판별 명세",
+    "role": "guide",
+    "authority": "markdown_source"
+  },
+  "blocks": [
+    {
+      "id": "b000001",
+      "kind": "heading",
+      "start_line": 1,
+      "end_line": 1,
+      "raw": "# Windows 라이브러리 판별 명세\n",
+      "level": 1,
+      "title": "Windows 라이브러리 판별 명세"
+    },
+    {
+      "id": "b000002",
+      "kind": "blank",
+      "start_line": 2,
+      "end_line": 2,
+      "raw": "\n"
+    },
+    {
+      "id": "b000003",
+      "kind": "paragraph",
+      "start_line": 3,
+      "end_line": 8,
+      "raw": "Windows SDK의 `.lib`는 이름만으로 정적 아카이브와 DLL 가져오기 라이브러리를\n구분할 수 없다. 빌더는 COFF 아카이브 멤버를 검사하여 실제 코드가 들어 있는\n정적 라이브러리, DLL 가져오기 멤버, 두 종류의 혼합, 불명확하거나 손상된 파일을\n구별한다. 혼합 라이브러리는 정적 코드를 포함하므로 정적 SDK 정책을 적용하며,\n불명확한 형식은 동적이라고 추측하지 않고 오류로 보고한다. 이름·확장자·파일 내\n임의 문자열만으로 동적 라이브러리라고 판정하지 않는다.\n"
+    },
+    {
+      "id": "b000004",
+      "kind": "blank",
+      "start_line": 9,
+      "end_line": 9,
+      "raw": "\n"
+    },
+    {
+      "id": "b000005",
+      "kind": "paragraph",
+      "start_line": 10,
+      "end_line": 15,
+      "raw": "검사는 빌드된 SDK prefix의 실제 링크 입력에 적용한다. Windows SDK 외부의 시스템\n라이브러리는 이 정책의 대상이 아니다. Microsoft COFF의 short import object는\n서명, 버전, 기계형, 데이터 길이, 가져오기 심볼과 DLL 이름을 검증한다. 보통의\nCOFF 객체와 섹션 경계를 함께 확인하고, 정적 코드와 가져오기 항목이 섞인\n아카이브도 허용 없이 통과시키지 않는다. 형식에 대한 증거가 불충분한 전통적\n가져오기 아카이브는 추측 대신 오류로 남긴다.\n"
+    },
+    {
+      "id": "b000006",
+      "kind": "blank",
+      "start_line": 16,
+      "end_line": 16,
+      "raw": "\n"
+    },
+    {
+      "id": "b000007",
+      "kind": "paragraph",
+      "start_line": 17,
+      "end_line": 18,
+      "raw": "테스트는 합성 아카이브의 경계·손상·혼합 사례와 Windows 대상 툴체인이 생성한\n실제 정적·DLL 가져오기 아카이브를 비교한다. 검사 대상 앱은 실행하지 않는다.\n"
+    },
+    {
+      "id": "b000008",
+      "kind": "blank",
+      "start_line": 19,
+      "end_line": 19,
+      "raw": "\n"
+    },
+    {
+      "id": "b000009",
+      "kind": "paragraph",
+      "start_line": 20,
+      "end_line": 22,
+      "raw": "하나의 CMake 링크 명령 조각에 여러 SDK 라이브러리 경로가 포함되더라도\n각 파일을 따로 판별한다. 첫 번째 가져오기 라이브러리만 검사하고 뒤의 정적\n라이브러리를 놓쳐서는 안 된다.\n"
+    }
+  ],
+  "outline": [
+    {
+      "block_id": "b000001",
+      "parent_id": null,
+      "level": 1,
+      "title": "Windows 라이브러리 판별 명세",
+      "anchor": "windows-라이브러리-판별-명세",
+      "start_line": 1
+    }
+  ],
+  "indexes": {
+    "directive_candidates": [
+      {
+        "block_id": "b000003",
+        "line": 8,
+        "text": "임의 문자열만으로 동적 라이브러리라고 판정하지 않는다.",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      },
+      {
+        "block_id": "b000007",
+        "line": 18,
+        "text": "실제 정적·DLL 가져오기 아카이브를 비교한다. 검사 대상 앱은 실행하지 않는다.",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      }
+    ],
+    "commands": [],
+    "links": [],
+    "tables": []
+  },
+  "provenance": {
+    "generator": "workspace-docs",
+    "version": "1.0.0",
+    "profile": "lossless-blocks-v1",
+    "derived": true
+  }
+}

@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.31)
+project(StaticPythonApp LANGUAGES CXX)
+find_package(iiSDKCore 0.20 CONFIG REQUIRED COMPONENTS Runtime)
+add_executable(static_python_app App/main.cpp)
+target_compile_features(static_python_app PRIVATE cxx_std_23)
+target_link_libraries(static_python_app PRIVATE iiSDKCore::Runtime)

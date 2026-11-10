@@ -60,6 +60,23 @@ inline Bytes pe(bool managed=false,bool bits64=true) {
     word(bytes,section+16,8,4);word(bytes,section+20,section+40,4);word(bytes,section+36,0x60000020,4);
     return bytes;
 }
+inline Bytes coff_library(bool imported) {
+    Bytes member;
+    if(imported) {
+        const std::string names("symbol\0fixture.dll\0",19);
+        member.resize(20+names.size());word(member,2,0xffff,2);word(member,6,0x8664,2);
+        word(member,12,names.size(),4);std::copy(names.begin(),names.end(),member.begin()+20);
+    } else {
+        member.resize(64);word(member,0,0x8664,2);word(member,2,1,2);
+        const std::string section=".text";std::copy(section.begin(),section.end(),member.begin()+20);
+        word(member,36,4,4);word(member,40,60,4);word(member,56,0x60000020,4);
+    }
+    const std::string magic="!<arch>\n";Bytes bytes(magic.begin(),magic.end());
+    std::string header(60,' ');header.replace(0,8,"item.obj");
+    const auto size=std::to_string(member.size());header.replace(48,size.size(),size);header[58]='`';header[59]='\n';
+    bytes.insert(bytes.end(),header.begin(),header.end());bytes.insert(bytes.end(),member.begin(),member.end());
+    if(member.size()%2)bytes.push_back('\n');return bytes;
+}
 inline void write(const std::filesystem::path& path,const Bytes& bytes) {
     std::filesystem::create_directories(path.parent_path());
     std::ofstream stream(path,std::ios::binary);

@@ -21,6 +21,9 @@ through its direct iiFileProvider Native dependency using atomic `File::write`.
 The JSON publication contract checks full replacement and original preservation
 when a parent path cannot be used. Core is selected as a separate project, not
 as a declared dependency of every other SDK.
+When those dependencies are imported shared libraries, Builder's installed CLI
+also carries the Core Runtime, Core Observation and iiFileProvider Native
+runtime artifacts needed after the installation is relocated.
 
 Public data is ordinary final value records and standard containers. `Builder`
 composes an executor function; it has no inheritance hierarchy or global task
@@ -66,12 +69,12 @@ their separate validation.
 ## Native execution contract
 
 Five OS targets produce target-specific CPU machine code and OS-loader images.
-The builder does not introduce a common VM, bytecode interpreter, emulator or
-interpreter launcher into those applications. iiSDKCore Runtime is a native C++
-thread/task executor; it is not an application virtual machine. Native static
-and shared libraries, the C/C++ standard runtime and OS frameworks are permitted.
-CMake, Core's Python architecture check and test scripts run only on the build
-host and are not application runtime dependencies.
+iiSDKCore Runtime is a native C++ thread/task executor. Pure C++ applications do
+not gain a Python runtime dependency; applications explicitly using CPython AOT
+supply their matching CPython runtime and load Builder-compiled native modules
+through the optional Core host. Build tools do not become application launchers.
+Native static and shared libraries, the C/C++ standard runtime and OS frameworks
+are permitted. See [CPython AOT](CPythonAot.md) for its current target boundary.
 
 WebAssembly is a virtual ISA with an engine-provided execution environment.
 Its kit is explicitly `executionModel=webassembly`, never `native`, in both plans
@@ -90,6 +93,15 @@ merged stdout/stderr through `iiFileProvider::native::OutputFile`. Capture
 limits are zero; even large build logs are drained without in-memory growth.
 No process backend remains in Builder. Timeout and stop tokens terminate and
 reap through Core; sink failures also retire the process before reporting error.
+
+On Windows, Builder explicitly requests a 20 ms pipe readiness polling interval
+for each spawned build command and HLS frontend. This bounded compatibility
+policy is necessary while Core's Windows pipe handles are non-overlapped; the
+request is not applied to other hosts. The build log, deadline and cancellation
+contracts remain unchanged. This is not an event-driven Windows pipe backend.
+The selected Core headers and library must include `CommunicationOptions::polling_interval`;
+an older installation with the same version number is insufficient. The policy
+and HLS tests have been exercised on macOS, but Windows execution remains unverified.
 The host cwd and environment are preserved. See the
 [Core process contract](../../iiSDKCore/docs/process.md) for platform limits,
 identity protection, pipe ownership and cleanup semantics.
@@ -105,11 +117,13 @@ identity protection, pipe ownership and cleanup semantics.
 | iOS | macOS host and Xcode iOS SDK | Native Mach-O app code; deployment signing disabled by default |
 | WASM | Activated Emscripten and compatible C++23 libraries | WebAssembly module and optional web glue; separate engine execution |
 
-Android OS entry glue/NativeActivity/JNI, APK/AAB packaging, iOS signing,
-provisioning, Store uploads, browser hosting, and device deployment remain the
-application's build/deployment responsibilities. A project may include packaging
-in its chosen CMake targets; the builder does not manufacture those packages.
-This keeps app packaging policy separate from SDK compilation.
+Android OS entry glue/NativeActivity/JNI, any required precompiled DEX, iOS
+signing and provisioning, Store uploads, browser hosting, and device deployment
+remain the application's responsibilities. Builder can produce an unsigned APK,
+an unsigned iOS app bundle or a WebAssembly distribution from suitable target
+artifacts, in addition to its desktop runtime packages. It does not create an
+AAB or distribution credentials. See [mobile and web packaging](MobileWebPackaging.md)
+and [dynamic app packaging](DynamicAppPackaging.md) for their contracts.
 Android application/SDK logic is compiled by the NDK; OS entry glue does not
 make a JVM application an accepted replacement for native application code.
 

@@ -10,8 +10,8 @@
   },
   "source": {
     "path": "AGENT.md",
-    "sha256": "bd6ffa80d699871a9e77a4713e47754826d5d8dc3f2a7ed009cc78bc47180380",
-    "bytes": 1995,
+    "sha256": "6015900636dd9404093961c025fba590924e74e29c0ae39e043060d818dcf5d6",
+    "bytes": 2083,
     "line_count": 23,
     "encoding": "utf-8",
     "language": "ko"
@@ -57,7 +57,7 @@
       "kind": "paragraph",
       "start_line": 5,
       "end_line": 5,
-      "raw": "빌드·설치 스테이징·검사는 저장소의 build/ 안에서 수행한다. 소스 변경 시 관련 docs/와 tests/를 함께 갱신한다. README.md는 영어, docs/ 문서는 한국어로 작성한다. 기존 작업과 사용자 파일을 보존한다. 플랫폼별 소스 이식과 실제 실행 검증을 구분한다.\n"
+      "raw": "컴파일 결과는 저장소의 build/에 두고 테스트의 독립 작업 공간과 설치 검증 임시 데이터는 resources/ 안에 두어 실행 후 정리한다. 소스 변경 시 관련 docs/와 tests/를 함께 갱신한다. README.md는 영어, docs/ 문서는 한국어로 작성한다. 기존 작업과 사용자 파일을 보존한다. 플랫폼별 소스 이식과 실제 실행 검증을 구분한다.\n"
     },
     {
       "id": "b000006",

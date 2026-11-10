@@ -20,7 +20,7 @@ class NativeKit(unittest.TestCase):
             self.assertTrue(record["url"].startswith("https://"))
 
     def test_archive_escape(self):
-        with tempfile.TemporaryDirectory(dir=Path(__file__).parents[1] / "build") as root:
+        with tempfile.TemporaryDirectory(dir=Path(__file__).parents[1] / "resources") as root:
             root = Path(root)
             for name in ("../../escape", "/absolute-escape"):
                 archive = root / "bad.tar"

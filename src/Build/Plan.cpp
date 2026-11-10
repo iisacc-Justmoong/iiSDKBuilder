@@ -1,4 +1,5 @@
 #include <iiSDKBuilder/Builder.h>
+#include <iiSDKBuilder/NativeAot.h>
 #include <iiSDKCore/Runtime/EventLoop.h>
 #include "Json.h"
 #include "Targets.h"
@@ -17,6 +18,14 @@ std::string lower(std::string text) {
     for (auto& c:text) c=static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
     return text;
 }
+bool boolean_option(const Variables& variables,std::string_view key,bool fallback=false) {
+    const auto found=variables.find(std::string(key));
+    if(found==variables.end())return fallback;
+    const auto value=lower(found->second);
+    if(value=="on"||value=="true"||value=="yes"||value=="1")return true;
+    if(value=="off"||value=="false"||value=="no"||value=="0")return false;
+    invalid(std::string(key)+" must be ON or OFF");
+}
 bool identifier(std::string_view value) {
     return !value.empty() && value!="." && value!=".." && value.size()<=128 &&
         std::ranges::all_of(value,[](unsigned char c) { return (c>='a'&&c<='z') || (c>='A'&&c<='Z') || (c>='0'&&c<='9') || c=='_' || c=='-' || c=='.'; });
@@ -32,6 +41,17 @@ void no_nul(std::string_view value) { if (value.find('\0')!=std::string_view::np
 fs::path normalized_path(const fs::path& path) {
     no_nul(path_string(path));
     return fs::weakly_canonical(fs::absolute(path));
+}
+std::string cmake_paths(const std::vector<fs::path>& paths) {
+    std::string result;
+    for(const auto& path:paths) {
+        const auto value=path_string(path);
+        if(value.find_first_of(";\n\r")!=std::string::npos)
+            invalid("Static plugin paths cannot contain CMake list separators or newlines");
+        if(!result.empty())result+=';';
+        result+=value;
+    }
+    return result;
 }
 bool within(const fs::path& path,const fs::path& root) {
     auto p=path.begin();
@@ -92,6 +112,7 @@ void validate(CMakeProject& project,const fs::path& root,bool cmake=true) {
     if (cmake && !fs::is_regular_file(project.source/"CMakeLists.txt")) invalid("Missing CMakeLists.txt for "+project.name+": "+path_string(project.source));
     if (within(project.source,root)) invalid("Build root must not contain source: "+path_string(project.source));
     cache_valid(project.cache);
+    (void)boolean_option(project.cache,"IISDKBUILDER_PRUNE_UNUSED_SHARED",true);
     for (const auto& target:project.targets) if (!identifier(target) || target.front()=='-') invalid("Invalid build target: "+target);
 }
 std::string preliminary(Kit& kit,const fs::path& cmake) {
@@ -178,7 +199,18 @@ ProjectPlan project_plan(const Request& r,const KitPlan& kp,const CMakeProject& 
     for (const auto& [key,value]:p.cache) vars[key]=value;
     vars.try_emplace("BUILD_TESTING","OFF");
     vars.try_emplace("IISDKCORE_BUILD_EXAMPLES","OFF");
-    vars.try_emplace("BUILD_SHARED_LIBS","OFF");
+    vars.try_emplace("IISDKBUILDER_PRUNE_UNUSED_SHARED","ON");
+    vars.erase("IISDKBUILDER_RUNTIME_MODULES");
+    vars.erase("IISDKBUILDER_ALLOW_STATIC_MODULES");
+    vars.erase("IISDKBUILDER_PACKAGE");
+    for(const auto* key:{"IISDKBUILDER_ANDROID_SDK","IISDKBUILDER_ANDROID_NDK","IISDKBUILDER_ANDROID_MANIFEST",
+                         "IISDKBUILDER_ANDROID_ASSETS","IISDKBUILDER_ANDROID_RES","IISDKBUILDER_ANDROID_DEX"}) vars.erase(key);
+    const bool static_only=k.platform==Platform::arduino || k.platform==Platform::fpga ||
+        (detail::extended_target(k) && k.target.foundation=="embedded");
+    vars.try_emplace("BUILD_SHARED_LIBS",static_only?"OFF":"ON");
+    if(sdk && p.name=="iiSDKCore" && (k.platform==Platform::ios || k.platform==Platform::wasm) &&
+       boolean_option(vars,"BUILD_SHARED_LIBS") && !boolean_option(vars,"IISDKCORE_STATIC_PLUGINS"))
+        vars.try_emplace("IISDKCORE_DYNAMIC_MOBILE","ON");
     // NDK/Emscripten distributions may omit clang-scan-deps. Ordinary SDK
     // headers/sources need no C++ module scanning; module projects opt in.
     vars.try_emplace("CMAKE_CXX_SCAN_FOR_MODULES","OFF");
@@ -189,6 +221,10 @@ ProjectPlan project_plan(const Request& r,const KitPlan& kp,const CMakeProject& 
     vars["CMAKE_BUILD_TYPE"]=r.configuration;
     const auto project_prefix=sdk ? kp.prefix/p.name : kp.prefix;
     vars["CMAKE_INSTALL_PREFIX"]=path_string(project_prefix);
+    // Android's toolchain searches only re-rooted target paths. The isolated
+    // SDK prefixes are already target builds and must not be re-rooted again.
+    if(!sdk && (k.platform==Platform::android || k.platform==Platform::wasm || k.platform==Platform::ios))
+        vars["CMAKE_STAGING_PREFIX"]=path_string(kp.prefix);
     vars["CMAKE_INSTALL_LIBDIR"]="lib";
     vars["CMAKE_FIND_USE_PACKAGE_REGISTRY"]="OFF";
     vars["CMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY"]="OFF";
@@ -206,6 +242,11 @@ ProjectPlan project_plan(const Request& r,const KitPlan& kp,const CMakeProject& 
     auto& includes=vars["CMAKE_PROJECT_TOP_LEVEL_INCLUDES"];
     if (!includes.empty()) includes+=';';
     includes+=path_string(plan.binary_dir/"iisdkbuilder-verify.cmake");
+    if(k.platform==Platform::wasm) {
+        auto& after=vars["CMAKE_PROJECT_INCLUDE"];
+        if(!after.empty())after+=';';
+        after+=path_string(plan.binary_dir/"iisdkbuilder-after-project.cmake");
+    }
     if (!sdk) vars["iiSDKCore_DIR"]=path_string(kp.prefix/"iiSDKCore/lib/cmake/iiSDKCore");
     if (!k.toolchain.empty()) vars["CMAKE_TOOLCHAIN_FILE"]=path_string(k.toolchain);
     if ((k.platform==Platform::macos || k.platform==Platform::ios) && !k.architecture.empty()) vars["CMAKE_OSX_ARCHITECTURES"]=k.architecture;
@@ -265,7 +306,7 @@ std::vector<Kit> default_kits() {
     return kits;
 }
 std::string_view phase_name(Phase phase) {
-    switch (phase) { case Phase::configure:return "configure";case Phase::build:return "build";case Phase::install:return "install";case Phase::verify:return "verify";case Phase::deploy:return "deploy";case Phase::run:return "run";case Phase::synthesize:return "synthesize"; }
+    switch (phase) { case Phase::configure:return "configure";case Phase::build:return "build";case Phase::install:return "install";case Phase::verify:return "verify";case Phase::deploy:return "deploy";case Phase::run:return "run";case Phase::synthesize:return "synthesize";case Phase::package:return "package"; }
     return "unknown";
 }
 core::Result<Plan> make_plan(const Request& input) {
@@ -304,11 +345,102 @@ core::Result<Plan> make_plan(const Request& input) {
                 invalid("SDK projects cannot depend on other SDK projects: "+projects[i].name);
         }
         for (const auto& name:r.app.depends) if (!indexes.contains(lower(name))) invalid("Unknown application SDK dependency: "+name);
+        // Static AOT is an explicit alternative to the default shared module ABI.
+        const bool static_aot=boolean_option(r.app.cache,"IISDKBUILDER_STATIC_NATIVE_AOT");
+        (void)boolean_option(r.app.cache,"IISDKBUILDER_PACKAGE",true);
+        (void)boolean_option(r.app.cache,"IISDKBUILDER_ALLOW_STATIC_MODULES");
+        if(!static_aot) for(const auto* key:{"IISDKBUILDER_BUILD_TIME_PYTHON","IISDKBUILDER_STATIC_PYTHON_COMPILER"}) {
+            const auto found=r.app.cache.find(key);
+            if(found!=r.app.cache.end()&&!found->second.empty())
+                invalid(std::string(key)+" requires IISDKBUILDER_STATIC_NATIVE_AOT=ON");
+        }
+        std::vector<fs::path> plugin_sources,python_sources;
+        if(static_aot) {
+            // Discover before configuring Core so its private archive contains the
+            // application's selected plugin code, with no runtime library loading.
+            std::vector<fs::path> include_dirs{r.app.source};
+            const auto app_root=fs::is_directory(r.app.source/"App")?r.app.source/"App":r.app.source;
+            if(app_root!=r.app.source)include_dirs.push_back(app_root);
+            auto discover=[&](const fs::path& root) {
+                auto found=discover_static_plugins(root);
+                if(!found)invalid(found.error().message);
+                plugin_sources.insert(plugin_sources.end(),found->begin(),found->end());
+            };
+            discover(app_root);
+            auto unsupported=discover_uncompiled_runtime(app_root);
+            if(!unsupported)invalid(unsupported.error().message);
+            if(!unsupported->empty())
+                invalid("Runtime code has no static native compiler: "+path_string(unsupported->front()));
+            auto discovered_python=discover_static_python(app_root);
+            if(!discovered_python)invalid(discovered_python.error().message);
+            python_sources=std::move(*discovered_python);
+            // A project can explicitly identify host-only generators that happen
+            // to live under App/. All other discovered sources remain candidates
+            // for native compilation and cannot silently fall back to Python.
+            if(const auto configured=r.app.cache.find("IISDKBUILDER_BUILD_TIME_PYTHON");
+               configured!=r.app.cache.end()&&!configured->second.empty()) {
+                std::string_view values=configured->second;
+                while(true) {
+                    const auto separator=values.find(';');
+                    const auto value=values.substr(0,separator);
+                    if(value.empty())invalid("Build-time Python source list contains an empty path");
+                    auto path=detail::utf8_path(value);
+                    if(!path.is_absolute())path=r.app.source/path;
+                    if(!fs::is_regular_file(path))invalid("Build-time Python source does not exist: "+path_string(path));
+                    path=normalized_path(path);
+                    if(!within(path,app_root))invalid("Build-time Python source is outside the application source tree: "+path_string(path));
+                    const auto found=std::ranges::find(python_sources,path);
+                    if(found==python_sources.end())invalid("Build-time Python source was not discovered or was declared twice: "+path_string(path));
+                    python_sources.erase(found);
+                    if(separator==std::string_view::npos)break;
+                    values.remove_prefix(separator+1);
+                }
+            }
+            fs::path python_compiler;
+            if(!python_sources.empty()){
+                if(const auto configured=r.app.cache.find("IISDKBUILDER_STATIC_PYTHON_COMPILER");
+                   configured!=r.app.cache.end()&&!configured->second.empty())
+                    python_compiler=detail::utf8_path(configured->second);
+                else if(const auto* configured=std::getenv("IISDKBUILDER_STATIC_PYTHON_COMPILER");configured&&*configured)
+                    python_compiler=detail::utf8_path(configured);
+                else python_compiler=r.sdk_root/"iiSDKBuilder/src/Python/CompileStaticPlugin.py";
+                if(!python_compiler.is_absolute())invalid("IISDKBUILDER_STATIC_PYTHON_COMPILER must be an absolute path");
+                python_compiler=normalized_path(python_compiler);
+                if(!fs::is_regular_file(python_compiler))
+                    invalid("Native Python source compiler is unavailable; set IISDKBUILDER_STATIC_PYTHON_COMPILER");
+            }
+            for(std::size_t i=1;i<projects.size();++i){
+                const auto root=projects[i].source/"src";
+                if(fs::is_directory(root)){include_dirs.push_back(root);discover(root);}
+            }
+            std::ranges::sort(plugin_sources);
+            plugin_sources.erase(std::unique(plugin_sources.begin(),plugin_sources.end()),plugin_sources.end());
+            auto& core_cache=projects.front().cache;
+            core_cache["BUILD_SHARED_LIBS"]="OFF";
+            core_cache["IISDKCORE_BUILD_CPYTHON"]="OFF";
+            core_cache["IISDKCORE_STATIC_PLUGINS"]="ON";
+            core_cache["IISDKCORE_STATIC_PLUGIN_SOURCES"]=cmake_paths(plugin_sources);
+            core_cache["IISDKCORE_STATIC_PLUGIN_INCLUDE_DIRS"]=cmake_paths(include_dirs);
+            core_cache["IISDKCORE_STATIC_PYTHON_SOURCES"]=cmake_paths(python_sources);
+            core_cache["IISDKCORE_STATIC_PYTHON_COMPILER"]=python_compiler.empty()?"":cmake_paths({python_compiler});
+        } else {
+            auto& core_cache=projects.front().cache;
+            core_cache.try_emplace("IISDKCORE_STATIC_PLUGINS","OFF");
+            core_cache.try_emplace("IISDKCORE_STATIC_PLUGIN_SOURCES","");
+            core_cache.try_emplace("IISDKCORE_STATIC_PLUGIN_INCLUDE_DIRS","");
+            core_cache.try_emplace("IISDKCORE_STATIC_PYTHON_SOURCES","");
+            core_cache.try_emplace("IISDKCORE_STATIC_PYTHON_COMPILER","");
+        }
         std::set<std::string> ids;
         for (auto kit:r.kits) {
             if (!portable_name(kit.id) || !ids.insert(lower(kit.id)).second) invalid("Invalid or duplicate kit id: "+kit.id);
             if (platform_name(kit.platform)=="unknown") invalid("Invalid target platform");
             cache_valid(kit.cache);
+            (void)boolean_option(kit.cache,"IISDKBUILDER_PACKAGE",true);
+            (void)boolean_option(kit.cache,"IISDKBUILDER_PRUNE_UNUSED_SHARED",true);
+            (void)boolean_option(kit.cache,"IISDKBUILDER_ALLOW_STATIC_MODULES");
+            if(kit.cache.contains("IISDKBUILDER_STATIC_NATIVE_AOT"))
+                invalid("IISDKBUILDER_STATIC_NATIVE_AOT must be set in the application cache");
             for (const auto& [key,value]:kit.environment) {
                 if (!identifier(key) || key.find_first_of(".-")!=std::string::npos || key=="CMAKE_PREFIX_PATH") invalid("Invalid or reserved child environment variable: "+key);
                 no_nul(value);
@@ -322,6 +454,13 @@ core::Result<Plan> make_plan(const Request& input) {
             KitPlan kp{std::move(kit),{},{},{}};
             kp.prefix=r.build_root/"kits"/kp.kit.id/r.configuration/"prefix";
             kp.unavailable_reason=preliminary(kp.kit,resolved_cmake);
+            // Embedded-only Core and board/hardware adapters bypass the
+            // hosted Core catalog. Refuse the kit instead of reporting a
+            // successful build that silently omits discovered code.
+            if((!plugin_sources.empty()||!python_sources.empty()) &&
+               (detail::adapter_target(kp.kit) ||
+                (detail::extended_target(kp.kit)&&kp.kit.target.foundation=="embedded")))
+                kp.unavailable_reason="This target cannot include the static plugin catalog";
             if (!kp.kit.architecture.empty() && kp.kit.platform!=Platform::macos && kp.kit.platform!=Platform::ios &&
                 !kp.kit.generator.starts_with("Visual Studio") && !detail::extended_target(kp.kit))
                 invalid("architecture requires an Apple target or Visual Studio generator; use androidAbi or a target toolchain for "+kp.kit.id);
@@ -334,7 +473,11 @@ core::Result<Plan> make_plan(const Request& input) {
             }else {
                 for (const auto& project:projects)
                     kp.projects.push_back(project_plan(r,kp,project,true));
-                kp.projects.push_back(project_plan(r,kp,r.app,false));
+                auto app=r.app;
+                app.cache.erase("IISDKBUILDER_STATIC_NATIVE_AOT");
+                app.cache.erase("IISDKBUILDER_BUILD_TIME_PYTHON");
+                app.cache.erase("IISDKBUILDER_STATIC_PYTHON_COMPILER");
+                kp.projects.push_back(project_plan(r,kp,app,false));
             }
             if(kp.unavailable_reason.empty()&&r.deploy&&kp.kit.target.deploy.empty()&&!(kp.kit.target.adapter=="arduino"&&!kp.kit.target.port.empty()))
                 kp.unavailable_reason="Deployment requested without an explicit board/programmer contract";

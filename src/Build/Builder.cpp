@@ -3,8 +3,14 @@
 #include <iiSDKCore/Runtime/Runtime.h>
 #include "Json.h"
 #include "Targets.h"
+#include "CoffArchive.h"
+#include "WasmDylink.h"
+#include "PackageScript.h"
 #include <algorithm>
 #include <cctype>
+#include <cstdlib>
+#include <initializer_list>
+#include <utility>
 #include <fstream>
 #include <set>
 #include <stdexcept>
@@ -23,6 +29,13 @@ core::Result<void> prepare(const ProjectPlan& project,const Kit& kit) {
     // Deferred verification sees the final top-level project state and does not
     // add targets or require applications to include a builder-specific module.
     auto result=detail::write_text(verify,
+        "if(IISDKBUILDER_PRUNE_UNUSED_SHARED)\n"
+        "  if(CMAKE_SYSTEM_NAME STREQUAL \"Darwin\" OR CMAKE_SYSTEM_NAME STREQUAL \"iOS\")\n"
+        "    add_link_options(\"LINKER:-dead_strip_dylibs\")\n"
+        "  elseif(CMAKE_SYSTEM_NAME STREQUAL \"Linux\" OR CMAKE_SYSTEM_NAME STREQUAL \"Android\")\n"
+        "    add_link_options(\"LINKER:--as-needed\")\n"
+        "  endif()\n"
+        "endif()\n"
         "function(_iisdkbuilder_verify_target)\n"
         "  if(NOT CMAKE_SYSTEM_NAME STREQUAL \""+expected+"\")\n"
         "    message(FATAL_ERROR \"iiSDKBuilder expected "+expected+", got ${CMAKE_SYSTEM_NAME}; check the kit toolchain\")\n"
@@ -31,6 +44,17 @@ core::Result<void> prepare(const ProjectPlan& project,const Kit& kit) {
         "endfunction()\n"
         "cmake_language(DEFER CALL _iisdkbuilder_verify_target)\n");
     if (!result) return result;
+    if(kit.platform==Platform::wasm) {
+        result=detail::write_text(project.binary_dir/"iisdkbuilder-after-project.cmake",
+            "if(EMSCRIPTEN AND CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)\n"
+            "  set_property(GLOBAL PROPERTY TARGET_SUPPORTS_SHARED_LIBS TRUE)\n"
+            "  add_compile_options(\"$<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:-sMAIN_MODULE=2>\"\n"
+            "    \"$<$<OR:$<STREQUAL:$<TARGET_PROPERTY:TYPE>,SHARED_LIBRARY>,$<STREQUAL:$<TARGET_PROPERTY:TYPE>,MODULE_LIBRARY>>:-sSIDE_MODULE=1>\")\n"
+            "  add_link_options(\"$<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:-sMAIN_MODULE=2>\"\n"
+            "    \"$<$<OR:$<STREQUAL:$<TARGET_PROPERTY:TYPE>,SHARED_LIBRARY>,$<STREQUAL:$<TARGET_PROPERTY:TYPE>,MODULE_LIBRARY>>:-sSIDE_MODULE=1>\")\n"
+            "endif()\n");
+        if(!result)return result;
+    }
     return detail::write_text(project.binary_dir/".cmake/api/v1/query/client-iiSDKBuilder/codemodel-v2","");
 }
 Json file_api_json(const fs::path& replies,const Json& reference) {
@@ -55,7 +79,57 @@ std::string artifact_path(std::string path,const Kit& kit) {
     }
     return path;
 }
-std::vector<fs::path> artifacts(const ProjectPlan& app,const std::string& configuration,const Kit& kit) {
+bool archive_fragment(std::string_view text) {
+    for (auto position=text.find(".a");position!=std::string_view::npos;position=text.find(".a",position+2)) {
+        const auto after=position+2;
+        if(after==text.size() || std::isspace(static_cast<unsigned char>(text[after])) ||
+           text[after]=='"' || text[after]=='\\' || text[after]==',' || text[after]==')')return true;
+    }
+    return false;
+}
+std::vector<fs::path> sdk_library_paths(std::string fragment,const fs::path& prefix) {
+    auto root=path_string(prefix);
+    std::ranges::replace(fragment,'\\','/');
+    std::ranges::replace(root,'\\','/');
+    auto folded=fragment,folded_root=root;
+    for(auto* value:{&folded,&folded_root})
+        std::ranges::transform(*value,value->begin(),[](unsigned char c){return static_cast<char>(std::tolower(c));});
+    std::vector<fs::path> result;
+    if(folded_root.empty())return result;
+    auto search=std::size_t{0};
+    while(true) {
+        const auto start=folded.find(folded_root,search);
+        if(start==std::string::npos)break;
+        search=start+folded_root.size();
+        if(search<folded.size() && folded[search]!='/')continue;
+        const auto next_root=folded.find(folded_root,search);
+        const auto limit=next_root==std::string::npos?folded.size():next_root;
+        for(auto position=search;position<limit;++position) {
+            const auto extension=folded.compare(position,4,".lib")==0?4u:
+                (folded.compare(position,2,".a")==0?2u:0u);
+            if(!extension)continue;
+            const auto end=position+extension;
+            if(end>limit || (end<folded.size() && !std::isspace(static_cast<unsigned char>(folded[end])) &&
+               folded[end]!='"' && folded[end]!=',' && folded[end]!=')'))continue;
+            result.push_back(detail::utf8_path(fragment.substr(start,end-start)));
+            search=end;
+            break;
+        }
+    }
+    return result;
+}
+bool enabled_option(const Variables& values,std::string_view name) {
+    const auto found=values.find(std::string(name));
+    if(found==values.end())return false;
+    auto value=found->second;
+    std::ranges::transform(value,value.begin(),[](unsigned char c){return static_cast<char>(std::tolower(c));});
+    if(value=="on"||value=="true"||value=="yes"||value=="1")return true;
+    if(value=="off"||value=="false"||value=="no"||value=="0")return false;
+    throw std::runtime_error(std::string(name)+" must be ON or OFF");
+}
+std::vector<fs::path> artifacts(const ProjectPlan& app,const std::string& configuration,const Kit& kit,
+                                std::vector<fs::path>& executables,const fs::path& sdk_prefix,
+                                std::vector<std::string>& static_sdk_links) {
     const auto replies=app.binary_dir/".cmake/api/v1/reply";
     fs::path index;
     for (const auto& entry:fs::directory_iterator(replies)) {
@@ -77,15 +151,39 @@ std::vector<fs::path> artifacts(const ProjectPlan& app,const std::string& config
                 const auto& type=target.at("type").string();
                 if (type!="EXECUTABLE" && type!="SHARED_LIBRARY" && type!="MODULE_LIBRARY") continue;
             }
+            if (target.has("type") && (target.at("type").string()=="EXECUTABLE" ||
+                (kit.platform==Platform::android && target.at("type").string()=="SHARED_LIBRARY")) && target.has("link") &&
+                target.at("link").has("commandFragments")) {
+                for(const auto& fragment:target.at("link").at("commandFragments").array()) {
+                    if(!fragment.has("fragment"))continue;
+                    const auto& text=fragment.at("fragment").string();
+                    if(kit.platform==Platform::windows) {
+                        for(const auto& library:sdk_library_paths(text,sdk_prefix)) {
+                            const auto kind=detail::inspect_coff_library(library);
+                            if(!kind)throw std::runtime_error("Cannot classify Windows SDK library "+path_string(library)+": "+kind.error().message);
+                            if(*kind!=detail::CoffLibraryKind::import_library)static_sdk_links.push_back(text);
+                        }
+                    } else if(text.find(path_string(sdk_prefix))!=std::string::npos && archive_fragment(text)) {
+                        static_sdk_links.push_back(text);
+                    }
+                }
+            }
             if (!target.has("artifacts")) continue;
             const auto primary=target.has("nameOnDisk")?
                 detail::utf8_path(target.at("nameOnDisk").string()).filename():fs::path{};
             for (const auto& artifact:target.at("artifacts").array()) {
                 auto p=detail::utf8_path(artifact_path(artifact.at("path").string(),kit));
-                if (!primary.empty() && p.filename()!=primary) continue; // PDB/import archives are auxiliary files.
+                if (!primary.empty() && p.filename()!=primary &&
+                    !(target.has("type") && target.at("type").string()=="EXECUTABLE" &&
+                      (p.generic_string().find(".app/Contents/MacOS/")!=std::string::npos ||
+                       (kit.platform==Platform::ios && p.generic_string().find(".app/")!=std::string::npos)))) continue; // PDB/import archives are auxiliary files.
                 if (p.is_relative()) p=app.binary_dir/p;
                 p=p.lexically_normal();
-                if (fs::is_regular_file(p)) unique.insert(std::move(p));
+                if (fs::is_regular_file(p)) {
+                    unique.insert(p);
+                    if (target.has("type") && (target.at("type").string()=="EXECUTABLE" ||
+                        (kit.platform==Platform::android && target.at("type").string()=="SHARED_LIBRARY"))) executables.push_back(p);
+                }
             }
         }
     }
@@ -256,8 +354,24 @@ KitReport build_kit(const KitPlan &kit, const Request &request, const Executor &
     try {
         const auto &app = kit.projects.back();
         auto executing = kit;
+        std::vector<fs::path> executables;
         report.artifacts = detail::adapter_target(kit.kit) ? detail::adapter_artifacts(app, kit.kit)
-                                                           : artifacts(app, request.configuration, kit.kit);
+                                                           : artifacts(app, request.configuration, kit.kit, executables,kit.prefix,report.static_sdk_links);
+        bool package_requested=true;
+        if(request.app.cache.contains("IISDKBUILDER_PACKAGE"))
+            package_requested=enabled_option(request.app.cache,"IISDKBUILDER_PACKAGE");
+        if(kit.kit.cache.contains("IISDKBUILDER_PACKAGE"))
+            package_requested=enabled_option(kit.kit.cache,"IISDKBUILDER_PACKAGE");
+        if(!report.static_sdk_links.empty()) {
+            report.linkage="contains_static_sdk";
+            const bool static_allowed=enabled_option(request.app.cache,"IISDKBUILDER_STATIC_NATIVE_AOT") ||
+                enabled_option(request.app.cache,"IISDKBUILDER_ALLOW_STATIC_MODULES") ||
+                enabled_option(kit.kit.cache,"IISDKBUILDER_ALLOW_STATIC_MODULES");
+            if(package_requested && !static_allowed) {
+                report.packaging="failed";
+                throw std::runtime_error("An SDK archive is linked statically; build that module shared or explicitly allow static SDK modules");
+            }
+        }
         if (executing.kit.target.artifact.empty() && report.artifacts.size() == 1)
             executing.kit.target.artifact = report.artifacts.front();
         auto checks = detail::after_commands(request, executing, Phase::verify);
@@ -282,6 +396,172 @@ KitReport build_kit(const KitPlan &kit, const Request &request, const Executor &
             if (!inspected)
                 throw std::runtime_error(inspected.error().message);
             report.verified_artifacts.push_back(std::move(*inspected));
+        }
+        if(!package_requested) {
+            report.packaging="not_requested";
+        } else if (!executables.empty()) {
+            const auto host=host_platform();
+            const bool android=kit.kit.platform==Platform::android;
+            const bool ios=kit.kit.platform==Platform::ios;
+            const bool wasm=kit.kit.platform==Platform::wasm;
+            const bool desktop=kit.kit.platform==Platform::macos || kit.kit.platform==Platform::windows ||
+                               kit.kit.platform==Platform::linux_os;
+            if ((!desktop && !android && !ios && !wasm) || detail::extended_target(kit.kit)) {
+                report.packaging="unsupported_target";
+                if (!detail::extended_target(kit.kit))
+                    throw std::runtime_error("Automatic application packaging is not implemented for this target; set IISDKBUILDER_PACKAGE=OFF for compile-only output");
+            } else if ((desktop && (!host || *host!=kit.kit.platform)) || (ios && (!host || *host!=Platform::macos))) {
+                report.packaging="unsupported_cross_host";
+                throw std::runtime_error("Native runtime dependency inspection requires a matching desktop host");
+            } else {
+                report.packaging="failed";
+                auto script=app.binary_dir/"iisdkbuilder-package.cmake";
+                auto written=detail::write_text(script,android?detail::package_android_script:
+                    (ios?detail::package_ios_script:(wasm?detail::package_wasm_script:detail::package_runtime_script)));
+                if(!written) throw std::runtime_error(written.error().message);
+                std::string dirs;
+                std::vector<fs::path> search_dirs;
+                const auto add_dir=[&](const fs::path& directory) {
+                    const auto text=path_string(directory);
+                    if(text.find_first_of(";\n\r")!=std::string::npos)
+                        throw std::runtime_error("Runtime search paths cannot contain CMake list separators or newlines");
+                    if(!dirs.empty())dirs+=';';
+                    dirs+=text;search_dirs.push_back(directory);
+                };
+                for(const auto& project:kit.projects) {
+                    const auto prefix=kit.prefix/project.project.name;
+                    add_dir(prefix/"lib");add_dir(prefix/"bin");
+                }
+                for(const auto& prefix:kit.kit.prefixes) {add_dir(prefix/"lib");add_dir(prefix/"bin");}
+                std::string module_names;
+                if(const auto configured=app.project.cache.find("IISDKBUILDER_RUNTIME_MODULES");configured!=app.project.cache.end())
+                    module_names=configured->second;
+                if(const auto configured=kit.kit.cache.find("IISDKBUILDER_RUNTIME_MODULES");configured!=kit.kit.cache.end())
+                    module_names=configured->second;
+                if(module_names.find_first_of("\n\r")!=std::string::npos)
+                    throw std::runtime_error("Runtime module names cannot contain newlines");
+                const auto option=[&](const std::string& key) -> std::string {
+                    if(const auto found=kit.kit.cache.find(key);found!=kit.kit.cache.end())return found->second;
+                    if(const auto found=request.app.cache.find(key);found!=request.app.cache.end())return found->second;
+                    return {};
+                };
+                const auto option_path=[&](const std::string& key) -> fs::path {
+                    const auto value=option(key);if(value.empty())return {};
+                    auto path=detail::utf8_path(value);return path.is_absolute()?path:request.app.source/path;
+                };
+                fs::path android_ndk,android_sdk,android_manifest;
+                if(android) {
+                    android_ndk=option_path("IISDKBUILDER_ANDROID_NDK");
+                    if(android_ndk.empty() && !kit.kit.toolchain.empty())
+                        android_ndk=kit.kit.toolchain.parent_path().parent_path().parent_path();
+                    android_sdk=option_path("IISDKBUILDER_ANDROID_SDK");
+                    if(android_sdk.empty()) {
+                        for(const auto* key:{"ANDROID_SDK_ROOT","ANDROID_HOME"}) {
+                            const auto it=kit.kit.environment.find(key);
+                            if(it!=kit.kit.environment.end() && !it->second.empty()) {android_sdk=detail::utf8_path(it->second);break;}
+                            if(const auto* value=std::getenv(key);value&&*value) {android_sdk=detail::utf8_path(value);break;}
+                        }
+                    }
+                    if(android_sdk.empty() && android_ndk.parent_path().filename()=="ndk")android_sdk=android_ndk.parent_path().parent_path();
+                    android_manifest=option_path("IISDKBUILDER_ANDROID_MANIFEST");
+                    if(android_manifest.empty())for(const auto& path:{request.app.source/"resources/android/AndroidManifest.xml",
+                        request.app.source/"App/AndroidManifest.xml",request.app.source/"AndroidManifest.xml"})
+                        if(fs::is_regular_file(path)){android_manifest=path;break;}
+                    if(!fs::is_directory(android_ndk) || !fs::is_directory(android_sdk) || !fs::is_regular_file(android_manifest))
+                        throw std::runtime_error("Android packaging requires an NDK, SDK and application AndroidManifest.xml");
+                }
+                std::set<fs::path> destinations;
+                for(const auto& input:executables) {
+                    const auto destination=kit.prefix.parent_path()/"packages"/input.filename();
+                    if(!destinations.insert(destination).second)
+                        throw std::runtime_error("App targets have colliding package names: "+path_string(destination));
+                    const auto staging=fs::path(path_string(destination)+".staging");
+                    const auto previous=fs::path(path_string(destination)+".previous");
+                    if(fs::exists(fs::symlink_status(staging)) || fs::exists(fs::symlink_status(previous)))
+                        throw std::runtime_error("An earlier package transaction needs inspection: "+path_string(destination));
+                    std::vector<std::string> args{path_string(request.cmake),"-E","env","--unset=DYLD_LIBRARY_PATH", "--unset=DYLD_FALLBACK_LIBRARY_PATH",
+                         "--unset=LD_LIBRARY_PATH","--",path_string(request.cmake),"-DINPUT="+path_string(input),
+                         "-DDESTINATION="+path_string(destination),"-DPLATFORM="+std::string(platform_name(kit.kit.platform)),
+                         "-DSEARCH_DIRS="+dirs,"-DMODULE_NAMES="+module_names};
+                    if(wasm) {
+                        auto main=input;main.replace_extension(".wasm");
+                        if(!fs::is_regular_file(main))throw std::runtime_error("WebAssembly main module is missing: "+path_string(main));
+                        std::vector<fs::path> queue{main},side_files;
+                        std::vector<std::string> side_names,extra_names;
+                        for(std::string_view remaining=module_names;!remaining.empty();) {
+                            const auto separator=remaining.find(';');
+                            const auto part=remaining.substr(0,separator);
+                            if(part.empty())throw std::runtime_error("Empty WebAssembly runtime module name");
+                            extra_names.emplace_back(part);
+                            if(separator==std::string_view::npos)break;
+                            remaining.remove_prefix(separator+1);
+                        }
+                        std::set<fs::path> seen;
+                        std::map<std::string,fs::path> chosen;
+                        for(std::size_t next=0;next<queue.size();++next) {
+                            const auto current=queue[next];
+                            const auto canonical=fs::canonical(current);
+                            if(!seen.insert(canonical).second)continue;
+                            auto dependencies=detail::wasm_needed(current);
+                            if(!dependencies)throw std::runtime_error(dependencies.error().message+": "+path_string(current));
+                            if(next==0)dependencies->insert(dependencies->end(),extra_names.begin(),extra_names.end());
+                            for(const auto& name:*dependencies) {
+                                if(name.empty() || name.find_first_of("\\:;\n\r")!=std::string::npos)
+                                    throw std::runtime_error("Unsafe WebAssembly runtime module name");
+                                const auto relative=detail::utf8_path(name);
+                                if(relative.is_absolute() || std::ranges::any_of(relative,[](const auto& part){return part==".."||part==".";}))
+                                    throw std::runtime_error("Unsafe WebAssembly runtime module path");
+                                std::set<fs::path> matches;
+                                const auto try_path=[&](const fs::path& path){if(fs::is_regular_file(path))matches.insert(fs::canonical(path));};
+                                try_path(input.parent_path()/relative);
+                                for(const auto& dir:search_dirs)try_path(dir/relative);
+                                if(matches.size()!=1)throw std::runtime_error("WebAssembly side module missing or ambiguous: "+name);
+                                const auto& match=*matches.begin();
+                                if(const auto found=chosen.find(name);found!=chosen.end()) {
+                                    if(found->second!=match)throw std::runtime_error("WebAssembly side module name collision: "+name);
+                                } else {chosen.emplace(name,match);side_files.push_back(match);side_names.push_back(name);queue.push_back(match);}
+                            }
+                        }
+                        auto cmake_list=[](const auto& values,auto convert) {
+                            std::string out;for(const auto& value:values) {const auto text=convert(value);
+                                if(text.find_first_of(";\n\r")!=std::string::npos)throw std::runtime_error("Invalid WebAssembly package path");
+                                if(!out.empty())out+=';';out+=text;}return out;
+                        };
+                        args.push_back("-DMAIN_WASM="+path_string(main));
+                        args.push_back("-DSIDE_FILES="+cmake_list(side_files,[](const auto& path){return path_string(path);}));
+                        args.push_back("-DSIDE_NAMES="+cmake_list(side_names,[](const auto& name){return name;}));
+                    }
+                    if(android) {
+                        args.insert(args.end(),{"-DANDROID_ABI="+kit.kit.android_abi,"-DANDROID_API="+std::to_string(kit.kit.android_api),
+                            "-DANDROID_NDK="+path_string(android_ndk),"-DANDROID_SDK="+path_string(android_sdk),
+                            "-DMANIFEST="+path_string(android_manifest)});
+                        for(const auto& [key,arg]:std::initializer_list<std::pair<const char*,const char*>>{
+                            {"IISDKBUILDER_ANDROID_ASSETS","ASSETS"},{"IISDKBUILDER_ANDROID_RES","ANDROID_RES"},
+                            {"IISDKBUILDER_ANDROID_DEX","DEX"}})
+                            if(auto path=option_path(key);!path.empty())args.push_back("-D"+std::string(arg)+"="+path_string(path));
+                    }
+                    args.insert(args.end(),{"-P",path_string(script)});
+                    Command command{Phase::package,app.project.name,std::move(args),
+                        kit.prefix.parent_path()/"logs/app"/(path_string(input.filename())+"-package.log"),request.timeout};
+                    if(!execute(command)) {
+                        if(fs::is_regular_file(staging/".iisdkbuilder-package")) {
+                            std::error_code ec;fs::remove_all(staging,ec);
+                        }
+                        return report;
+                    }
+                    if(!fs::is_regular_file(destination/".iisdkbuilder-package"))
+                        throw std::runtime_error("Package command did not produce an owned package: "+path_string(destination));
+                    report.packages.push_back(destination);
+                }
+                report.packaging="succeeded";
+                report.package_signing=(android||ios)?"unsigned":(kit.kit.platform==Platform::macos?"ad_hoc":"not_applicable");
+            }
+        } else if (detail::adapter_target(kit.kit) || detail::extended_target(kit.kit) ||
+                   (kit.kit.platform!=Platform::macos && kit.kit.platform!=Platform::windows &&
+                    kit.kit.platform!=Platform::linux_os)) {
+            report.packaging="unsupported_target";
+            if (!detail::adapter_target(kit.kit) && !detail::extended_target(kit.kit))
+                throw std::runtime_error("Automatic application packaging is not implemented for this target; set IISDKBUILDER_PACKAGE=OFF for compile-only output");
         }
         const bool upload =
             request.deploy || (request.run && kit.kit.target.adapter == "arduino" && !kit.kit.target.port.empty());
@@ -331,7 +611,7 @@ std::string_view status_name(Status status) {
 std::string report_json(const Report& report) {
     Json::Array kits;
     for (const auto& k:report.kits) {
-        Json::Array steps,paths,images;
+        Json::Array steps,paths,images,packages,static_links;
         for (const auto& step:k.steps) {
             Json::Array args;
             for (const auto& arg:step.command.arguments) args.emplace_back(arg);
@@ -341,6 +621,8 @@ std::string report_json(const Report& report) {
                 {"arguments",std::move(args)},{"log",path_string(step.command.log)}});
         }
         for (const auto& artifact:k.artifacts) paths.emplace_back(path_string(artifact));
+        for (const auto& package:k.packages) packages.emplace_back(path_string(package));
+        for (const auto& link:k.static_sdk_links) static_links.emplace_back(link);
         for (const auto& image:k.verified_artifacts) {
             Json::Array architectures;
             for (const auto& arch:image.architectures) architectures.emplace_back(arch);
@@ -350,7 +632,9 @@ std::string report_json(const Report& report) {
         kits.emplace_back(Json::Object{{"id",k.id},{"platform",platform_name(k.platform)},
             {"executionModel",execution_model_name(k.execution)},{"profile",k.profile},{"runner",k.runner},{"deployment",k.deployment},{"execution",k.execution_status},
             {"status",status_name(k.status)},{"message",k.message},{"steps",std::move(steps)},
-            {"artifacts",std::move(paths)},{"verifiedArtifacts",std::move(images)}});
+            {"artifacts",std::move(paths)},{"verifiedArtifacts",std::move(images)},
+            {"packaging",k.packaging},{"packageSigning",k.package_signing},{"packages",std::move(packages)},
+            {"linkage",k.linkage},{"staticSdkLinks",std::move(static_links)}});
     }
     return detail::dump_json(Json::Object{{"schema",1},{"succeeded",report.succeeded},
         {"report",path_string(report.file)},{"kits",std::move(kits)}});

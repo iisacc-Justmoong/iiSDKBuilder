@@ -10,9 +10,9 @@
   },
   "source": {
     "path": "docs/README.md",
-    "sha256": "e1bc6ed2f68628c5c94f729d004fe97b9272fab947b8e481da8ec40895b922d3",
-    "bytes": 2161,
-    "line_count": 30,
+    "sha256": "de05d4f1c33e6bb7a84e88ef2dc5e4537f9a061ad3e75fa99835b92e5c5f8bcf",
+    "bytes": 2814,
+    "line_count": 37,
     "encoding": "utf-8",
     "language": "en"
   },
@@ -79,8 +79,8 @@
       "id": "b000008",
       "kind": "table",
       "start_line": 8,
-      "end_line": 29,
-      "raw": "| Document | Agent JSON |\n| --- | --- |\n| [`AGENT.md`](../AGENT.md) | [JSON](entrypoints/AGENT.agent.json) |\n| [`README.md`](../README.md) | [JSON](entrypoints/README.agent.json) |\n| [`docs/Architecture.md`](Architecture.md) | [JSON](Architecture.agent.json) |\n| [`docs/EmbeddedTargets.md`](EmbeddedTargets.md) | [JSON](EmbeddedTargets.agent.json) |\n| [`docs/FILE_PROVIDER.md`](FILE_PROVIDER.md) | [JSON](FILE_PROVIDER.agent.json) |\n| [`docs/HLS.md`](HLS.md) | [JSON](HLS.agent.json) |\n| [`docs/Resources.md`](Resources.md) | [JSON](Resources.agent.json) |\n| [`docs/Usage.md`](Usage.md) | [JSON](Usage.agent.json) |\n| [`docs/Verification.md`](Verification.md) | [JSON](Verification.agent.json) |\n| [`docs/WindowsBuildAndRun.md`](WindowsBuildAndRun.md) | [JSON](WindowsBuildAndRun.agent.json) |\n| [`docs/congregation-native.md`](congregation-native.md) | [JSON](congregation-native.agent.json) |\n| [`docs/documentation-structure.md`](documentation-structure.md) | [JSON](documentation-structure.agent.json) |\n| [`docs/independent-sdk-plan.md`](independent-sdk-plan.md) | [JSON](independent-sdk-plan.agent.json) |\n| [`docs/native-kit.md`](native-kit.md) | [JSON](native-kit.agent.json) |\n| [`example/README.md`](../example/README.md) | [JSON](mirrors/example/README.agent.json) |\n| [`examples/EmbeddedHello/README.md`](../examples/EmbeddedHello/README.md) | [JSON](mirrors/examples/EmbeddedHello/README.agent.json) |\n| [`examples/FPGAHello/README.md`](../examples/FPGAHello/README.md) | [JSON](mirrors/examples/FPGAHello/README.agent.json) |\n| [`examples/HLSHello/README.md`](../examples/HLSHello/README.md) | [JSON](mirrors/examples/HLSHello/README.agent.json) |\n| [`examples/Hello/README.md`](../examples/Hello/README.md) | [JSON](mirrors/examples/Hello/README.agent.json) |\n| [`examples/HelloResources/README.md`](../examples/HelloResources/README.md) | [JSON](mirrors/examples/HelloResources/README.agent.json) |\n",
+      "end_line": 36,
+      "raw": "| Document | Agent JSON |\n| --- | --- |\n| [`AGENT.md`](../AGENT.md) | [JSON](entrypoints/AGENT.agent.json) |\n| [`README.md`](../README.md) | [JSON](entrypoints/README.agent.json) |\n| [`docs/Architecture.md`](Architecture.md) | [JSON](Architecture.agent.json) |\n| [`docs/BuildLayout.md`](BuildLayout.md) | [JSON](BuildLayout.agent.json) |\n| [`docs/CPythonAot.md`](CPythonAot.md) | [JSON](CPythonAot.agent.json) |\n| [`docs/DynamicAppPackaging.md`](DynamicAppPackaging.md) | [JSON](DynamicAppPackaging.agent.json) |\n| [`docs/DynamicLinking.md`](DynamicLinking.md) | [JSON](DynamicLinking.agent.json) |\n| [`docs/EmbeddedTargets.md`](EmbeddedTargets.md) | [JSON](EmbeddedTargets.agent.json) |\n| [`docs/FILE_PROVIDER.md`](FILE_PROVIDER.md) | [JSON](FILE_PROVIDER.agent.json) |\n| [`docs/HLS.md`](HLS.md) | [JSON](HLS.agent.json) |\n| [`docs/MobileWebPackaging.md`](MobileWebPackaging.md) | [JSON](MobileWebPackaging.agent.json) |\n| [`docs/Resources.md`](Resources.md) | [JSON](Resources.agent.json) |\n| [`docs/StaticNativeAot.md`](StaticNativeAot.md) | [JSON](StaticNativeAot.agent.json) |\n| [`docs/Usage.md`](Usage.md) | [JSON](Usage.agent.json) |\n| [`docs/Verification.md`](Verification.md) | [JSON](Verification.agent.json) |\n| [`docs/WindowsBuildAndRun.md`](WindowsBuildAndRun.md) | [JSON](WindowsBuildAndRun.agent.json) |\n| [`docs/WindowsLibraryClassification.md`](WindowsLibraryClassification.md) | [JSON](WindowsLibraryClassification.agent.json) |\n| [`docs/congregation-native.md`](congregation-native.md) | [JSON](congregation-native.agent.json) |\n| [`docs/documentation-structure.md`](documentation-structure.md) | [JSON](documentation-structure.agent.json) |\n| [`docs/independent-sdk-plan.md`](independent-sdk-plan.md) | [JSON](independent-sdk-plan.agent.json) |\n| [`docs/native-kit.md`](native-kit.md) | [JSON](native-kit.agent.json) |\n| [`example/README.md`](../example/README.md) | [JSON](mirrors/example/README.agent.json) |\n| [`examples/EmbeddedHello/README.md`](../examples/EmbeddedHello/README.md) | [JSON](mirrors/examples/EmbeddedHello/README.agent.json) |\n| [`examples/FPGAHello/README.md`](../examples/FPGAHello/README.md) | [JSON](mirrors/examples/FPGAHello/README.agent.json) |\n| [`examples/HLSHello/README.md`](../examples/HLSHello/README.md) | [JSON](mirrors/examples/HLSHello/README.agent.json) |\n| [`examples/Hello/README.md`](../examples/Hello/README.md) | [JSON](mirrors/examples/Hello/README.agent.json) |\n| [`examples/HelloResources/README.md`](../examples/HelloResources/README.md) | [JSON](mirrors/examples/HelloResources/README.agent.json) |\n",
       "columns": [
         "Document",
         "Agent JSON"
@@ -99,6 +99,22 @@
           "[JSON](Architecture.agent.json)"
         ],
         [
+          "[`docs/BuildLayout.md`](BuildLayout.md)",
+          "[JSON](BuildLayout.agent.json)"
+        ],
+        [
+          "[`docs/CPythonAot.md`](CPythonAot.md)",
+          "[JSON](CPythonAot.agent.json)"
+        ],
+        [
+          "[`docs/DynamicAppPackaging.md`](DynamicAppPackaging.md)",
+          "[JSON](DynamicAppPackaging.agent.json)"
+        ],
+        [
+          "[`docs/DynamicLinking.md`](DynamicLinking.md)",
+          "[JSON](DynamicLinking.agent.json)"
+        ],
+        [
           "[`docs/EmbeddedTargets.md`](EmbeddedTargets.md)",
           "[JSON](EmbeddedTargets.agent.json)"
         ],
@@ -111,8 +127,16 @@
           "[JSON](HLS.agent.json)"
         ],
         [
+          "[`docs/MobileWebPackaging.md`](MobileWebPackaging.md)",
+          "[JSON](MobileWebPackaging.agent.json)"
+        ],
+        [
           "[`docs/Resources.md`](Resources.md)",
           "[JSON](Resources.agent.json)"
+        ],
+        [
+          "[`docs/StaticNativeAot.md`](StaticNativeAot.md)",
+          "[JSON](StaticNativeAot.agent.json)"
         ],
         [
           "[`docs/Usage.md`](Usage.md)",
@@ -125,6 +149,10 @@
         [
           "[`docs/WindowsBuildAndRun.md`](WindowsBuildAndRun.md)",
           "[JSON](WindowsBuildAndRun.agent.json)"
+        ],
+        [
+          "[`docs/WindowsLibraryClassification.md`](WindowsLibraryClassification.md)",
+          "[JSON](WindowsLibraryClassification.agent.json)"
         ],
         [
           "[`docs/congregation-native.md`](congregation-native.md)",
@@ -171,8 +199,8 @@
     {
       "id": "b000009",
       "kind": "html",
-      "start_line": 30,
-      "end_line": 30,
+      "start_line": 37,
+      "end_line": 37,
       "raw": "<!-- workspace-docs:document-map:end -->\n"
     }
   ],
@@ -242,241 +270,339 @@
       },
       {
         "block_id": "b000008",
+        "label": "`docs/BuildLayout.md`",
+        "target": "BuildLayout.md",
+        "kind": "relative",
+        "line": 13
+      },
+      {
+        "block_id": "b000008",
+        "label": "JSON",
+        "target": "BuildLayout.agent.json",
+        "kind": "relative",
+        "line": 13
+      },
+      {
+        "block_id": "b000008",
+        "label": "`docs/CPythonAot.md`",
+        "target": "CPythonAot.md",
+        "kind": "relative",
+        "line": 14
+      },
+      {
+        "block_id": "b000008",
+        "label": "JSON",
+        "target": "CPythonAot.agent.json",
+        "kind": "relative",
+        "line": 14
+      },
+      {
+        "block_id": "b000008",
+        "label": "`docs/DynamicAppPackaging.md`",
+        "target": "DynamicAppPackaging.md",
+        "kind": "relative",
+        "line": 15
+      },
+      {
+        "block_id": "b000008",
+        "label": "JSON",
+        "target": "DynamicAppPackaging.agent.json",
+        "kind": "relative",
+        "line": 15
+      },
+      {
+        "block_id": "b000008",
+        "label": "`docs/DynamicLinking.md`",
+        "target": "DynamicLinking.md",
+        "kind": "relative",
+        "line": 16
+      },
+      {
+        "block_id": "b000008",
+        "label": "JSON",
+        "target": "DynamicLinking.agent.json",
+        "kind": "relative",
+        "line": 16
+      },
+      {
+        "block_id": "b000008",
         "label": "`docs/EmbeddedTargets.md`",
         "target": "EmbeddedTargets.md",
         "kind": "relative",
-        "line": 13
+        "line": 17
       },
       {
         "block_id": "b000008",
         "label": "JSON",
         "target": "EmbeddedTargets.agent.json",
         "kind": "relative",
-        "line": 13
+        "line": 17
       },
       {
         "block_id": "b000008",
         "label": "`docs/FILE_PROVIDER.md`",
         "target": "FILE_PROVIDER.md",
         "kind": "relative",
-        "line": 14
+        "line": 18
       },
       {
         "block_id": "b000008",
         "label": "JSON",
         "target": "FILE_PROVIDER.agent.json",
         "kind": "relative",
-        "line": 14
+        "line": 18
       },
       {
         "block_id": "b000008",
         "label": "`docs/HLS.md`",
         "target": "HLS.md",
         "kind": "relative",
-        "line": 15
+        "line": 19
       },
       {
         "block_id": "b000008",
         "label": "JSON",
         "target": "HLS.agent.json",
         "kind": "relative",
-        "line": 15
+        "line": 19
+      },
+      {
+        "block_id": "b000008",
+        "label": "`docs/MobileWebPackaging.md`",
+        "target": "MobileWebPackaging.md",
+        "kind": "relative",
+        "line": 20
+      },
+      {
+        "block_id": "b000008",
+        "label": "JSON",
+        "target": "MobileWebPackaging.agent.json",
+        "kind": "relative",
+        "line": 20
       },
       {
         "block_id": "b000008",
         "label": "`docs/Resources.md`",
         "target": "Resources.md",
         "kind": "relative",
-        "line": 16
+        "line": 21
       },
       {
         "block_id": "b000008",
         "label": "JSON",
         "target": "Resources.agent.json",
         "kind": "relative",
-        "line": 16
+        "line": 21
+      },
+      {
+        "block_id": "b000008",
+        "label": "`docs/StaticNativeAot.md`",
+        "target": "StaticNativeAot.md",
+        "kind": "relative",
+        "line": 22
+      },
+      {
+        "block_id": "b000008",
+        "label": "JSON",
+        "target": "StaticNativeAot.agent.json",
+        "kind": "relative",
+        "line": 22
       },
       {
         "block_id": "b000008",
         "label": "`docs/Usage.md`",
         "target": "Usage.md",
         "kind": "relative",
-        "line": 17
+        "line": 23
       },
       {
         "block_id": "b000008",
         "label": "JSON",
         "target": "Usage.agent.json",
         "kind": "relative",
-        "line": 17
+        "line": 23
       },
       {
         "block_id": "b000008",
         "label": "`docs/Verification.md`",
         "target": "Verification.md",
         "kind": "relative",
-        "line": 18
+        "line": 24
       },
       {
         "block_id": "b000008",
         "label": "JSON",
         "target": "Verification.agent.json",
         "kind": "relative",
-        "line": 18
+        "line": 24
       },
       {
         "block_id": "b000008",
         "label": "`docs/WindowsBuildAndRun.md`",
         "target": "WindowsBuildAndRun.md",
         "kind": "relative",
-        "line": 19
+        "line": 25
       },
       {
         "block_id": "b000008",
         "label": "JSON",
         "target": "WindowsBuildAndRun.agent.json",
         "kind": "relative",
-        "line": 19
+        "line": 25
+      },
+      {
+        "block_id": "b000008",
+        "label": "`docs/WindowsLibraryClassification.md`",
+        "target": "WindowsLibraryClassification.md",
+        "kind": "relative",
+        "line": 26
+      },
+      {
+        "block_id": "b000008",
+        "label": "JSON",
+        "target": "WindowsLibraryClassification.agent.json",
+        "kind": "relative",
+        "line": 26
       },
       {
         "block_id": "b000008",
         "label": "`docs/congregation-native.md`",
         "target": "congregation-native.md",
         "kind": "relative",
-        "line": 20
+        "line": 27
       },
       {
         "block_id": "b000008",
         "label": "JSON",
         "target": "congregation-native.agent.json",
         "kind": "relative",
-        "line": 20
+        "line": 27
       },
       {
         "block_id": "b000008",
         "label": "`docs/documentation-structure.md`",
         "target": "documentation-structure.md",
         "kind": "relative",
-        "line": 21
+        "line": 28
       },
       {
         "block_id": "b000008",
         "label": "JSON",
         "target": "documentation-structure.agent.json",
         "kind": "relative",
-        "line": 21
+        "line": 28
       },
       {
         "block_id": "b000008",
         "label": "`docs/independent-sdk-plan.md`",
         "target": "independent-sdk-plan.md",
         "kind": "relative",
-        "line": 22
+        "line": 29
       },
       {
         "block_id": "b000008",
         "label": "JSON",
         "target": "independent-sdk-plan.agent.json",
         "kind": "relative",
-        "line": 22
+        "line": 29
       },
       {
         "block_id": "b000008",
         "label": "`docs/native-kit.md`",
         "target": "native-kit.md",
         "kind": "relative",
-        "line": 23
+        "line": 30
       },
       {
         "block_id": "b000008",
         "label": "JSON",
         "target": "native-kit.agent.json",
         "kind": "relative",
-        "line": 23
+        "line": 30
       },
       {
         "block_id": "b000008",
         "label": "`example/README.md`",
         "target": "../example/README.md",
         "kind": "relative",
-        "line": 24
+        "line": 31
       },
       {
         "block_id": "b000008",
         "label": "JSON",
         "target": "mirrors/example/README.agent.json",
         "kind": "relative",
-        "line": 24
+        "line": 31
       },
       {
         "block_id": "b000008",
         "label": "`examples/EmbeddedHello/README.md`",
         "target": "../examples/EmbeddedHello/README.md",
         "kind": "relative",
-        "line": 25
+        "line": 32
       },
       {
         "block_id": "b000008",
         "label": "JSON",
         "target": "mirrors/examples/EmbeddedHello/README.agent.json",
         "kind": "relative",
-        "line": 25
+        "line": 32
       },
       {
         "block_id": "b000008",
         "label": "`examples/FPGAHello/README.md`",
         "target": "../examples/FPGAHello/README.md",
         "kind": "relative",
-        "line": 26
+        "line": 33
       },
       {
         "block_id": "b000008",
         "label": "JSON",
         "target": "mirrors/examples/FPGAHello/README.agent.json",
         "kind": "relative",
-        "line": 26
+        "line": 33
       },
       {
         "block_id": "b000008",
         "label": "`examples/HLSHello/README.md`",
         "target": "../examples/HLSHello/README.md",
         "kind": "relative",
-        "line": 27
+        "line": 34
       },
       {
         "block_id": "b000008",
         "label": "JSON",
         "target": "mirrors/examples/HLSHello/README.agent.json",
         "kind": "relative",
-        "line": 27
+        "line": 34
       },
       {
         "block_id": "b000008",
         "label": "`examples/Hello/README.md`",
         "target": "../examples/Hello/README.md",
         "kind": "relative",
-        "line": 28
+        "line": 35
       },
       {
         "block_id": "b000008",
         "label": "JSON",
         "target": "mirrors/examples/Hello/README.agent.json",
         "kind": "relative",
-        "line": 28
+        "line": 35
       },
       {
         "block_id": "b000008",
         "label": "`examples/HelloResources/README.md`",
         "target": "../examples/HelloResources/README.md",
         "kind": "relative",
-        "line": 29
+        "line": 36
       },
       {
         "block_id": "b000008",
         "label": "JSON",
         "target": "mirrors/examples/HelloResources/README.agent.json",
         "kind": "relative",
-        "line": 29
+        "line": 36
       }
     ],
     "tables": [
@@ -500,6 +626,22 @@
             "[JSON](Architecture.agent.json)"
           ],
           [
+            "[`docs/BuildLayout.md`](BuildLayout.md)",
+            "[JSON](BuildLayout.agent.json)"
+          ],
+          [
+            "[`docs/CPythonAot.md`](CPythonAot.md)",
+            "[JSON](CPythonAot.agent.json)"
+          ],
+          [
+            "[`docs/DynamicAppPackaging.md`](DynamicAppPackaging.md)",
+            "[JSON](DynamicAppPackaging.agent.json)"
+          ],
+          [
+            "[`docs/DynamicLinking.md`](DynamicLinking.md)",
+            "[JSON](DynamicLinking.agent.json)"
+          ],
+          [
             "[`docs/EmbeddedTargets.md`](EmbeddedTargets.md)",
             "[JSON](EmbeddedTargets.agent.json)"
           ],
@@ -512,8 +654,16 @@
             "[JSON](HLS.agent.json)"
           ],
           [
+            "[`docs/MobileWebPackaging.md`](MobileWebPackaging.md)",
+            "[JSON](MobileWebPackaging.agent.json)"
+          ],
+          [
             "[`docs/Resources.md`](Resources.md)",
             "[JSON](Resources.agent.json)"
+          ],
+          [
+            "[`docs/StaticNativeAot.md`](StaticNativeAot.md)",
+            "[JSON](StaticNativeAot.agent.json)"
           ],
           [
             "[`docs/Usage.md`](Usage.md)",
@@ -526,6 +676,10 @@
           [
             "[`docs/WindowsBuildAndRun.md`](WindowsBuildAndRun.md)",
             "[JSON](WindowsBuildAndRun.agent.json)"
+          ],
+          [
+            "[`docs/WindowsLibraryClassification.md`](WindowsLibraryClassification.md)",
+            "[JSON](WindowsLibraryClassification.agent.json)"
           ],
           [
             "[`docs/congregation-native.md`](congregation-native.md)",

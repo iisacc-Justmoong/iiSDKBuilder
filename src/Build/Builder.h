@@ -108,7 +108,7 @@ struct Request final {
     bool deploy = false, run = false;
 };
 
-enum class Phase { configure, build, install, verify, deploy, run, synthesize };
+enum class Phase { configure, build, install, verify, deploy, run, synthesize, package };
 IISDKBUILDER_EXPORT std::string_view phase_name(Phase phase);
 struct Command final {
     Phase phase = Phase::configure;
@@ -172,6 +172,11 @@ struct KitReport final {
     std::vector<ArtifactInfo> verified_artifacts{};
     ExecutionModel execution = ExecutionModel::native;
     std::string runner{}, profile{}, deployment = "not_requested", execution_status = "not_requested";
+    std::vector<std::filesystem::path> packages{};
+    std::string packaging = "not_applicable";
+    std::string package_signing = "not_applicable";
+    std::string linkage = "shared_requested";
+    std::vector<std::string> static_sdk_links{};
 };
 struct Report final {
     bool succeeded = false; // True only if every requested kit succeeded.

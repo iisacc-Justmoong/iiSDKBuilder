@@ -1,8 +1,10 @@
 #include <algorithm>
 #include <iiSDKBuilder/iiSDKBuilder.h>
+#include <iiSDKBuilder/NativeAot.h>
 #include <iiSDKCore/Embedded/Embedded.h>
 #include <iostream>
 int main() {
+    if (ii::builder::discover_static_python(std::filesystem::path{})) return 3;
     ii::embedded::EventLoop<2> loop;
     unsigned calls = 0;
     const auto ticket = loop.post({[](void *value) noexcept { ++*static_cast<unsigned *>(value); }, &calls});

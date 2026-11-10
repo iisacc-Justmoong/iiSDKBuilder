@@ -12,10 +12,9 @@ SPEC.loader.exec_module(MODULE)
 
 class InstalledKitContracts(unittest.TestCase):
     def setUp(self):
-        (ROOT / "build").mkdir(exist_ok=True)
-        self.temporary = tempfile.TemporaryDirectory(dir=ROOT / "build")
+        self.temporary = tempfile.TemporaryDirectory(dir=ROOT / "resources")
         self.addCleanup(self.temporary.cleanup)
-        self.prefix = Path(self.temporary.name) / "prefix"
+        self.prefix = Path(self.temporary.name) / "build" / "prefix"
         (self.prefix / "include").mkdir(parents=True)
         (self.prefix / "include/Native.h").write_text("#pragma once\n")
 

@@ -24,7 +24,7 @@ int main(int argc,char** argv) try {
     const auto report=Builder{}.build(request);
     check(bool(report),report ? "" : report.error().message);
     check(report->succeeded,report->kits.empty() ? "missing kit report" : report->kits[0].message);
-    check(report->kits.size()==1 && report->kits[0].steps.size()==8,"all SDK and consumer commands must complete");
+    check(report->kits.size()==1 && report->kits[0].steps.size()==9,"all SDK and consumer commands must complete");
     const auto& kit=plan->kits.front();
     check(fs::is_regular_file(kit.prefix/"iiSDKCore/lib/cmake/iiSDKCore/iiSDKCoreConfig.cmake"),"Core installed independently");
     check(fs::is_regular_file(kit.prefix/"Addon/lib/cmake/Addon/AddonConfig.cmake"),"Addon installed independently");

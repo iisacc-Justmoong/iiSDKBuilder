@@ -64,4 +64,13 @@ HLS는 `synthesize` 단계로 기록한다. 여기서 실패하면 RTL 구현·�
 
 빌드 테스트에는 Clang이 필요하다. 전체 회로 대조 검사는 `IISDK_HLS_YOSYS`, `IISDK_HLS_VERILATOR` 경로를 설정하여 활성화한다. 물리 장치 업로드와 상용 Vivado·Quartus 실기 검증은 별도의 공급자 도구·장치가 필요하며 합성·시뮬레이션 결과와 혼동하지 않는다.
 
+Windows의 비동기 미지원 파이프에서는 HLS 프런트엔드가 Builder 공통 정책으로
+20ms 준비 확인을 명시적으로 요청한다. 다른 호스트는 네이티브 완료 대기를 사용한다.
+
+Windows에서 테스트를 포함하여 구성할 때 `clang++`는 `PATH` 또는
+`LLVM_ROOT/bin`, `ProgramFiles/LLVM/bin`, Visual Studio의 `VCINSTALLDIR` 아래
+LLVM 도구 디렉터리에서 찾는다. `-DIISDK_HLS_CLANG=<절대 경로>`로 선택을
+직접 지정할 수도 있다. 이 경로 탐색은 Clang의 설치나 HLS 합성 성공을
+의미하지 않으며, HLS 테스트의 조건을 건너뛰지 않는다.
+
 C++17 이후의 복합 대입은 우변을 먼저 평가한 뒤 좌변을 읽는다. `compound_constant`의 `x += ++x` 회귀 검사는 이 순서를 상수 데이터 흐름에서 확인하며, 동일한 구문을 포함한 커널을 실제 RTL과 C++ 기준 프로그램으로도 대조한다. 부분 초기화 배열의 명시 값과 나머지 원소의 0 채우기도 대조 대상이다.

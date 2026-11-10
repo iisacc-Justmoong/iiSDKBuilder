@@ -1,0 +1,233 @@
+{
+  "format": "iisacc.agent-document",
+  "schema_version": 1,
+  "document_id": "urn:iisacc:document:e03c4c77fe9063867ca69f43df82f0cdc7ea9277c5c216333b08c9523ed368f8",
+  "project": {
+    "id": "urn:iisacc:project:SDK%2FiiSDKBuilder",
+    "name": "iiSDKBuilder",
+    "root": "SDK/iiSDKBuilder",
+    "kind": "sdk"
+  },
+  "source": {
+    "path": "docs/StaticNativeAot.md",
+    "sha256": "b441dc2df96fd062081acc5c67c1f2339668c5e2bcd92a257c5c6a5329993c8f",
+    "bytes": 5083,
+    "line_count": 60,
+    "encoding": "utf-8",
+    "language": "ko"
+  },
+  "document": {
+    "title": "앱별 정적 Core와 소스 탐색",
+    "role": "guide",
+    "authority": "markdown_source"
+  },
+  "blocks": [
+    {
+      "id": "b000001",
+      "kind": "heading",
+      "start_line": 1,
+      "end_line": 1,
+      "raw": "# 앱별 정적 Core와 소스 탐색\n",
+      "level": 1,
+      "title": "앱별 정적 Core와 소스 탐색"
+    },
+    {
+      "id": "b000002",
+      "kind": "blank",
+      "start_line": 2,
+      "end_line": 2,
+      "raw": "\n"
+    },
+    {
+      "id": "b000003",
+      "kind": "paragraph",
+      "start_line": 3,
+      "end_line": 8,
+      "raw": "앱 manifest의 `cache`에 `IISDKBUILDER_STATIC_NATIVE_AOT=ON`을 명시하면\niiSDKBuilder는 앱과 선택한 SDK의 네이티브 플러그인 진입점\n`ii_sdk_plugin_v1`을 빌드 전에 탐색한다. 결과는 앱별 Core 정적 라이브러리에\n컴파일되며, 같은 진입점 이름을 쓰는 여러 플러그인은 빌드 시 서로 다른 내부\n이름으로 분리한다. Core는 생성된 정적 목록으로 플러그인을 찾고, 이 구성에서는\n`dlopen`·`LoadLibrary`로 플러그인 파일을 읽지 않는다.\n"
+    },
+    {
+      "id": "b000004",
+      "kind": "blank",
+      "start_line": 9,
+      "end_line": 9,
+      "raw": "\n"
+    },
+    {
+      "id": "b000005",
+      "kind": "paragraph",
+      "start_line": 10,
+      "end_line": 17,
+      "raw": "탐색은 앱의 `App/`과 선택된 SDK의 `src/`를 대상으로 하며 빌드·테스트와 숨김\n디렉터리는 제외한다. 탐색 대상 안의 심볼릭 링크는 누락 가능성을 감추지 않고\n오류로 처리한다. 주석, 문자열과 함수 선언은 진입점\n구현으로 취급하지 않는다. 현재 진입점은 인자 목록 뒤에 `noexcept`가 있거나\n없는 일반 함수 정의 형태로 탐색한다. 후행 속성, 플랫폼별 조건문이나 매크로가\n숨기는 구현까지 일반 C++ 파일만으로 완전하게 증명하지 않으며 실제 컴파일 오류를\n성공으로 바꾸지 않는다. 앱별로 별도의 아카이브가 만들어지므로 공통 Core 소스나 다른 앱의 Core를\n수정하지 않는다.\n"
+    },
+    {
+      "id": "b000006",
+      "kind": "blank",
+      "start_line": 18,
+      "end_line": 18,
+      "raw": "\n"
+    },
+    {
+      "id": "b000007",
+      "kind": "paragraph",
+      "start_line": 19,
+      "end_line": 25,
+      "raw": "앱의 `App/`에 있는 Python 파일은 호스트 빌드 시 네이티브 C++로 변환한다. 현재\n지원 범위는 `int` 인자 하나와 `int` 반환값을 선언하고 단일 표현식을 반환하는\n순수 함수이다. 정수 상수·인자, 단항 부호, 덧셈·뺄셈·곱셈·정수 나눗셈·나머지,\n정수 비교를 이용한 조건식이 가능하다. 값과 중간 결과는 부호 있는 64비트 범위로\n제한하며 오버플로와 0으로 나누기는 명시적인 호출 오류이다. 이는 임의 정밀도\nCPython 정수의 전체 의미가 아니다. import, 실행 중 코드 생성, 임의 함수 호출,\n여러 함수나 구문을 사용하는 파일은 컴파일 오류이며 인터프리터로 우회하지 않는다.\n"
+    },
+    {
+      "id": "b000008",
+      "kind": "blank",
+      "start_line": 26,
+      "end_line": 26,
+      "raw": "\n"
+    },
+    {
+      "id": "b000009",
+      "kind": "paragraph",
+      "start_line": 27,
+      "end_line": 34,
+      "raw": "`App/` 안에 빌드 도구로만 쓰이는 Python 파일이 있다면 앱 manifest의 `cache`에\n`IISDKBUILDER_BUILD_TIME_PYTHON`을 지정한다. 값은 앱 루트 기준 상대 경로 또는\n절대 경로를 세미콜론으로 구분한 목록이다. 선언한 경로는 실제 탐색된 Python\n파일이어야 하며, 해당 파일만 대상 Core에 넣지 않는다. 정적 AOT를 선택하지 않고 이 옵션이나\n`IISDKBUILDER_STATIC_PYTHON_COMPILER`를 지정하면 빌더는 조용히 무시하지 않고\n계획 단계에서 오류를 반환한다. 이 선언은 앱 작성자가\n런타임에 사용하지 않음을 보증하는 입력이므로 빌더가 이를 자동 증명하지 않는다.\n미지정 파일은 기존처럼 모두 네이티브 변환을 시도하고, 잘못된 경로는 오류이다.\n"
+    },
+    {
+      "id": "b000010",
+      "kind": "blank",
+      "start_line": 35,
+      "end_line": 35,
+      "raw": "\n"
+    },
+    {
+      "id": "b000011",
+      "kind": "paragraph",
+      "start_line": 36,
+      "end_line": 41,
+      "raw": "Python 파일 이름이 정적 플러그인 식별자이며 ASCII 영문자로 시작하는 영문·숫자·\n밑줄이어야 한다. `Plugin::open_static(\"transform\")`으로 `transform.py`를 열고,\noperation 0의 입력과 출력을 각각 리틀엔디언 부호 있는 64비트 정수 8바이트로\n전달한다. 이 ABI를 사용하는 앱 코드의 연결은 호출자 책임이며 기존 임의 Python\n모듈 API를 자동으로 보존하지 않는다. 서로 다른 소스가 같은 식별자를 내놓으면\n호출이 중복 오류로 실패한다.\n"
+    },
+    {
+      "id": "b000012",
+      "kind": "blank",
+      "start_line": 42,
+      "end_line": 42,
+      "raw": "\n"
+    },
+    {
+      "id": "b000013",
+      "kind": "paragraph",
+      "start_line": 43,
+      "end_line": 46,
+      "raw": "빌더는 기본적으로 `sdkRoot/iiSDKBuilder/src/Python/CompileStaticPlugin.py`를\n호스트 컴파일러로 사용한다. 설치본만 사용하는 환경에서는 앱 CMake cache 또는\n호스트 환경의 `IISDKBUILDER_STATIC_PYTHON_COMPILER`에 설치된 컴파일러의 절대\n경로를 지정한다. Python은 빌드 도구일 뿐 생성된 앱의 실행 의존성이 아니다.\n"
+    },
+    {
+      "id": "b000014",
+      "kind": "blank",
+      "start_line": 47,
+      "end_line": 47,
+      "raw": "\n"
+    },
+    {
+      "id": "b000015",
+      "kind": "paragraph",
+      "start_line": 48,
+      "end_line": 56,
+      "raw": "앱 소스의 JavaScript·Lua·QML·WebAssembly·Python 바이트코드·동적 라이브러리와\nSPIR-V 파일은 해당 변환기가 없어 탐색 시 오류를 반환한다. 현재 소스 탐색은 CMake\n대상·설치 스크립트·실행 중 임의 로딩의 완전한 그래프 분석이 아니며, 문자열에\n들어 있는 셰이더나 제3자 라이브러리의 동적 로딩을 제거하지 않는다. GPU 셰이더와\n지원 범위 밖의 언어는 별도의 네이티브 컴파일러 또는 코드 이식이 필요하다.\n운영체제 프레임워크의 일반적인 네이티브 공유 라이브러리 연결은 별도이다.\n기존 `wasm` 키트는 별도의 WebAssembly 산출물로 계속 제공되며 네이티브 CPU\n기계어만 허용하는 조건에는 해당하지 않는다. 그 조건을 적용하는 앱은 Windows,\nmacOS, Linux, Android 또는 iOS 네이티브 키트를 선택해야 한다.\n"
+    },
+    {
+      "id": "b000016",
+      "kind": "blank",
+      "start_line": 57,
+      "end_line": 57,
+      "raw": "\n"
+    },
+    {
+      "id": "b000017",
+      "kind": "paragraph",
+      "start_line": 58,
+      "end_line": 60,
+      "raw": "Embedded 전용 Core와 보드·하드웨어 어댑터는 이 정적 플러그인 카탈로그를\n포함하지 않는다. 해당 키트에 플러그인 또는 변환 대상 Python이 발견되면\n빌더는 산출물에 포함된 것처럼 처리하지 않고 키트를 사용 불가로 보고한다.\n"
+    }
+  ],
+  "outline": [
+    {
+      "block_id": "b000001",
+      "parent_id": null,
+      "level": 1,
+      "title": "앱별 정적 Core와 소스 탐색",
+      "anchor": "앱별-정적-core와-소스-탐색",
+      "start_line": 1
+    }
+  ],
+  "indexes": {
+    "directive_candidates": [
+      {
+        "block_id": "b000005",
+        "line": 13,
+        "text": "구현으로 취급하지 않는다. 현재 진입점은 인자 목록 뒤에 `noexcept`가 있거나",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      },
+      {
+        "block_id": "b000005",
+        "line": 17,
+        "text": "수정하지 않는다.",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      },
+      {
+        "block_id": "b000007",
+        "line": 25,
+        "text": "여러 함수나 구문을 사용하는 파일은 컴파일 오류이며 인터프리터로 우회하지 않는다.",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      },
+      {
+        "block_id": "b000009",
+        "line": 33,
+        "text": "런타임에 사용하지 않음을 보증하는 입력이므로 빌더가 이를 자동 증명하지 않는다.",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      },
+      {
+        "block_id": "b000011",
+        "line": 40,
+        "text": "모듈 API를 자동으로 보존하지 않는다. 서로 다른 소스가 같은 식별자를 내놓으면",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      },
+      {
+        "block_id": "b000015",
+        "line": 51,
+        "text": "들어 있는 셰이더나 제3자 라이브러리의 동적 로딩을 제거하지 않는다. GPU 셰이더와",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      },
+      {
+        "block_id": "b000015",
+        "line": 55,
+        "text": "기계어만 허용하는 조건에는 해당하지 않는다. 그 조건을 적용하는 앱은 Windows,",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      },
+      {
+        "block_id": "b000015",
+        "line": 56,
+        "text": "macOS, Linux, Android 또는 iOS 네이티브 키트를 선택해야 한다.",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      },
+      {
+        "block_id": "b000017",
+        "line": 59,
+        "text": "포함하지 않는다. 해당 키트에 플러그인 또는 변환 대상 Python이 발견되면",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      }
+    ],
+    "commands": [],
+    "links": [],
+    "tables": []
+  },
+  "provenance": {
+    "generator": "workspace-docs",
+    "version": "1.0.0",
+    "profile": "lossless-blocks-v1",
+    "derived": true
+  }
+}

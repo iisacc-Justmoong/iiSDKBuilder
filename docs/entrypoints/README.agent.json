@@ -10,9 +10,9 @@
   },
   "source": {
     "path": "README.md",
-    "sha256": "ea446e72e42eff26fc5a780138cdfc6321f262f33018f5d974e1da18a8320a4f",
-    "bytes": 7388,
-    "line_count": 127,
+    "sha256": "0a3e390f872615dc98e5f420ae4d16741f87fea97605b4af0e1c75f8744c9168",
+    "bytes": 9615,
+    "line_count": 161,
     "encoding": "utf-8",
     "language": "en"
   },
@@ -112,153 +112,153 @@
       "id": "b000013",
       "kind": "paragraph",
       "start_line": 30,
-      "end_line": 34,
-      "raw": "Windows, macOS, Linux, Android and iOS targets compile to each platform's native\nCPU machine code and OS ABI. Target applications do not require iiSDKBuilder,\nPython, Node, a JVM or a shared interpreter/VM runtime supplied by the builder.\niiSDKCore Runtime is a native C++ worker/task executor. Standard C/C++ runtime\nlibraries and native OS frameworks retain their normal role.\n"
+      "end_line": 36,
+      "raw": "Windows, macOS, Linux, Android and iOS targets compile to each platform's native\nCPU machine code and OS ABI. Target applications do not require iiSDKBuilder,\nNode, a JVM or a shared interpreter/VM runtime supplied by the builder. Pure\nC++ applications do not require Python; applications explicitly using CPython\nAOT supply the matching CPython runtime and standard library. iiSDKCore Runtime\nis a native C++ worker/task executor. Standard C/C++ runtime\nlibraries and native OS frameworks retain their normal role.\n"
     },
     {
       "id": "b000014",
       "kind": "blank",
-      "start_line": 35,
-      "end_line": 35,
+      "start_line": 37,
+      "end_line": 37,
       "raw": "\n"
     },
     {
       "id": "b000015",
       "kind": "paragraph",
-      "start_line": 36,
-      "end_line": 41,
+      "start_line": 38,
+      "end_line": 43,
       "raw": "WebAssembly is an explicit **web** target with `executionModel=webassembly`;\nit requires a WebAssembly engine and is not classified as an OS-native image.\nThe other five targets use `executionModel=native`. Successful builds require\npost-link image/CPU inspection: PE without a CLR directory, Mach-O with the\ncorrect Apple deployment platform, or ELF with the requested CPU/Android ABI.\nScript/bytecode launchers cannot stand in for these native application artifacts.\n"
     },
     {
       "id": "b000016",
       "kind": "blank",
-      "start_line": 42,
-      "end_line": 42,
+      "start_line": 44,
+      "end_line": 44,
       "raw": "\n"
     },
     {
       "id": "b000017",
       "kind": "paragraph",
-      "start_line": 43,
-      "end_line": 44,
+      "start_line": 45,
+      "end_line": 46,
       "raw": "Build and test on a desktop host with CMake 3.31+, a C++23 compiler, Ninja and\nPython 3.9+ (Python is required by iiSDKCore's architecture check):\n"
     },
     {
       "id": "b000018",
       "kind": "blank",
-      "start_line": 45,
-      "end_line": 45,
+      "start_line": 47,
+      "end_line": 47,
       "raw": "\n"
     },
     {
       "id": "b000019",
       "kind": "fenced_code",
-      "start_line": 46,
-      "end_line": 52,
-      "raw": "```sh\ncmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \\\n  -DIISDKBUILDER_CORE_SOURCE_DIR=../iiSDKCore\ncmake --build build --parallel 2\nctest --test-dir build --output-on-failure\ncmake --install build --prefix \"$PWD/build/install\"\n```\n",
+      "start_line": 48,
+      "end_line": 54,
+      "raw": "```sh\ncmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \\\n  -DIISDKBUILDER_CORE_SOURCE_DIR=../iiSDKCore\ncmake --build build --parallel 2\nctest --test-dir build --output-on-failure\ncmake --install build --prefix \"$HOME/.local/SDK/iiSDKBuilder\"\n```\n",
       "language": "sh",
-      "code": "cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \\\n  -DIISDKBUILDER_CORE_SOURCE_DIR=../iiSDKCore\ncmake --build build --parallel 2\nctest --test-dir build --output-on-failure\ncmake --install build --prefix \"$PWD/build/install\"\n",
+      "code": "cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \\\n  -DIISDKBUILDER_CORE_SOURCE_DIR=../iiSDKCore\ncmake --build build --parallel 2\nctest --test-dir build --output-on-failure\ncmake --install build --prefix \"$HOME/.local/SDK/iiSDKBuilder\"\n",
       "closed": true
     },
     {
       "id": "b000020",
       "kind": "blank",
-      "start_line": 53,
-      "end_line": 53,
+      "start_line": 55,
+      "end_line": 55,
       "raw": "\n"
     },
     {
       "id": "b000021",
       "kind": "paragraph",
-      "start_line": 54,
-      "end_line": 56,
+      "start_line": 56,
+      "end_line": 58,
       "raw": "An installed `iiSDKCore` package can be used instead by omitting the source\noption and setting `CMAKE_PREFIX_PATH` to its prefix. The builder runs on a\nWindows, macOS or Linux host; mobile and browser targets are build outputs.\n"
     },
     {
       "id": "b000022",
       "kind": "blank",
-      "start_line": 57,
-      "end_line": 57,
+      "start_line": 59,
+      "end_line": 59,
       "raw": "\n"
     },
     {
       "id": "b000023",
       "kind": "fenced_code",
-      "start_line": 58,
-      "end_line": 64,
-      "raw": "```sh\nbuild/iisdk-builder init --app examples/Hello --sdk-root .. \\\n  --manifest build/hello.json\nbuild/iisdk-builder doctor --manifest build/hello.json\nbuild/iisdk-builder plan --manifest build/hello.json\nbuild/iisdk-builder build --manifest build/hello.json\n```\n",
+      "start_line": 60,
+      "end_line": 66,
+      "raw": "```sh\nbuild/iisdk-builder init --app examples/Hello --sdk-root .. \\\n  --manifest resources/hello.json\nbuild/iisdk-builder doctor --manifest resources/hello.json\nbuild/iisdk-builder plan --manifest resources/hello.json\nbuild/iisdk-builder build --manifest resources/hello.json\n```\n",
       "language": "sh",
-      "code": "build/iisdk-builder init --app examples/Hello --sdk-root .. \\\n  --manifest build/hello.json\nbuild/iisdk-builder doctor --manifest build/hello.json\nbuild/iisdk-builder plan --manifest build/hello.json\nbuild/iisdk-builder build --manifest build/hello.json\n",
+      "code": "build/iisdk-builder init --app examples/Hello --sdk-root .. \\\n  --manifest resources/hello.json\nbuild/iisdk-builder doctor --manifest resources/hello.json\nbuild/iisdk-builder plan --manifest resources/hello.json\nbuild/iisdk-builder build --manifest resources/hello.json\n",
       "closed": true
     },
     {
       "id": "b000024",
       "kind": "blank",
-      "start_line": 65,
-      "end_line": 65,
+      "start_line": 67,
+      "end_line": 67,
       "raw": "\n"
     },
     {
       "id": "b000025",
       "kind": "paragraph",
-      "start_line": 66,
-      "end_line": 74,
-      "raw": "All six target platforms are requested by default. `--platform host` selects\nonly the current desktop platform; `--platform macos,ios,android,wasm` selects\nan explicit subset. Missing prerequisites are reported as `unavailable` and\nmake the matrix return a nonzero exit code. A partial matrix is never reported\nas complete. `doctor` only checks initial prerequisites; successful configuration,\ncompilation, native execution, and device/browser execution are separate evidence.\nFor a strictly OS-native matrix, select\n`--platform windows,macos,linux,android,ios`. WASM remains available separately\nto preserve the original six-target build request.\n"
+      "start_line": 68,
+      "end_line": 82,
+      "raw": "All six target platforms are requested by default. `--platform host` selects\nonly the current desktop platform; `--platform macos,ios,android,wasm` selects\nan explicit subset. Missing prerequisites are reported as `unavailable` and\nmake the matrix return a nonzero exit code. A partial matrix is never reported\nas complete. Automatic packaging covers desktop applications, Android APKs,\niOS app bundles and WebAssembly loaders with their linked SDK modules. Android\nand iOS results are unsigned and require the app's platform manifest, entry\npoint and distribution signing; see [mobile and web packaging](docs/MobileWebPackaging.md).\nSet `IISDKBUILDER_PACKAGE=OFF` in a kit or app cache for an\nexplicit compile-only result. `doctor` only checks initial\nprerequisites; successful configuration, compilation, packaging, native\nexecution, and device/browser execution are separate evidence.\nFor a strictly OS-native matrix, select\n`--platform windows,macos,linux,android,ios`. WASM remains available separately\nto preserve the original six-target build request.\n"
     },
     {
       "id": "b000026",
       "kind": "blank",
-      "start_line": 75,
-      "end_line": 75,
+      "start_line": 83,
+      "end_line": 83,
       "raw": "\n"
     },
     {
       "id": "b000027",
       "kind": "paragraph",
-      "start_line": 76,
-      "end_line": 78,
+      "start_line": 84,
+      "end_line": 86,
       "raw": "See [the manifest and CLI contract](docs/Usage.md),\n[architecture and platform requirements](docs/Architecture.md), and\n[verification boundaries](docs/Verification.md).\n"
     },
     {
       "id": "b000028",
       "kind": "blank",
-      "start_line": 79,
-      "end_line": 79,
+      "start_line": 87,
+      "end_line": 87,
       "raw": "\n"
     },
     {
       "id": "b000029",
       "kind": "paragraph",
-      "start_line": 80,
-      "end_line": 83,
+      "start_line": 88,
+      "end_line": 91,
       "raw": "The [Hello World example](examples/Hello/README.md) is a minimal Core-only\napplication built through the Builder CLI. It dispatches a Core event-loop task,\nthen prints `Hello, World!` through Core. Builder's internal file/log dependency\ndoes not become an application link dependency.\n"
     },
     {
       "id": "b000030",
       "kind": "blank",
-      "start_line": 84,
-      "end_line": 84,
+      "start_line": 92,
+      "end_line": 92,
       "raw": "\n"
     },
     {
       "id": "b000031",
       "kind": "paragraph",
-      "start_line": 85,
-      "end_line": 88,
+      "start_line": 93,
+      "end_line": 96,
       "raw": "The native file-provider dependency is scoped to Builder and its direct test\nconsumers. It is not inherited by a source-built iiSDKCore. The\n`iiSDKBuilder.core_foundation` regression checks the actual Core target\ndependency manifest when `IISDKBUILDER_CORE_SOURCE_DIR` is enabled.\n"
     },
     {
       "id": "b000032",
       "kind": "blank",
-      "start_line": 89,
-      "end_line": 89,
+      "start_line": 97,
+      "end_line": 97,
       "raw": "\n"
     },
     {
       "id": "b000033",
       "kind": "heading",
-      "start_line": 90,
-      "end_line": 90,
+      "start_line": 98,
+      "end_line": 98,
       "raw": "## Embedded and commercial AOT targets\n",
       "level": 2,
       "title": "Embedded and commercial AOT targets"
@@ -266,184 +266,258 @@
     {
       "id": "b000034",
       "kind": "blank",
-      "start_line": 91,
-      "end_line": 91,
-      "raw": "\n"
-    },
-    {
-      "id": "b000035",
-      "kind": "paragraph",
-      "start_line": 92,
-      "end_line": 92,
-      "raw": "The `automotive`, `arduino`, and `fpga` target domains add vendor/BSP profiles, native MCU images, FPGA configuration flows, explicit deployment, and finite device/emulator runners. `iisdk-builder targets` lists the catalog. Existing six-kit defaults remain unchanged; embedded targets require an explicit board/toolchain manifest. Core Embedded supplies bounded allocation-free C++23 callbacks and timers without an OS. FPGA configuration, FPGA CPU programs and native RTL simulation are reported separately. Commercial toolchains/licenses and physical boards remain required for their own compilation and execution evidence.\n"
-    },
-    {
-      "id": "b000036",
-      "kind": "blank",
-      "start_line": 93,
-      "end_line": 93,
-      "raw": "\n"
-    },
-    {
-      "id": "b000037",
-      "kind": "paragraph",
-      "start_line": 94,
-      "end_line": 94,
-      "raw": "See [embedded targets](docs/EmbeddedTargets.md), [EmbeddedHello](examples/EmbeddedHello/README.md), and [FPGAHello](examples/FPGAHello/README.md).\n"
-    },
-    {
-      "id": "b000038",
-      "kind": "blank",
-      "start_line": 95,
-      "end_line": 95,
-      "raw": "\n"
-    },
-    {
-      "id": "b000039",
-      "kind": "heading",
-      "start_line": 96,
-      "end_line": 96,
-      "raw": "## License\n",
-      "level": 2,
-      "title": "License"
-    },
-    {
-      "id": "b000040",
-      "kind": "blank",
-      "start_line": 97,
-      "end_line": 97,
-      "raw": "\n"
-    },
-    {
-      "id": "b000041",
-      "kind": "paragraph",
-      "start_line": 98,
-      "end_line": 98,
-      "raw": "SPDX-License-Identifier: MIT\n"
-    },
-    {
-      "id": "b000042",
-      "kind": "blank",
       "start_line": 99,
       "end_line": 99,
       "raw": "\n"
     },
     {
-      "id": "b000043",
+      "id": "b000035",
       "kind": "paragraph",
       "start_line": 100,
-      "end_line": 102,
-      "raw": "The original code and documentation in this repository are licensed under the\n[MIT License](LICENSE). Third-party code, libraries, fonts, tools, and model\nweights retain their respective licenses.\n"
+      "end_line": 100,
+      "raw": "The `automotive`, `arduino`, and `fpga` target domains add vendor/BSP profiles, native MCU images, FPGA configuration flows, explicit deployment, and finite device/emulator runners. `iisdk-builder targets` lists the catalog. Existing six-kit defaults remain unchanged; embedded targets require an explicit board/toolchain manifest. Core Embedded supplies bounded allocation-free C++23 callbacks and timers without an OS. FPGA configuration, FPGA CPU programs and native RTL simulation are reported separately. Commercial toolchains/licenses and physical boards remain required for their own compilation and execution evidence.\n"
     },
     {
-      "id": "b000044",
+      "id": "b000036",
+      "kind": "blank",
+      "start_line": 101,
+      "end_line": 101,
+      "raw": "\n"
+    },
+    {
+      "id": "b000037",
+      "kind": "paragraph",
+      "start_line": 102,
+      "end_line": 102,
+      "raw": "See [embedded targets](docs/EmbeddedTargets.md), [EmbeddedHello](examples/EmbeddedHello/README.md), and [FPGAHello](examples/FPGAHello/README.md).\n"
+    },
+    {
+      "id": "b000038",
       "kind": "blank",
       "start_line": 103,
       "end_line": 103,
       "raw": "\n"
     },
     {
-      "id": "b000045",
+      "id": "b000039",
       "kind": "heading",
       "start_line": 104,
       "end_line": 104,
-      "raw": "## Source header layout\n",
+      "raw": "## CPython script AOT\n",
       "level": 2,
-      "title": "Source header layout"
+      "title": "CPython script AOT"
     },
     {
-      "id": "b000046",
+      "id": "b000040",
       "kind": "blank",
       "start_line": 105,
       "end_line": 105,
       "raw": "\n"
     },
     {
-      "id": "b000047",
+      "id": "b000041",
       "kind": "paragraph",
       "start_line": 106,
+      "end_line": 109,
+      "raw": "The optional CPython AOT helper compiles selected Python modules to native\nextensions for the Core CPython host and can stage their native dependencies.\nThe first backend is Apache-2.0 Nuitka 2.8.9 with a matching CPython ABI.\nSee [CPython AOT](docs/CPythonAot.md) for integration and target limitations.\n"
+    },
+    {
+      "id": "b000042",
+      "kind": "blank",
+      "start_line": 110,
       "end_line": 110,
-      "raw": "Public headers and implementations live together in `src/iiSDKBuilder/`.\nThere is no separate authored `include/` tree. Existing public `#include` names\nand exported CMake targets are unchanged; installation still places only public\nheaders in the package include directory. Generated export headers belong to\n`build/`, not to the authored source tree.\n"
+      "raw": "\n"
+    },
+    {
+      "id": "b000043",
+      "kind": "heading",
+      "start_line": 111,
+      "end_line": 111,
+      "raw": "## App-specific native source compilation\n",
+      "level": 2,
+      "title": "App-specific native source compilation"
+    },
+    {
+      "id": "b000044",
+      "kind": "blank",
+      "start_line": 112,
+      "end_line": 112,
+      "raw": "\n"
+    },
+    {
+      "id": "b000045",
+      "kind": "paragraph",
+      "start_line": 113,
+      "end_line": 126,
+      "raw": "By default the Builder requests shared SDK libraries and creates a private,\nrelocatable package containing the linked SDK runtime dependencies. The build\nreport identifies packaged paths and signing status. Explicitly\nselected static AOT instead discovers native plugin entry points and supported\nPython source in an application's source tree and compiles them into a private\nstatic Core. Set `IISDKBUILDER_STATIC_NATIVE_AOT=ON` in the app manifest cache\nto opt in. See [dynamic app packaging](docs/DynamicAppPackaging.md) for system\nlibraries, plugins, platform-specific gaps, signing and granularity limitations.\nThe static-mode Python compiler supports a deliberately small,\nbounded integer expression subset; unsupported code fails without an interpreter\nfallback. It does not convert arbitrary Python, GPU shaders, or undeclared dynamic\ndependencies. See [static native AOT](docs/StaticNativeAot.md). A Python client\nfor the native Builder CLI is installed under `share/iiSDKBuilder/python`; target\napplications do not need that client or Python to run.\n"
+    },
+    {
+      "id": "b000046",
+      "kind": "blank",
+      "start_line": 127,
+      "end_line": 127,
+      "raw": "\n"
+    },
+    {
+      "id": "b000047",
+      "kind": "heading",
+      "start_line": 128,
+      "end_line": 128,
+      "raw": "## License\n",
+      "level": 2,
+      "title": "License"
     },
     {
       "id": "b000048",
       "kind": "blank",
-      "start_line": 111,
-      "end_line": 111,
+      "start_line": 129,
+      "end_line": 129,
       "raw": "\n"
     },
     {
       "id": "b000049",
       "kind": "paragraph",
-      "start_line": 112,
-      "end_line": 114,
-      "raw": "Validate this layout from the SDK workspace with\n`python3 -B tests/test_source_header_layout.py`. Reconfigure, build, run CTest,\nand verify a staged installed consumer after changing source/header paths.\n"
+      "start_line": 130,
+      "end_line": 130,
+      "raw": "SPDX-License-Identifier: MIT\n"
     },
     {
       "id": "b000050",
       "kind": "blank",
-      "start_line": 115,
-      "end_line": 115,
+      "start_line": 131,
+      "end_line": 131,
       "raw": "\n"
     },
     {
       "id": "b000051",
+      "kind": "paragraph",
+      "start_line": 132,
+      "end_line": 134,
+      "raw": "The original code and documentation in this repository are licensed under the\n[MIT License](LICENSE). Third-party code, libraries, fonts, tools, and model\nweights retain their respective licenses.\n"
+    },
+    {
+      "id": "b000052",
+      "kind": "blank",
+      "start_line": 135,
+      "end_line": 135,
+      "raw": "\n"
+    },
+    {
+      "id": "b000053",
       "kind": "heading",
-      "start_line": 116,
-      "end_line": 116,
+      "start_line": 136,
+      "end_line": 136,
+      "raw": "## Source header layout\n",
+      "level": 2,
+      "title": "Source header layout"
+    },
+    {
+      "id": "b000054",
+      "kind": "blank",
+      "start_line": 137,
+      "end_line": 137,
+      "raw": "\n"
+    },
+    {
+      "id": "b000055",
+      "kind": "paragraph",
+      "start_line": 138,
+      "end_line": 142,
+      "raw": "Public headers and implementations live together in `src/iiSDKBuilder/`.\nThere is no separate authored `include/` tree. Existing public `#include` names\nand exported CMake targets are unchanged; installation still places only public\nheaders in the package include directory. Generated export headers belong to\n`build/`, not to the authored source tree.\n"
+    },
+    {
+      "id": "b000056",
+      "kind": "blank",
+      "start_line": 143,
+      "end_line": 143,
+      "raw": "\n"
+    },
+    {
+      "id": "b000057",
+      "kind": "paragraph",
+      "start_line": 144,
+      "end_line": 146,
+      "raw": "Validate this layout from the SDK workspace with\n`python3 -B tests/test_source_header_layout.py`. Reconfigure, build, run CTest,\nand verify a staged installed consumer after changing source/header paths.\n"
+    },
+    {
+      "id": "b000058",
+      "kind": "blank",
+      "start_line": 147,
+      "end_line": 147,
+      "raw": "\n"
+    },
+    {
+      "id": "b000059",
+      "kind": "heading",
+      "start_line": 148,
+      "end_line": 148,
       "raw": "## Native C++ high-level synthesis\n",
       "level": 2,
       "title": "Native C++ high-level synthesis"
     },
     {
-      "id": "b000052",
+      "id": "b000060",
       "kind": "blank",
-      "start_line": 117,
-      "end_line": 117,
+      "start_line": 149,
+      "end_line": 149,
       "raw": "\n"
     },
     {
-      "id": "b000053",
+      "id": "b000061",
       "kind": "paragraph",
-      "start_line": 118,
-      "end_line": 118,
+      "start_line": 150,
+      "end_line": 150,
       "raw": "`iisdk-builder hls` and `synthesize_hls()` compile a bounded C++23 integer kernel into synthesizable SystemVerilog. The native path uses Clang semantic analysis, typed dataflow, constant folding, common-subexpression reuse and static loop unrolling. Ready/valid backpressure or a combinational interface is emitted without a software runtime on the FPGA. The `fpga-hls` profile connects the generated RTL to Yosys verification or iCE40, Vivado and Quartus implementation. See [HLS](docs/HLS.md) and [HLSHello](examples/HLSHello/README.md) for the exact supported subset and reproducible validation.\n"
     },
     {
-      "id": "b000054",
+      "id": "b000062",
       "kind": "blank",
-      "start_line": 119,
-      "end_line": 119,
+      "start_line": 151,
+      "end_line": 151,
       "raw": "\n"
     },
     {
-      "id": "b000055",
+      "id": "b000063",
+      "kind": "paragraph",
+      "start_line": 152,
+      "end_line": 152,
+      "raw": "Each test that generates files uses a unique temporary workspace below `resources/.state/`; it is removed after the test, including failure. Compiler output remains in `build/`. See [build layout](docs/BuildLayout.md).\n"
+    },
+    {
+      "id": "b000064",
+      "kind": "blank",
+      "start_line": 153,
+      "end_line": 153,
+      "raw": "\n"
+    },
+    {
+      "id": "b000065",
       "kind": "html",
-      "start_line": 120,
-      "end_line": 120,
+      "start_line": 154,
+      "end_line": 154,
       "raw": "<!-- workspace-docs:readme:start -->\n"
     },
     {
-      "id": "b000056",
+      "id": "b000066",
       "kind": "heading",
-      "start_line": 121,
-      "end_line": 121,
+      "start_line": 155,
+      "end_line": 155,
       "raw": "## Documentation entry points\n",
       "level": 2,
       "title": "Documentation entry points"
     },
     {
-      "id": "b000057",
+      "id": "b000067",
       "kind": "blank",
-      "start_line": 122,
-      "end_line": 122,
+      "start_line": 156,
+      "end_line": 156,
       "raw": "\n"
     },
     {
-      "id": "b000058",
+      "id": "b000068",
       "kind": "list",
-      "start_line": 123,
-      "end_line": 126,
+      "start_line": 157,
+      "end_line": 160,
       "raw": "- Human overview: this English `README.md`.\n- Agent instructions: [AGENT.md](AGENT.md).\n- Human documentation: [documentation index](docs/README.md).\n- Structured agent documentation: [agent index](docs/agent-index.json).\n",
       "items": [
         {
@@ -469,10 +543,10 @@
       ]
     },
     {
-      "id": "b000059",
+      "id": "b000069",
       "kind": "html",
-      "start_line": 127,
-      "end_line": 127,
+      "start_line": 161,
+      "end_line": 161,
       "raw": "<!-- workspace-docs:readme:end -->\n"
     }
   ],
@@ -491,39 +565,55 @@
       "level": 2,
       "title": "Embedded and commercial AOT targets",
       "anchor": "embedded-and-commercial-aot-targets",
-      "start_line": 90
+      "start_line": 98
     },
     {
       "block_id": "b000039",
       "parent_id": "b000001",
       "level": 2,
-      "title": "License",
-      "anchor": "license",
-      "start_line": 96
+      "title": "CPython script AOT",
+      "anchor": "cpython-script-aot",
+      "start_line": 104
     },
     {
-      "block_id": "b000045",
+      "block_id": "b000043",
+      "parent_id": "b000001",
+      "level": 2,
+      "title": "App-specific native source compilation",
+      "anchor": "app-specific-native-source-compilation",
+      "start_line": 111
+    },
+    {
+      "block_id": "b000047",
+      "parent_id": "b000001",
+      "level": 2,
+      "title": "License",
+      "anchor": "license",
+      "start_line": 128
+    },
+    {
+      "block_id": "b000053",
       "parent_id": "b000001",
       "level": 2,
       "title": "Source header layout",
       "anchor": "source-header-layout",
-      "start_line": 104
+      "start_line": 136
     },
     {
-      "block_id": "b000051",
+      "block_id": "b000059",
       "parent_id": "b000001",
       "level": 2,
       "title": "Native C++ high-level synthesis",
       "anchor": "native-c-high-level-synthesis",
-      "start_line": 116
+      "start_line": 148
     },
     {
-      "block_id": "b000056",
+      "block_id": "b000066",
       "parent_id": "b000001",
       "level": 2,
       "title": "Documentation entry points",
       "anchor": "documentation-entry-points",
-      "start_line": 121
+      "start_line": 155
     }
   ],
   "indexes": {
@@ -536,23 +626,37 @@
         "context": "paragraph"
       },
       {
+        "block_id": "b000013",
+        "line": 33,
+        "text": "C++ applications do not require Python; applications explicitly using CPython",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      },
+      {
         "block_id": "b000017",
-        "line": 44,
+        "line": 46,
         "text": "Python 3.9+ (Python is required by iiSDKCore's architecture check):",
         "basis": "lexical_match",
         "context": "paragraph"
       },
       {
         "block_id": "b000025",
-        "line": 69,
+        "line": 71,
         "text": "make the matrix return a nonzero exit code. A partial matrix is never reported",
         "basis": "lexical_match",
         "context": "paragraph"
       },
       {
         "block_id": "b000035",
-        "line": 92,
+        "line": 100,
         "text": "The `automotive`, `arduino`, and `fpga` target domains add vendor/BSP profiles, native MCU images, FPGA configuration flows, explicit deployment, and finite device/emulator runners. `iisdk-builder targets` lists the catalog. Existing six-kit defaults remain unchanged; embedded targets require an explicit board/toolchain manifest. Core Embedded supplies bounded allocation-free C++23 callbacks and timers without an OS. FPGA configuration, FPGA CPU programs and native RTL simulation are reported separately. Commercial toolchains/licenses and physical boards remain required for their own compilation and execution evidence.",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      },
+      {
+        "block_id": "b000045",
+        "line": 126,
+        "text": "applications do not need that client or Python to run.",
         "basis": "lexical_match",
         "context": "paragraph"
       }
@@ -561,12 +665,12 @@
       {
         "block_id": "b000019",
         "language": "sh",
-        "code": "cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \\\n  -DIISDKBUILDER_CORE_SOURCE_DIR=../iiSDKCore\ncmake --build build --parallel 2\nctest --test-dir build --output-on-failure\ncmake --install build --prefix \"$PWD/build/install\"\n"
+        "code": "cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \\\n  -DIISDKBUILDER_CORE_SOURCE_DIR=../iiSDKCore\ncmake --build build --parallel 2\nctest --test-dir build --output-on-failure\ncmake --install build --prefix \"$HOME/.local/SDK/iiSDKBuilder\"\n"
       },
       {
         "block_id": "b000023",
         "language": "sh",
-        "code": "build/iisdk-builder init --app examples/Hello --sdk-root .. \\\n  --manifest build/hello.json\nbuild/iisdk-builder doctor --manifest build/hello.json\nbuild/iisdk-builder plan --manifest build/hello.json\nbuild/iisdk-builder build --manifest build/hello.json\n"
+        "code": "build/iisdk-builder init --app examples/Hello --sdk-root .. \\\n  --manifest resources/hello.json\nbuild/iisdk-builder doctor --manifest resources/hello.json\nbuild/iisdk-builder plan --manifest resources/hello.json\nbuild/iisdk-builder build --manifest resources/hello.json\n"
       }
     ],
     "links": [
@@ -599,95 +703,130 @@
         "line": 28
       },
       {
+        "block_id": "b000025",
+        "label": "mobile and web packaging",
+        "target": "docs/MobileWebPackaging.md",
+        "kind": "relative",
+        "line": 75
+      },
+      {
         "block_id": "b000027",
         "label": "the manifest and CLI contract",
         "target": "docs/Usage.md",
         "kind": "relative",
-        "line": 76
+        "line": 84
       },
       {
         "block_id": "b000027",
         "label": "architecture and platform requirements",
         "target": "docs/Architecture.md",
         "kind": "relative",
-        "line": 77
+        "line": 85
       },
       {
         "block_id": "b000027",
         "label": "verification boundaries",
         "target": "docs/Verification.md",
         "kind": "relative",
-        "line": 78
+        "line": 86
       },
       {
         "block_id": "b000029",
         "label": "Hello World example",
         "target": "examples/Hello/README.md",
         "kind": "relative",
-        "line": 80
+        "line": 88
       },
       {
         "block_id": "b000037",
         "label": "embedded targets",
         "target": "docs/EmbeddedTargets.md",
         "kind": "relative",
-        "line": 94
+        "line": 102
       },
       {
         "block_id": "b000037",
         "label": "EmbeddedHello",
         "target": "examples/EmbeddedHello/README.md",
         "kind": "relative",
-        "line": 94
+        "line": 102
       },
       {
         "block_id": "b000037",
         "label": "FPGAHello",
         "target": "examples/FPGAHello/README.md",
         "kind": "relative",
-        "line": 94
+        "line": 102
       },
       {
-        "block_id": "b000043",
-        "label": "MIT License",
-        "target": "LICENSE",
+        "block_id": "b000041",
+        "label": "CPython AOT",
+        "target": "docs/CPythonAot.md",
         "kind": "relative",
-        "line": 101
+        "line": 109
       },
       {
-        "block_id": "b000053",
-        "label": "HLS",
-        "target": "docs/HLS.md",
+        "block_id": "b000045",
+        "label": "dynamic app packaging",
+        "target": "docs/DynamicAppPackaging.md",
         "kind": "relative",
-        "line": 118
+        "line": 119
       },
       {
-        "block_id": "b000053",
-        "label": "HLSHello",
-        "target": "examples/HLSHello/README.md",
-        "kind": "relative",
-        "line": 118
-      },
-      {
-        "block_id": "b000058",
-        "label": "AGENT.md",
-        "target": "AGENT.md",
+        "block_id": "b000045",
+        "label": "static native AOT",
+        "target": "docs/StaticNativeAot.md",
         "kind": "relative",
         "line": 124
       },
       {
-        "block_id": "b000058",
+        "block_id": "b000051",
+        "label": "MIT License",
+        "target": "LICENSE",
+        "kind": "relative",
+        "line": 133
+      },
+      {
+        "block_id": "b000061",
+        "label": "HLS",
+        "target": "docs/HLS.md",
+        "kind": "relative",
+        "line": 150
+      },
+      {
+        "block_id": "b000061",
+        "label": "HLSHello",
+        "target": "examples/HLSHello/README.md",
+        "kind": "relative",
+        "line": 150
+      },
+      {
+        "block_id": "b000063",
+        "label": "build layout",
+        "target": "docs/BuildLayout.md",
+        "kind": "relative",
+        "line": 152
+      },
+      {
+        "block_id": "b000068",
+        "label": "AGENT.md",
+        "target": "AGENT.md",
+        "kind": "relative",
+        "line": 158
+      },
+      {
+        "block_id": "b000068",
         "label": "documentation index",
         "target": "docs/README.md",
         "kind": "relative",
-        "line": 125
+        "line": 159
       },
       {
-        "block_id": "b000058",
+        "block_id": "b000068",
         "label": "agent index",
         "target": "docs/agent-index.json",
         "kind": "relative",
-        "line": 126
+        "line": 160
       }
     ],
     "tables": []

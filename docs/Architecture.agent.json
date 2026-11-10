@@ -10,9 +10,9 @@
   },
   "source": {
     "path": "docs/Architecture.md",
-    "sha256": "a6ef28e9021de995b426823774f8b1fe0f8f92382f26e286a1784f8c5afe50f8",
-    "bytes": 8355,
-    "line_count": 132,
+    "sha256": "a7058e740826dae4a8f95ceda1e7ca5f1345248520399b20a1bd3e7ccbd696ed",
+    "bytes": 9433,
+    "line_count": 146,
     "encoding": "utf-8",
     "language": "ko"
   },
@@ -73,91 +73,91 @@
       "id": "b000007",
       "kind": "paragraph",
       "start_line": 19,
-      "end_line": 23,
-      "raw": "Core 0.13 has no storage-SDK dependency. Builder publishes manifests and reports\nthrough its direct iiFileProvider Native dependency using atomic `File::write`.\nThe JSON publication contract checks full replacement and original preservation\nwhen a parent path cannot be used. Core is selected as a separate project, not\nas a declared dependency of every other SDK.\n"
+      "end_line": 26,
+      "raw": "Core 0.13 has no storage-SDK dependency. Builder publishes manifests and reports\nthrough its direct iiFileProvider Native dependency using atomic `File::write`.\nThe JSON publication contract checks full replacement and original preservation\nwhen a parent path cannot be used. Core is selected as a separate project, not\nas a declared dependency of every other SDK.\nWhen those dependencies are imported shared libraries, Builder's installed CLI\nalso carries the Core Runtime, Core Observation and iiFileProvider Native\nruntime artifacts needed after the installation is relocated.\n"
     },
     {
       "id": "b000008",
       "kind": "blank",
-      "start_line": 24,
-      "end_line": 24,
+      "start_line": 27,
+      "end_line": 27,
       "raw": "\n"
     },
     {
       "id": "b000009",
       "kind": "paragraph",
-      "start_line": 25,
-      "end_line": 31,
+      "start_line": 28,
+      "end_line": 34,
       "raw": "Public data is ordinary final value records and standard containers. `Builder`\ncomposes an executor function; it has no inheritance hierarchy or global task\nregistry. Core does not reference Builder. Manifest and File API JSON are a\nprivate replaceable boundary. The JSON reader is deliberately limited to the\ndata needed at these boundaries, rather than becoming a new Core serialization\nAPI. It checks syntax, numeric ranges, duplicate keys, string escapes, Unicode\nsurrogates, depth and input size. Reports share that encoder.\n"
     },
     {
       "id": "b000010",
       "kind": "blank",
-      "start_line": 32,
-      "end_line": 32,
+      "start_line": 35,
+      "end_line": 35,
       "raw": "\n"
     },
     {
       "id": "b000011",
       "kind": "paragraph",
-      "start_line": 33,
-      "end_line": 37,
+      "start_line": 36,
+      "end_line": 40,
       "raw": "계획은 소스·이름·경로를 확인하고 SDK 간 `depends`를 거부한 뒤 파일을 쓰지 않고\n선택 순서의 명시적 명령 인자를 만든다. SDK마다 설치 prefix와 CMake 캐시를 따로\n사용하고 앱 구성에만 선택 SDK들의 prefix를 모은다. 앱에는 여러 선택 SDK를 허용한다. 네이티브\n사전 확인은 예비 검사이며 컴파일러와 라이브러리 호환성은 실제 CMake 구성과\n빌드에서 확인한다. 같은 키트 설정은 각 SDK와 소비 앱에 적용한다.\n"
     },
     {
       "id": "b000012",
       "kind": "blank",
-      "start_line": 38,
-      "end_line": 38,
+      "start_line": 41,
+      "end_line": 41,
       "raw": "\n"
     },
     {
       "id": "b000013",
       "kind": "paragraph",
-      "start_line": 39,
-      "end_line": 48,
+      "start_line": 42,
+      "end_line": 51,
       "raw": "Execution owns a root lock, stores target identity, and schedules one sequential\nchain per kit through `ii::runtime::Runtime`. SDK project failures block their\nown remaining commands and the app, while unrelated SDK projects continue;\ncancellation stops later projects. A configure hook verifies the\nfinal `CMAKE_SYSTEM_NAME` and writes a fresh marker. The builder requires the\nmarker before proceeding. This catches a foreign-kit toolchain that accidentally\nproduces host binaries. CMake's client-owned File API query identifies actual\napplication artifact paths; absence of existing app artifacts fails the kit.\nXcode's `EFFECTIVE_PLATFORM_NAME` placeholder is resolved for the kit's selected\niPhone device/simulator SDK before checking artifact existence.\n"
     },
     {
       "id": "b000014",
       "kind": "blank",
-      "start_line": 49,
-      "end_line": 49,
+      "start_line": 52,
+      "end_line": 52,
       "raw": "\n"
     },
     {
       "id": "b000015",
       "kind": "paragraph",
-      "start_line": 50,
-      "end_line": 59,
+      "start_line": 53,
+      "end_line": 62,
       "raw": "Post-link inspection is mandatory for successful app builds. Only executable,\nshared-library and module-library targets provide primary app images; debug\nsymbols and import archives are auxiliary artifacts. PE headers must identify\nnative CPU code and an executable section, and a CLR runtime directory is\nrejected. ELF headers must identify executable/shared code, a matching CPU class\nand executable load segments. Mach-O thin/universal images must contain executable\nsegments and the correct macOS, iOS-device or iOS-simulator deployment command.\nRequested CPU families are matched against the image, including all requested\nuniversal slices and Android's ABI. When the kit leaves its architecture empty,\nthe app's configured CMake processor/Apple architecture list supplies it.\n"
     },
     {
       "id": "b000016",
       "kind": "blank",
-      "start_line": 60,
-      "end_line": 60,
+      "start_line": 63,
+      "end_line": 63,
       "raw": "\n"
     },
     {
       "id": "b000017",
       "kind": "paragraph",
-      "start_line": 61,
-      "end_line": 64,
+      "start_line": 64,
+      "end_line": 67,
       "raw": "This inspects image metadata, not arbitrary application behavior, every instruction\nor the complete transitive dependency tree. External toolchains still own their\nsysroot/library ABI correctness; device execution and deployment signing require\ntheir separate validation.\n"
     },
     {
       "id": "b000018",
       "kind": "blank",
-      "start_line": 65,
-      "end_line": 65,
+      "start_line": 68,
+      "end_line": 68,
       "raw": "\n"
     },
     {
       "id": "b000019",
       "kind": "heading",
-      "start_line": 66,
-      "end_line": 66,
+      "start_line": 69,
+      "end_line": 69,
       "raw": "## Native execution contract\n",
       "level": 2,
       "title": "Native execution contract"
@@ -165,44 +165,44 @@
     {
       "id": "b000020",
       "kind": "blank",
-      "start_line": 67,
-      "end_line": 67,
+      "start_line": 70,
+      "end_line": 70,
       "raw": "\n"
     },
     {
       "id": "b000021",
       "kind": "paragraph",
-      "start_line": 68,
-      "end_line": 74,
-      "raw": "Five OS targets produce target-specific CPU machine code and OS-loader images.\nThe builder does not introduce a common VM, bytecode interpreter, emulator or\ninterpreter launcher into those applications. iiSDKCore Runtime is a native C++\nthread/task executor; it is not an application virtual machine. Native static\nand shared libraries, the C/C++ standard runtime and OS frameworks are permitted.\nCMake, Core's Python architecture check and test scripts run only on the build\nhost and are not application runtime dependencies.\n"
+      "start_line": 71,
+      "end_line": 77,
+      "raw": "Five OS targets produce target-specific CPU machine code and OS-loader images.\niiSDKCore Runtime is a native C++ thread/task executor. Pure C++ applications do\nnot gain a Python runtime dependency; applications explicitly using CPython AOT\nsupply their matching CPython runtime and load Builder-compiled native modules\nthrough the optional Core host. Build tools do not become application launchers.\nNative static and shared libraries, the C/C++ standard runtime and OS frameworks\nare permitted. See [CPython AOT](CPythonAot.md) for its current target boundary.\n"
     },
     {
       "id": "b000022",
       "kind": "blank",
-      "start_line": 75,
-      "end_line": 75,
+      "start_line": 78,
+      "end_line": 78,
       "raw": "\n"
     },
     {
       "id": "b000023",
       "kind": "paragraph",
-      "start_line": 76,
-      "end_line": 82,
+      "start_line": 79,
+      "end_line": 85,
       "raw": "WebAssembly is a virtual ISA with an engine-provided execution environment.\nIts kit is explicitly `executionModel=webassembly`, never `native`, in both plans\nand reports. JS/HTML glue is accepted only with a companion module carrying a\nvalid WebAssembly magic/version; plain JavaScript or asm.js cannot substitute\nfor that module. Embedded single-file WASM output is not supported by this\ninspection contract. The original six-target matrix is retained, and callers\nrequiring only OS-native outputs select the five OS platforms explicitly.\n"
     },
     {
       "id": "b000024",
       "kind": "blank",
-      "start_line": 83,
-      "end_line": 83,
+      "start_line": 86,
+      "end_line": 86,
       "raw": "\n"
     },
     {
       "id": "b000025",
       "kind": "paragraph",
-      "start_line": 84,
+      "start_line": 87,
       "end_line": 95,
-      "raw": "Native execution is delegated to `ii::process::Process` from iiSDKCore 0.15.\nCore owns literal argv, child-local environment/cwd, standard pipe Channels,\nexit status and process-tree lifetime. Its POSIX spawn/group and Windows\nCreateProcessW/Job Object implementations are shared SDK infrastructure.\nBuilder owns command policy and uses a synchronous streaming sink to write\nmerged stdout/stderr through `iiFileProvider::native::OutputFile`. Capture\nlimits are zero; even large build logs are drained without in-memory growth.\nNo process backend remains in Builder. Timeout and stop tokens terminate and\nreap through Core; sink failures also retire the process before reporting error.\nThe host cwd and environment are preserved. See the\n[Core process contract](../../iiSDKCore/docs/process.md) for platform limits,\nidentity protection, pipe ownership and cleanup semantics.\n"
+      "raw": "Native execution is delegated to `ii::process::Process` from iiSDKCore 0.15.\nCore owns literal argv, child-local environment/cwd, standard pipe Channels,\nexit status and process-tree lifetime. Its POSIX spawn/group and Windows\nCreateProcessW/Job Object implementations are shared SDK infrastructure.\nBuilder owns command policy and uses a synchronous streaming sink to write\nmerged stdout/stderr through `iiFileProvider::native::OutputFile`. Capture\nlimits are zero; even large build logs are drained without in-memory growth.\nNo process backend remains in Builder. Timeout and stop tokens terminate and\nreap through Core; sink failures also retire the process before reporting error.\n"
     },
     {
       "id": "b000026",
@@ -213,25 +213,39 @@
     },
     {
       "id": "b000027",
-      "kind": "heading",
+      "kind": "paragraph",
       "start_line": 97,
-      "end_line": 97,
+      "end_line": 107,
+      "raw": "On Windows, Builder explicitly requests a 20 ms pipe readiness polling interval\nfor each spawned build command and HLS frontend. This bounded compatibility\npolicy is necessary while Core's Windows pipe handles are non-overlapped; the\nrequest is not applied to other hosts. The build log, deadline and cancellation\ncontracts remain unchanged. This is not an event-driven Windows pipe backend.\nThe selected Core headers and library must include `CommunicationOptions::polling_interval`;\nan older installation with the same version number is insufficient. The policy\nand HLS tests have been exercised on macOS, but Windows execution remains unverified.\nThe host cwd and environment are preserved. See the\n[Core process contract](../../iiSDKCore/docs/process.md) for platform limits,\nidentity protection, pipe ownership and cleanup semantics.\n"
+    },
+    {
+      "id": "b000028",
+      "kind": "blank",
+      "start_line": 108,
+      "end_line": 108,
+      "raw": "\n"
+    },
+    {
+      "id": "b000029",
+      "kind": "heading",
+      "start_line": 109,
+      "end_line": 109,
       "raw": "## Platform requirements\n",
       "level": 2,
       "title": "Platform requirements"
     },
     {
-      "id": "b000028",
+      "id": "b000030",
       "kind": "blank",
-      "start_line": 98,
-      "end_line": 98,
+      "start_line": 110,
+      "end_line": 110,
       "raw": "\n"
     },
     {
-      "id": "b000029",
+      "id": "b000031",
       "kind": "table",
-      "start_line": 99,
-      "end_line": 106,
+      "start_line": 111,
+      "end_line": 118,
       "raw": "| Target | Build environment | Default result scope |\n| --- | --- | --- |\n| Windows | Native Windows compiler/SDK, or an explicit compatible cross toolchain | Native PE executable/DLL, no CLR header |\n| macOS | macOS host, selected Xcode/Command Line Tools | Native Mach-O executable/dylib |\n| Linux | Native Linux compiler and a libc with Core process extensions (for example glibc 2.34+), or a complete target sysroot/toolchain | Native ELF executable/shared object |\n| Android | Android NDK CMake toolchain and ABI/API-specific target packages | Native ELF application/SDK code for the selected ABI |\n| iOS | macOS host and Xcode iOS SDK | Native Mach-O app code; deployment signing disabled by default |\n| WASM | Activated Emscripten and compatible C++23 libraries | WebAssembly module and optional web glue; separate engine execution |\n",
       "columns": [
         "Target",
@@ -272,61 +286,61 @@
       ]
     },
     {
-      "id": "b000030",
-      "kind": "blank",
-      "start_line": 107,
-      "end_line": 107,
-      "raw": "\n"
-    },
-    {
-      "id": "b000031",
-      "kind": "paragraph",
-      "start_line": 108,
-      "end_line": 114,
-      "raw": "Android OS entry glue/NativeActivity/JNI, APK/AAB packaging, iOS signing,\nprovisioning, Store uploads, browser hosting, and device deployment remain the\napplication's build/deployment responsibilities. A project may include packaging\nin its chosen CMake targets; the builder does not manufacture those packages.\nThis keeps app packaging policy separate from SDK compilation.\nAndroid application/SDK logic is compiled by the NDK; OS entry glue does not\nmake a JVM application an accepted replacement for native application code.\n"
-    },
-    {
       "id": "b000032",
       "kind": "blank",
-      "start_line": 115,
-      "end_line": 115,
+      "start_line": 119,
+      "end_line": 119,
       "raw": "\n"
     },
     {
       "id": "b000033",
       "kind": "paragraph",
-      "start_line": 116,
-      "end_line": 119,
-      "raw": "Qt Creator's documented grouping of compiler, device/target and build settings\ninto a Kit informed the configuration boundary. No Qt source, runtime, SDK,\ntool or API is used by iiSDKBuilder. It does not invoke qmake, qt-cmake,\nandroiddeployqt, or macdeployqt.\n"
+      "start_line": 120,
+      "end_line": 128,
+      "raw": "Android OS entry glue/NativeActivity/JNI, any required precompiled DEX, iOS\nsigning and provisioning, Store uploads, browser hosting, and device deployment\nremain the application's responsibilities. Builder can produce an unsigned APK,\nan unsigned iOS app bundle or a WebAssembly distribution from suitable target\nartifacts, in addition to its desktop runtime packages. It does not create an\nAAB or distribution credentials. See [mobile and web packaging](MobileWebPackaging.md)\nand [dynamic app packaging](DynamicAppPackaging.md) for their contracts.\nAndroid application/SDK logic is compiled by the NDK; OS entry glue does not\nmake a JVM application an accepted replacement for native application code.\n"
     },
     {
       "id": "b000034",
       "kind": "blank",
-      "start_line": 120,
-      "end_line": 120,
+      "start_line": 129,
+      "end_line": 129,
       "raw": "\n"
     },
     {
       "id": "b000035",
+      "kind": "paragraph",
+      "start_line": 130,
+      "end_line": 133,
+      "raw": "Qt Creator's documented grouping of compiler, device/target and build settings\ninto a Kit informed the configuration boundary. No Qt source, runtime, SDK,\ntool or API is used by iiSDKBuilder. It does not invoke qmake, qt-cmake,\nandroiddeployqt, or macdeployqt.\n"
+    },
+    {
+      "id": "b000036",
+      "kind": "blank",
+      "start_line": 134,
+      "end_line": 134,
+      "raw": "\n"
+    },
+    {
+      "id": "b000037",
       "kind": "heading",
-      "start_line": 121,
-      "end_line": 121,
+      "start_line": 135,
+      "end_line": 135,
       "raw": "## Primary references\n",
       "level": 2,
       "title": "Primary references"
     },
     {
-      "id": "b000036",
+      "id": "b000038",
       "kind": "blank",
-      "start_line": 122,
-      "end_line": 122,
+      "start_line": 136,
+      "end_line": 136,
       "raw": "\n"
     },
     {
-      "id": "b000037",
+      "id": "b000039",
       "kind": "list",
-      "start_line": 123,
-      "end_line": 132,
+      "start_line": 137,
+      "end_line": 146,
       "raw": "- [Qt Creator: Add kits](https://doc.qt.io/qtcreator/creator-targets.html)\n- [CMake toolchains](https://cmake.org/cmake/help/latest/manual/cmake-toolchains.7.html)\n- [CMake File API](https://cmake.org/cmake/help/latest/manual/cmake-file-api.7.html)\n- [CMake Xcode effective platform names](https://cmake.org/cmake/help/latest/prop_gbl/XCODE_EMIT_EFFECTIVE_PLATFORM_NAME.html)\n- [Android NDK CMake guide](https://developer.android.com/ndk/guides/cmake)\n- [Emscripten: Building Projects](https://emscripten.org/docs/compiling/Building-Projects.html)\n- [Microsoft PE/COFF specification](https://learn.microsoft.com/en-us/windows/win32/debug/pe-format)\n- [Apple Mach-O format definitions](https://github.com/apple-oss-distributions/xnu/blob/main/EXTERNAL_HEADERS/mach-o/loader.h)\n- [ELF header specification](https://gabi.xinuos.com/elf/02-eheader.html)\n- [WebAssembly execution model](https://webassembly.github.io/spec/core/intro/introduction.html)\n",
       "items": [
         {
@@ -397,52 +411,73 @@
       "level": 2,
       "title": "Native execution contract",
       "anchor": "native-execution-contract",
-      "start_line": 66
+      "start_line": 69
     },
     {
-      "block_id": "b000027",
+      "block_id": "b000029",
       "parent_id": "b000001",
       "level": 2,
       "title": "Platform requirements",
       "anchor": "platform-requirements",
-      "start_line": 97
+      "start_line": 109
     },
     {
-      "block_id": "b000035",
+      "block_id": "b000037",
       "parent_id": "b000001",
       "level": 2,
       "title": "Primary references",
       "anchor": "primary-references",
-      "start_line": 121
+      "start_line": 135
     }
   ],
   "indexes": {
     "directive_candidates": [
       {
         "block_id": "b000015",
-        "line": 52,
+        "line": 55,
         "text": "symbols and import archives are auxiliary artifacts. PE headers must identify",
         "basis": "lexical_match",
         "context": "paragraph"
       },
       {
         "block_id": "b000015",
-        "line": 54,
+        "line": 57,
         "text": "rejected. ELF headers must identify executable/shared code, a matching CPU class",
         "basis": "lexical_match",
         "context": "paragraph"
       },
       {
         "block_id": "b000015",
-        "line": 55,
+        "line": 58,
         "text": "and executable load segments. Mach-O thin/universal images must contain executable",
         "basis": "lexical_match",
         "context": "paragraph"
       },
       {
+        "block_id": "b000021",
+        "line": 75,
+        "text": "through the optional Core host. Build tools do not become application launchers.",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      },
+      {
         "block_id": "b000023",
-        "line": 77,
+        "line": 80,
         "text": "Its kit is explicitly `executionModel=webassembly`, never `native`, in both plans",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      },
+      {
+        "block_id": "b000027",
+        "line": 102,
+        "text": "The selected Core headers and library must include `CommunicationOptions::polling_interval`;",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      },
+      {
+        "block_id": "b000033",
+        "line": 120,
+        "text": "Android OS entry glue/NativeActivity/JNI, any required precompiled DEX, iOS",
         "basis": "lexical_match",
         "context": "paragraph"
       }
@@ -450,86 +485,107 @@
     "commands": [],
     "links": [
       {
-        "block_id": "b000025",
+        "block_id": "b000021",
+        "label": "CPython AOT",
+        "target": "CPythonAot.md",
+        "kind": "relative",
+        "line": 77
+      },
+      {
+        "block_id": "b000027",
         "label": "Core process contract",
         "target": "../../iiSDKCore/docs/process.md",
         "kind": "relative",
-        "line": 94
+        "line": 106
       },
       {
-        "block_id": "b000037",
-        "label": "Qt Creator: Add kits",
-        "target": "https://doc.qt.io/qtcreator/creator-targets.html",
-        "kind": "external",
-        "line": 123
-      },
-      {
-        "block_id": "b000037",
-        "label": "CMake toolchains",
-        "target": "https://cmake.org/cmake/help/latest/manual/cmake-toolchains.7.html",
-        "kind": "external",
-        "line": 124
-      },
-      {
-        "block_id": "b000037",
-        "label": "CMake File API",
-        "target": "https://cmake.org/cmake/help/latest/manual/cmake-file-api.7.html",
-        "kind": "external",
+        "block_id": "b000033",
+        "label": "mobile and web packaging",
+        "target": "MobileWebPackaging.md",
+        "kind": "relative",
         "line": 125
       },
       {
-        "block_id": "b000037",
-        "label": "CMake Xcode effective platform names",
-        "target": "https://cmake.org/cmake/help/latest/prop_gbl/XCODE_EMIT_EFFECTIVE_PLATFORM_NAME.html",
-        "kind": "external",
+        "block_id": "b000033",
+        "label": "dynamic app packaging",
+        "target": "DynamicAppPackaging.md",
+        "kind": "relative",
         "line": 126
       },
       {
-        "block_id": "b000037",
+        "block_id": "b000039",
+        "label": "Qt Creator: Add kits",
+        "target": "https://doc.qt.io/qtcreator/creator-targets.html",
+        "kind": "external",
+        "line": 137
+      },
+      {
+        "block_id": "b000039",
+        "label": "CMake toolchains",
+        "target": "https://cmake.org/cmake/help/latest/manual/cmake-toolchains.7.html",
+        "kind": "external",
+        "line": 138
+      },
+      {
+        "block_id": "b000039",
+        "label": "CMake File API",
+        "target": "https://cmake.org/cmake/help/latest/manual/cmake-file-api.7.html",
+        "kind": "external",
+        "line": 139
+      },
+      {
+        "block_id": "b000039",
+        "label": "CMake Xcode effective platform names",
+        "target": "https://cmake.org/cmake/help/latest/prop_gbl/XCODE_EMIT_EFFECTIVE_PLATFORM_NAME.html",
+        "kind": "external",
+        "line": 140
+      },
+      {
+        "block_id": "b000039",
         "label": "Android NDK CMake guide",
         "target": "https://developer.android.com/ndk/guides/cmake",
         "kind": "external",
-        "line": 127
+        "line": 141
       },
       {
-        "block_id": "b000037",
+        "block_id": "b000039",
         "label": "Emscripten: Building Projects",
         "target": "https://emscripten.org/docs/compiling/Building-Projects.html",
         "kind": "external",
-        "line": 128
+        "line": 142
       },
       {
-        "block_id": "b000037",
+        "block_id": "b000039",
         "label": "Microsoft PE/COFF specification",
         "target": "https://learn.microsoft.com/en-us/windows/win32/debug/pe-format",
         "kind": "external",
-        "line": 129
+        "line": 143
       },
       {
-        "block_id": "b000037",
+        "block_id": "b000039",
         "label": "Apple Mach-O format definitions",
         "target": "https://github.com/apple-oss-distributions/xnu/blob/main/EXTERNAL_HEADERS/mach-o/loader.h",
         "kind": "external",
-        "line": 130
+        "line": 144
       },
       {
-        "block_id": "b000037",
+        "block_id": "b000039",
         "label": "ELF header specification",
         "target": "https://gabi.xinuos.com/elf/02-eheader.html",
         "kind": "external",
-        "line": 131
+        "line": 145
       },
       {
-        "block_id": "b000037",
+        "block_id": "b000039",
         "label": "WebAssembly execution model",
         "target": "https://webassembly.github.io/spec/core/intro/introduction.html",
         "kind": "external",
-        "line": 132
+        "line": 146
       }
     ],
     "tables": [
       {
-        "block_id": "b000029",
+        "block_id": "b000031",
         "columns": [
           "Target",
           "Build environment",

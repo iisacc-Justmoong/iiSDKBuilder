@@ -1,4 +1,5 @@
 #include "Json.h"
+#include "ChildIOPolicy.h"
 #include <bit>
 #include <iiFileProviderStorage.h>
 #include <iiSDKBuilder/Builder.h>
@@ -42,6 +43,7 @@ core::Result<ProcessOutcome> run_process(const Command &command, std::stop_token
         if (!child)
             return std::unexpected(child.error());
         process::CommunicationOptions options;
+        detail::apply_child_io_policy(options);
         std::stop_source receive_stop;
         std::stop_callback forward_stop(stop, [&] { receive_stop.request_stop(); });
         bool matched = false;

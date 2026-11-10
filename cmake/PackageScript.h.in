@@ -1,0 +1,7 @@
+#pragma once
+namespace ii::builder::detail {
+inline constexpr const char package_runtime_script[] = R"IISDK_PACKAGE(@IISDKBUILDER_PACKAGE_SCRIPT@)IISDK_PACKAGE";
+inline constexpr const char package_android_script[] = R"IISDK_ANDROID(@IISDKBUILDER_ANDROID_PACKAGE_SCRIPT@)IISDK_ANDROID";
+inline constexpr const char package_ios_script[] = R"IISDK_IOS(@IISDKBUILDER_IOS_PACKAGE_SCRIPT@)IISDK_IOS";
+inline constexpr const char package_wasm_script[] = R"IISDK_WASM(@IISDKBUILDER_WASM_PACKAGE_SCRIPT@)IISDK_WASM";
+}

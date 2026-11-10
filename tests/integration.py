@@ -49,14 +49,22 @@ native_env=os.environ.copy()
 native_env["PATH"]=""
 for name in ("PYTHONHOME","PYTHONPATH","NODE_PATH","CLASSPATH","DOTNET_ROOT","LD_LIBRARY_PATH","DYLD_LIBRARY_PATH","DYLD_FALLBACK_LIBRARY_PATH"):
     native_env.pop(name,None)
-result = subprocess.run([str(executable)], env=native_env, capture_output=True, text=True, timeout=15)
-assert result.returncode == 0 and "iiSDKBuilder native app: 0" in result.stdout
+if os.environ.get("IISDKBUILDER_TEST_BUILD_ONLY") != "1":
+    result = subprocess.run([str(executable)], env=native_env, capture_output=True, text=True, timeout=15)
+    assert result.returncode == 0 and "iiSDKBuilder native app: 0" in result.stdout
 assert report["kits"][0]["executionModel"] == "native"
 assert len(report["kits"][0]["verifiedArtifacts"]) == 1
 assert report["kits"][0]["verifiedArtifacts"][0]["executionModel"] == "native"
 assert report["kits"][0]["verifiedArtifacts"][0]["architectures"]
 assert all(step["status"] == "succeeded" for step in report["kits"][0]["steps"])
-assert len(report["kits"][0]["steps"]) == 8
+assert len(report["kits"][0]["steps"]) == 9
+assert report["kits"][0]["packaging"] == "succeeded"
+package = pathlib.Path(report["kits"][0]["packages"][0])
+assert any("iisdkcore" in path.name.lower() and path.is_file() for path in package.rglob("*")), \
+    "the app's linked shared Core must be present in its private package"
+if os.environ.get("IISDKBUILDER_TEST_SINGLE_BUILD") == "1":
+    print("Real Core shared build and private package inspection: passed")
+    sys.exit(0)
 
 # A present toolchain file must not silently turn a foreign kit into a host build.
 toolchain = output / "wrong-platform.cmake"
@@ -87,4 +95,4 @@ for command in ([cmake, "-S", str(wrapper), "-B", str(wrapper / "build")],
                 [cmake, "--build", str(wrapper / "build"), "--target", "matrix"]):
     result = subprocess.run(command, capture_output=True, text=True, timeout=120)
     assert result.returncode == 0, result.stdout + result.stderr
-print("Real SDK/addon/app build, app execution, incremental reuse, wrong-target rejection and CMake target: passed")
+print("Real SDK/addon/app build, artifact checks, incremental reuse, wrong-target rejection and CMake target: passed")

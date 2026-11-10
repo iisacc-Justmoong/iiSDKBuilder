@@ -35,6 +35,12 @@ int main(int argc,char** argv) try {
     const auto core_prefix=plan->kits.front().prefix/"iiSDKCore";
     const auto addon_prefix=plan->kits.front().prefix/"Addon";
     const auto& core_args=projects.front().commands.front().arguments;
+    check(std::ranges::find(core_args,"-DBUILD_SHARED_LIBS=ON")!=core_args.end(),
+          "desktop Core must request shared libraries by default");
+    check(std::ranges::none_of(core_args,[](const auto& arg){ return arg=="-DIISDKCORE_STATIC_PLUGINS=ON"; }),
+          "desktop Core must not force the static plugin catalog");
+    check(std::ranges::find(args,"-DBUILD_SHARED_LIBS=ON")!=args.end(),
+          "desktop SDK must request shared libraries by default");
     for (const auto& environment : {"CMAKE_PREFIX_PATH", "CMAKE_INCLUDE_PATH", "CMAKE_LIBRARY_PATH",
             "CMAKE_FRAMEWORK_PATH", "CMAKE_APPBUNDLE_PATH", "CPATH", "C_INCLUDE_PATH",
             "CPLUS_INCLUDE_PATH", "OBJC_INCLUDE_PATH", "LIBRARY_PATH", "PKG_CONFIG_PATH",
@@ -88,6 +94,35 @@ int main(int argc,char** argv) try {
     const auto supplied=std::ranges::find(environment_args,"CPATH=explicit-third-party-include");
     check(unset!=environment_args.end() && supplied!=environment_args.end() && unset<supplied,
           "explicit kit environment is applied after inherited path removal");
+    auto explicit_static=request;
+    explicit_static.app.cache["IISDKBUILDER_STATIC_NATIVE_AOT"]="ON";
+    const auto static_plan=make_plan(explicit_static);
+    check(bool(static_plan),"explicit static AOT plan");
+    const auto& static_core_args=static_plan->kits.front().projects.front().commands.front().arguments;
+    check(std::ranges::find(static_core_args,"-DBUILD_SHARED_LIBS=OFF")!=static_core_args.end() &&
+          std::ranges::find(static_core_args,"-DIISDKCORE_STATIC_PLUGINS=ON")!=static_core_args.end(),
+          "explicit static AOT must retain the private Core catalog");
+    explicit_static.app.cache["IISDKBUILDER_STATIC_NATIVE_AOT"]="invalid";
+    check(!make_plan(explicit_static),"invalid AOT selection rejected");
+    auto invalid_setting=request;
+    invalid_setting.app.cache["IISDKBUILDER_PACKAGE"]="not-a-boolean";
+    check(!make_plan(invalid_setting),"invalid packaging mode rejected before building");
+    invalid_setting=request;
+    invalid_setting.app.cache["IISDKBUILDER_PRUNE_UNUSED_SHARED"]="invalid";
+    check(!make_plan(invalid_setting),"invalid pruning mode rejected before building");
+    invalid_setting=request;
+    invalid_setting.app.cache["IISDKBUILDER_BUILD_TIME_PYTHON"]="generator.py";
+    check(!make_plan(invalid_setting),"static-only Python configuration cannot be silently ignored");
+    invalid_setting=request;
+    invalid_setting.kits.front().cache["IISDKBUILDER_STATIC_NATIVE_AOT"]="ON";
+    check(!make_plan(invalid_setting),"global static AOT selection cannot be silently set per kit");
+    auto explicit_library=request;
+    explicit_library.sdks.front().cache["BUILD_SHARED_LIBS"]="OFF";
+    const auto library_plan=make_plan(explicit_library);
+    check(bool(library_plan),"explicit library linkage plan");
+    const auto& explicit_args=library_plan->kits.front().projects[1].commands.front().arguments;
+    check(std::ranges::find(explicit_args,"-DBUILD_SHARED_LIBS=OFF")!=explicit_args.end(),
+          "explicit SDK linkage override is respected");
     for (const auto& dependency:{"iiSDKCore","Addon","missing"}) {
         auto invalid=request;
         invalid.sdks.front().depends={dependency};

@@ -5,3 +5,4 @@
 **/.*.iisacc-preview
 .DS_Store
 __pycache__/
+resources/

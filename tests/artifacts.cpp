@@ -65,6 +65,14 @@ int main(int argc,char** argv) {
         auto web=inspect_artifact(js,wasm);
         require(web && web->file==module && web->format==BinaryFormat::webassembly &&
             web->execution==ExecutionModel::webassembly,"actual wasm module classified separately");
+        const auto esm=out/"web.mjs";
+        fixture::write(esm,{'e','x','p','o','r','t'});
+        auto module_loader=inspect_artifact(esm,wasm);
+        require(module_loader && module_loader->file==module && module_loader->format==BinaryFormat::webassembly,
+            "ES module loader resolves to the real WebAssembly module");
+        const auto missing_esm=out/"missing.mjs";
+        fixture::write(missing_esm,{'e','x','p','o','r','t'});
+        require(!inspect_artifact(missing_esm,wasm),"ES module without WebAssembly is rejected");
         require(!inspect_artifact(module,mac),"WASM cannot satisfy native target");
         for (auto p:{Platform::windows,Platform::macos,Platform::linux_os,Platform::android,Platform::ios})
             require(execution_model(p)==ExecutionModel::native,"five native platform contracts");

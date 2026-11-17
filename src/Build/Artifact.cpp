@@ -325,8 +325,8 @@ core::Result<ArtifactInfo> inspect_artifact(const std::filesystem::path &file, c
 
         auto actual = file;
         if (kit.platform == Platform::wasm && actual.extension() != ".wasm") {
-            if (actual.extension() != ".js" && actual.extension() != ".html")
-                reject("WebAssembly target requires a .wasm module or its JS/HTML glue");
+            if (actual.extension() != ".js" && actual.extension() != ".mjs" && actual.extension() != ".html")
+                reject("WebAssembly target requires a .wasm module or its JS/ES module/HTML glue");
             actual.replace_extension(".wasm");
         }
         const auto size = std::filesystem::file_size(actual);

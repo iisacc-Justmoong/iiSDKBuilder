@@ -203,6 +203,9 @@ if(BUILD_TESTING)
     endif()
     add_test(NAME iiSDKBuilder.source_layout COMMAND "${CMAKE_COMMAND}"
         "-DSOURCE_ROOT=${CMAKE_CURRENT_SOURCE_DIR}" -P "${CMAKE_CURRENT_SOURCE_DIR}/tests/source_layout.cmake")
+    add_test(NAME iiSDKBuilder.wasm_module_package COMMAND "${Python3_EXECUTABLE}" -B
+        "${CMAKE_CURRENT_SOURCE_DIR}/tests/wasm_module_package.py" "${CMAKE_COMMAND}")
+    set_tests_properties(iiSDKBuilder.wasm_module_package PROPERTIES TIMEOUT 60)
     include(cmake/HlsClang.cmake)
     iisdk_builder_find_hls_clang()
     add_test(NAME iiSDKBuilder.hls_clang_discovery COMMAND ${_test_workspace} "${CMAKE_COMMAND}"
@@ -324,6 +327,10 @@ if(BUILD_TESTING)
             "${CMAKE_CURRENT_SOURCE_DIR}/tests/wasm_builder.py" "$<TARGET_FILE:iiSDKBuilderCLI>"
             "@WORK@/wasm-builder" "${CMAKE_COMMAND}" "${IISDKBUILDER_TEST_EMSCRIPTEN_TOOLCHAIN}")
         set_tests_properties(iiSDKBuilder.wasm_builder PROPERTIES TIMEOUT 240)
+        add_test(NAME iiSDKBuilder.wasm_module_builder COMMAND ${_test_workspace} "${Python3_EXECUTABLE}" -B
+            "${CMAKE_CURRENT_SOURCE_DIR}/tests/wasm_builder.py" "$<TARGET_FILE:iiSDKBuilderCLI>"
+            "@WORK@/wasm-module-builder" "${CMAKE_COMMAND}" "${IISDKBUILDER_TEST_EMSCRIPTEN_TOOLCHAIN}" --module)
+        set_tests_properties(iiSDKBuilder.wasm_module_builder PROPERTIES TIMEOUT 240)
     endif()
     add_executable(iiSDKBuilderWasmLinkTests tests/wasm_link.cpp src/Build/WasmDylink.cpp)
     target_include_directories(iiSDKBuilderWasmLinkTests PRIVATE src/Build)

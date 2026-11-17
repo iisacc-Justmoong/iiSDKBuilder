@@ -5,7 +5,10 @@ import subprocess
 import sys
 from builder_subprocess import run_builder
 
-tool, work, cmake, toolchain = sys.argv[1:]
+tool, work, cmake, toolchain = sys.argv[1:5]
+module_loader = sys.argv[5:] == ['--module']
+if sys.argv[5:] and not module_loader:
+    raise ValueError('Unknown WebAssembly fixture mode')
 work=Path(work);core=work/'sdk/iiSDKCore';addon=work/'sdk/Addon';app=work/'app'
 for directory in (core,addon,app): directory.mkdir(parents=True)
 (core/'CMakeLists.txt').write_text('''cmake_minimum_required(VERSION 3.31)
@@ -33,7 +36,9 @@ project(WasmFixture LANGUAGES CXX)
 find_package(Addon CONFIG REQUIRED)
 add_executable(WasmFixture main.cpp)
 target_link_libraries(WasmFixture PRIVATE Addon::Used)
-''')
+''' + ('''set_target_properties(WasmFixture PROPERTIES SUFFIX ".mjs")
+target_link_options(WasmFixture PRIVATE -sMODULARIZE=1 -sEXPORT_ES6=1)
+''' if module_loader else ''))
 (app/'main.cpp').write_text('extern "C" int used(); int main() { return used(); }\n')
 manifest=work/'request.json'
 manifest.write_text(json.dumps({'schema':1,'app':{'name':'WasmFixture','source':str(app),'targets':['WasmFixture']},
@@ -49,6 +54,7 @@ if result.returncode:
 report=json.loads(result.stdout);kit=report['kits'][0]
 assert report['succeeded'] and kit['packaging']=='succeeded' and kit['execution']=='not_requested',kit
 package=Path(kit['packages'][0]);files={path.name for path in package.rglob('*') if path.is_file()}
-assert 'WasmFixture.js' in files and 'WasmFixture.wasm' in files and 'libUsed.so' in files,files
+loader = 'WasmFixture.mjs' if module_loader else 'WasmFixture.js'
+assert loader in files and 'WasmFixture.wasm' in files and 'libUsed.so' in files,files
 assert 'libUnused.so' not in files,files
 print('Builder WebAssembly main/side modules and loader packaged without execution')

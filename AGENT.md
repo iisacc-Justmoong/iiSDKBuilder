@@ -4,6 +4,14 @@ C++23과 표준·iiSDK의 공개 인터페이스를 사용한다. SDK 소스와 
 
 컴파일 결과는 저장소의 build/에 두고 테스트의 독립 작업 공간과 설치 검증 임시 데이터는 resources/ 안에 두어 실행 후 정리한다. 소스 변경 시 관련 docs/와 tests/를 함께 갱신한다. README.md는 영어, docs/ 문서는 한국어로 작성한다. 기존 작업과 사용자 파일을 보존한다. 플랫폼별 소스 이식과 실제 실행 검증을 구분한다.
 
+## 라이선스
+
+이 저장소의 iiSDKBuilder 모듈은 Apache License 2.0이다. 자사 소스, 문서, 도구, 테스트가 포함된다. 저작권 표시는 `Copyright (c) 2026 iisacc`이고 고지는 루트 `NOTICE`에 있다. 사람용 한국어 설명은 [docs/License.md](docs/License.md)이다.
+
+iiSDK 모듈은 Apache License 2.0이다. iisacc 제품은 GNU Affero General Public License version 3 또는 그 이후 버전(AGPL-3.0-or-later)이다.
+
+제3자와 벤더 코드는 원래 라이선스를 유지한다. 문서 재편 중에도 그 라이선스와 외부 원본은 보존한다.
+
 <!-- workspace-docs:agent:start -->
 ## 문서 구조와 에이전트 탐색
 

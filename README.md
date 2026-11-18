@@ -127,11 +127,19 @@ applications do not need that client or Python to run.
 
 ## License
 
-SPDX-License-Identifier: MIT
+SPDX-License-Identifier: Apache-2.0
 
-The original code and documentation in this repository are licensed under the
-[MIT License](LICENSE). Third-party code, libraries, fonts, tools, and model
-weights retain their respective licenses.
+This iiSDK module is licensed under the
+[Apache License, Version 2.0](LICENSE) (SPDX `Apache-2.0`).
+The copyright notice is `Copyright (c) 2026 iisacc`. Attribution for this
+distribution is in [NOTICE](NOTICE). The Korean statement of the same policy
+is [docs/License.md](docs/License.md).
+
+Every iiSDK module is Apache-2.0. iisacc products are licensed under the
+GNU Affero General Public License, version 3 or later (AGPL-3.0-or-later).
+
+Third-party and vendored code, libraries, fonts, tools, and model weights
+keep their original licenses.
 
 ## Source header layout
 

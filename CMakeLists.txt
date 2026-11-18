@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.31)
 project(iiSDKBuilder VERSION 0.4.0 LANGUAGES CXX)
+set(iiSDKBuilder_SPDX_LICENSE "Apache-2.0")
 set(CMAKE_CXX_EXTENSIONS OFF)
 # File creation is owned by iiFileProvider.
 find_package(iiFileProviderNative 0.6 CONFIG REQUIRED HINTS "$ENV{IIFILEPROVIDER_PREFIX}" "$ENV{HOME}/.local/SDK/iiFileProvider")
@@ -151,7 +152,7 @@ foreach(dependency IN ITEMS iiSDKCore::iiSDKCore iiSDKCore::Observation iiFilePr
             LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
     endif()
 endforeach()
-install(FILES README.md DESTINATION ${CMAKE_INSTALL_DATADIR}/iiSDKBuilder)
+install(FILES LICENSE NOTICE README.md DESTINATION ${CMAKE_INSTALL_DATADIR}/iiSDKBuilder)
 install(DIRECTORY docs/ DESTINATION ${CMAKE_INSTALL_DATADIR}/iiSDKBuilder/docs
     PATTERN "*.iisacc-preview" EXCLUDE PATTERN ".iisacc-temporary.lock" EXCLUDE PATTERN ".DS_Store" EXCLUDE)
 
@@ -201,6 +202,8 @@ if(BUILD_TESTING)
             "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_builder_subprocess.py" "@WORK@")
         set_tests_properties(iiSDKBuilder.timeout_cleanup PROPERTIES TIMEOUT 60)
     endif()
+    add_test(NAME iiSDKBuilder.license_text COMMAND "${CMAKE_COMMAND}"
+        "-DSOURCE_ROOT=${CMAKE_CURRENT_SOURCE_DIR}" -P "${CMAKE_CURRENT_SOURCE_DIR}/tests/license_text.cmake")
     add_test(NAME iiSDKBuilder.source_layout COMMAND "${CMAKE_COMMAND}"
         "-DSOURCE_ROOT=${CMAKE_CURRENT_SOURCE_DIR}" -P "${CMAKE_CURRENT_SOURCE_DIR}/tests/source_layout.cmake")
     add_test(NAME iiSDKBuilder.wasm_module_package COMMAND "${Python3_EXECUTABLE}" -B

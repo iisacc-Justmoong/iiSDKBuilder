@@ -10,9 +10,9 @@
   },
   "source": {
     "path": "README.md",
-    "sha256": "0a3e390f872615dc98e5f420ae4d16741f87fea97605b4af0e1c75f8744c9168",
-    "bytes": 9615,
-    "line_count": 161,
+    "sha256": "7ea22307e3e21446fd4e58da60d17f24943fd1babeefa2affd0191f56ca66bb6",
+    "bytes": 9969,
+    "line_count": 169,
     "encoding": "utf-8",
     "language": "en"
   },
@@ -379,7 +379,7 @@
       "kind": "paragraph",
       "start_line": 130,
       "end_line": 130,
-      "raw": "SPDX-License-Identifier: MIT\n"
+      "raw": "SPDX-License-Identifier: Apache-2.0\n"
     },
     {
       "id": "b000050",
@@ -392,38 +392,36 @@
       "id": "b000051",
       "kind": "paragraph",
       "start_line": 132,
-      "end_line": 134,
-      "raw": "The original code and documentation in this repository are licensed under the\n[MIT License](LICENSE). Third-party code, libraries, fonts, tools, and model\nweights retain their respective licenses.\n"
+      "end_line": 136,
+      "raw": "This iiSDK module is licensed under the\n[Apache License, Version 2.0](LICENSE) (SPDX `Apache-2.0`).\nThe copyright notice is `Copyright (c) 2026 iisacc`. Attribution for this\ndistribution is in [NOTICE](NOTICE). The Korean statement of the same policy\nis [docs/License.md](docs/License.md).\n"
     },
     {
       "id": "b000052",
-      "kind": "blank",
-      "start_line": 135,
-      "end_line": 135,
-      "raw": "\n"
-    },
-    {
-      "id": "b000053",
-      "kind": "heading",
-      "start_line": 136,
-      "end_line": 136,
-      "raw": "## Source header layout\n",
-      "level": 2,
-      "title": "Source header layout"
-    },
-    {
-      "id": "b000054",
       "kind": "blank",
       "start_line": 137,
       "end_line": 137,
       "raw": "\n"
     },
     {
-      "id": "b000055",
+      "id": "b000053",
       "kind": "paragraph",
       "start_line": 138,
+      "end_line": 139,
+      "raw": "Every iiSDK module is Apache-2.0. iisacc products are licensed under the\nGNU Affero General Public License, version 3 or later (AGPL-3.0-or-later).\n"
+    },
+    {
+      "id": "b000054",
+      "kind": "blank",
+      "start_line": 140,
+      "end_line": 140,
+      "raw": "\n"
+    },
+    {
+      "id": "b000055",
+      "kind": "paragraph",
+      "start_line": 141,
       "end_line": 142,
-      "raw": "Public headers and implementations live together in `src/iiSDKBuilder/`.\nThere is no separate authored `include/` tree. Existing public `#include` names\nand exported CMake targets are unchanged; installation still places only public\nheaders in the package include directory. Generated export headers belong to\n`build/`, not to the authored source tree.\n"
+      "raw": "Third-party and vendored code, libraries, fonts, tools, and model weights\nkeep their original licenses.\n"
     },
     {
       "id": "b000056",
@@ -434,90 +432,120 @@
     },
     {
       "id": "b000057",
-      "kind": "paragraph",
+      "kind": "heading",
       "start_line": 144,
-      "end_line": 146,
-      "raw": "Validate this layout from the SDK workspace with\n`python3 -B tests/test_source_header_layout.py`. Reconfigure, build, run CTest,\nand verify a staged installed consumer after changing source/header paths.\n"
+      "end_line": 144,
+      "raw": "## Source header layout\n",
+      "level": 2,
+      "title": "Source header layout"
     },
     {
       "id": "b000058",
       "kind": "blank",
-      "start_line": 147,
-      "end_line": 147,
+      "start_line": 145,
+      "end_line": 145,
       "raw": "\n"
     },
     {
       "id": "b000059",
-      "kind": "heading",
-      "start_line": 148,
-      "end_line": 148,
-      "raw": "## Native C++ high-level synthesis\n",
-      "level": 2,
-      "title": "Native C++ high-level synthesis"
+      "kind": "paragraph",
+      "start_line": 146,
+      "end_line": 150,
+      "raw": "Public headers and implementations live together in `src/iiSDKBuilder/`.\nThere is no separate authored `include/` tree. Existing public `#include` names\nand exported CMake targets are unchanged; installation still places only public\nheaders in the package include directory. Generated export headers belong to\n`build/`, not to the authored source tree.\n"
     },
     {
       "id": "b000060",
-      "kind": "blank",
-      "start_line": 149,
-      "end_line": 149,
-      "raw": "\n"
-    },
-    {
-      "id": "b000061",
-      "kind": "paragraph",
-      "start_line": 150,
-      "end_line": 150,
-      "raw": "`iisdk-builder hls` and `synthesize_hls()` compile a bounded C++23 integer kernel into synthesizable SystemVerilog. The native path uses Clang semantic analysis, typed dataflow, constant folding, common-subexpression reuse and static loop unrolling. Ready/valid backpressure or a combinational interface is emitted without a software runtime on the FPGA. The `fpga-hls` profile connects the generated RTL to Yosys verification or iCE40, Vivado and Quartus implementation. See [HLS](docs/HLS.md) and [HLSHello](examples/HLSHello/README.md) for the exact supported subset and reproducible validation.\n"
-    },
-    {
-      "id": "b000062",
       "kind": "blank",
       "start_line": 151,
       "end_line": 151,
       "raw": "\n"
     },
     {
-      "id": "b000063",
+      "id": "b000061",
       "kind": "paragraph",
       "start_line": 152,
-      "end_line": 152,
-      "raw": "Each test that generates files uses a unique temporary workspace below `resources/.state/`; it is removed after the test, including failure. Compiler output remains in `build/`. See [build layout](docs/BuildLayout.md).\n"
+      "end_line": 154,
+      "raw": "Validate this layout from the SDK workspace with\n`python3 -B tests/test_source_header_layout.py`. Reconfigure, build, run CTest,\nand verify a staged installed consumer after changing source/header paths.\n"
+    },
+    {
+      "id": "b000062",
+      "kind": "blank",
+      "start_line": 155,
+      "end_line": 155,
+      "raw": "\n"
+    },
+    {
+      "id": "b000063",
+      "kind": "heading",
+      "start_line": 156,
+      "end_line": 156,
+      "raw": "## Native C++ high-level synthesis\n",
+      "level": 2,
+      "title": "Native C++ high-level synthesis"
     },
     {
       "id": "b000064",
       "kind": "blank",
-      "start_line": 153,
-      "end_line": 153,
+      "start_line": 157,
+      "end_line": 157,
       "raw": "\n"
     },
     {
       "id": "b000065",
-      "kind": "html",
-      "start_line": 154,
-      "end_line": 154,
-      "raw": "<!-- workspace-docs:readme:start -->\n"
+      "kind": "paragraph",
+      "start_line": 158,
+      "end_line": 158,
+      "raw": "`iisdk-builder hls` and `synthesize_hls()` compile a bounded C++23 integer kernel into synthesizable SystemVerilog. The native path uses Clang semantic analysis, typed dataflow, constant folding, common-subexpression reuse and static loop unrolling. Ready/valid backpressure or a combinational interface is emitted without a software runtime on the FPGA. The `fpga-hls` profile connects the generated RTL to Yosys verification or iCE40, Vivado and Quartus implementation. See [HLS](docs/HLS.md) and [HLSHello](examples/HLSHello/README.md) for the exact supported subset and reproducible validation.\n"
     },
     {
       "id": "b000066",
+      "kind": "blank",
+      "start_line": 159,
+      "end_line": 159,
+      "raw": "\n"
+    },
+    {
+      "id": "b000067",
+      "kind": "paragraph",
+      "start_line": 160,
+      "end_line": 160,
+      "raw": "Each test that generates files uses a unique temporary workspace below `resources/.state/`; it is removed after the test, including failure. Compiler output remains in `build/`. See [build layout](docs/BuildLayout.md).\n"
+    },
+    {
+      "id": "b000068",
+      "kind": "blank",
+      "start_line": 161,
+      "end_line": 161,
+      "raw": "\n"
+    },
+    {
+      "id": "b000069",
+      "kind": "html",
+      "start_line": 162,
+      "end_line": 162,
+      "raw": "<!-- workspace-docs:readme:start -->\n"
+    },
+    {
+      "id": "b000070",
       "kind": "heading",
-      "start_line": 155,
-      "end_line": 155,
+      "start_line": 163,
+      "end_line": 163,
       "raw": "## Documentation entry points\n",
       "level": 2,
       "title": "Documentation entry points"
     },
     {
-      "id": "b000067",
+      "id": "b000071",
       "kind": "blank",
-      "start_line": 156,
-      "end_line": 156,
+      "start_line": 164,
+      "end_line": 164,
       "raw": "\n"
     },
     {
-      "id": "b000068",
+      "id": "b000072",
       "kind": "list",
-      "start_line": 157,
-      "end_line": 160,
+      "start_line": 165,
+      "end_line": 168,
       "raw": "- Human overview: this English `README.md`.\n- Agent instructions: [AGENT.md](AGENT.md).\n- Human documentation: [documentation index](docs/README.md).\n- Structured agent documentation: [agent index](docs/agent-index.json).\n",
       "items": [
         {
@@ -543,10 +571,10 @@
       ]
     },
     {
-      "id": "b000069",
+      "id": "b000073",
       "kind": "html",
-      "start_line": 161,
-      "end_line": 161,
+      "start_line": 169,
+      "end_line": 169,
       "raw": "<!-- workspace-docs:readme:end -->\n"
     }
   ],
@@ -592,28 +620,28 @@
       "start_line": 128
     },
     {
-      "block_id": "b000053",
+      "block_id": "b000057",
       "parent_id": "b000001",
       "level": 2,
       "title": "Source header layout",
       "anchor": "source-header-layout",
-      "start_line": 136
+      "start_line": 144
     },
     {
-      "block_id": "b000059",
+      "block_id": "b000063",
       "parent_id": "b000001",
       "level": 2,
       "title": "Native C++ high-level synthesis",
       "anchor": "native-c-high-level-synthesis",
-      "start_line": 148
+      "start_line": 156
     },
     {
-      "block_id": "b000066",
+      "block_id": "b000070",
       "parent_id": "b000001",
       "level": 2,
       "title": "Documentation entry points",
       "anchor": "documentation-entry-points",
-      "start_line": 155
+      "start_line": 163
     }
   ],
   "indexes": {
@@ -781,52 +809,66 @@
       },
       {
         "block_id": "b000051",
-        "label": "MIT License",
+        "label": "Apache License, Version 2.0",
         "target": "LICENSE",
         "kind": "relative",
         "line": 133
       },
       {
-        "block_id": "b000061",
+        "block_id": "b000051",
+        "label": "NOTICE",
+        "target": "NOTICE",
+        "kind": "relative",
+        "line": 135
+      },
+      {
+        "block_id": "b000051",
+        "label": "docs/License.md",
+        "target": "docs/License.md",
+        "kind": "relative",
+        "line": 136
+      },
+      {
+        "block_id": "b000065",
         "label": "HLS",
         "target": "docs/HLS.md",
-        "kind": "relative",
-        "line": 150
-      },
-      {
-        "block_id": "b000061",
-        "label": "HLSHello",
-        "target": "examples/HLSHello/README.md",
-        "kind": "relative",
-        "line": 150
-      },
-      {
-        "block_id": "b000063",
-        "label": "build layout",
-        "target": "docs/BuildLayout.md",
-        "kind": "relative",
-        "line": 152
-      },
-      {
-        "block_id": "b000068",
-        "label": "AGENT.md",
-        "target": "AGENT.md",
         "kind": "relative",
         "line": 158
       },
       {
-        "block_id": "b000068",
+        "block_id": "b000065",
+        "label": "HLSHello",
+        "target": "examples/HLSHello/README.md",
+        "kind": "relative",
+        "line": 158
+      },
+      {
+        "block_id": "b000067",
+        "label": "build layout",
+        "target": "docs/BuildLayout.md",
+        "kind": "relative",
+        "line": 160
+      },
+      {
+        "block_id": "b000072",
+        "label": "AGENT.md",
+        "target": "AGENT.md",
+        "kind": "relative",
+        "line": 166
+      },
+      {
+        "block_id": "b000072",
         "label": "documentation index",
         "target": "docs/README.md",
         "kind": "relative",
-        "line": 159
+        "line": 167
       },
       {
-        "block_id": "b000068",
+        "block_id": "b000072",
         "label": "agent index",
         "target": "docs/agent-index.json",
         "kind": "relative",
-        "line": 160
+        "line": 168
       }
     ],
     "tables": []

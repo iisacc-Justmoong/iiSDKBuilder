@@ -10,9 +10,9 @@
   },
   "source": {
     "path": "README.md",
-    "sha256": "0a3e390f872615dc98e5f420ae4d16741f87fea97605b4af0e1c75f8744c9168",
-    "bytes": 9615,
-    "line_count": 161,
+    "sha256": "eb8c5ad58ef04e9a62e97b577ac58daa8846595e152eca7382419d6f6af4bf7d",
+    "bytes": 10940,
+    "line_count": 184,
     "encoding": "utf-8",
     "language": "en"
   },
@@ -492,32 +492,93 @@
     },
     {
       "id": "b000065",
-      "kind": "html",
+      "kind": "heading",
       "start_line": 154,
       "end_line": 154,
-      "raw": "<!-- workspace-docs:readme:start -->\n"
+      "raw": "## Hosted build test\n",
+      "level": 2,
+      "title": "Hosted build test"
     },
     {
       "id": "b000066",
-      "kind": "heading",
+      "kind": "blank",
       "start_line": 155,
       "end_line": 155,
+      "raw": "\n"
+    },
+    {
+      "id": "b000067",
+      "kind": "paragraph",
+      "start_line": 156,
+      "end_line": 156,
+      "raw": "A push of this repository runs one build and test on GitHub-hosted `ubuntu-latest` and `windows-latest`. Linux compiles with the runner's GCC. Clang and `clang-scan-deps` are installed for callers that select Clang; Ubuntu's Clang 18 reports `__cpp_concepts` as 201907, so libstdc++ does not declare `std::expected` for that compiler. The same [workflow](.github/workflows/build-test.yml) is reusable. Another iiSDK C++ repository calls it without its own OS matrix and without a self-hosted runner:\n"
+    },
+    {
+      "id": "b000068",
+      "kind": "blank",
+      "start_line": 157,
+      "end_line": 157,
+      "raw": "\n"
+    },
+    {
+      "id": "b000069",
+      "kind": "fenced_code",
+      "start_line": 158,
+      "end_line": 173,
+      "raw": "```yaml\nname: Build test\non:\n  push:\njobs:\n  build-test:\n    uses: iisacc-Justmoong/iiSDKBuilder/.github/workflows/build-test.yml@main\n    with:\n      build_type: Release\n      build_tests: true\n      # cmake_args: -DIISDK_OPTION=ON\n      # apt_packages: pkg-config\n      # choco_packages: nuget\n      # dependencies: |\n      #   iisacc-Justmoong/iiSDKCore@master -- -DBUILD_TESTING=OFF\n```\n",
+      "language": "yaml",
+      "code": "name: Build test\non:\n  push:\njobs:\n  build-test:\n    uses: iisacc-Justmoong/iiSDKBuilder/.github/workflows/build-test.yml@main\n    with:\n      build_type: Release\n      build_tests: true\n      # cmake_args: -DIISDK_OPTION=ON\n      # apt_packages: pkg-config\n      # choco_packages: nuget\n      # dependencies: |\n      #   iisacc-Justmoong/iiSDKCore@master -- -DBUILD_TESTING=OFF\n",
+      "closed": true
+    },
+    {
+      "id": "b000070",
+      "kind": "blank",
+      "start_line": 174,
+      "end_line": 174,
+      "raw": "\n"
+    },
+    {
+      "id": "b000071",
+      "kind": "paragraph",
+      "start_line": 175,
+      "end_line": 175,
+      "raw": "iiSDKCore is tier 0 and omits `dependencies`. Qt 6.8.3 and Apple frameworks are not installed on these runners. Disable a Qt target with that project's CMake option, for example `-DIIFILEPROVIDER_BUILD_QT_API=OFF`, and do not set `Qt6_DIR` to `/Volumes/Storage/Qt/6.8.3` or `C:/Qt/6.8.3`. Apple-only sources stay behind their existing `APPLE` / `iOS` conditions. See [hosted build test](docs/HostedBuild.md).\n"
+    },
+    {
+      "id": "b000072",
+      "kind": "blank",
+      "start_line": 176,
+      "end_line": 176,
+      "raw": "\n"
+    },
+    {
+      "id": "b000073",
+      "kind": "html",
+      "start_line": 177,
+      "end_line": 177,
+      "raw": "<!-- workspace-docs:readme:start -->\n"
+    },
+    {
+      "id": "b000074",
+      "kind": "heading",
+      "start_line": 178,
+      "end_line": 178,
       "raw": "## Documentation entry points\n",
       "level": 2,
       "title": "Documentation entry points"
     },
     {
-      "id": "b000067",
+      "id": "b000075",
       "kind": "blank",
-      "start_line": 156,
-      "end_line": 156,
+      "start_line": 179,
+      "end_line": 179,
       "raw": "\n"
     },
     {
-      "id": "b000068",
+      "id": "b000076",
       "kind": "list",
-      "start_line": 157,
-      "end_line": 160,
+      "start_line": 180,
+      "end_line": 183,
       "raw": "- Human overview: this English `README.md`.\n- Agent instructions: [AGENT.md](AGENT.md).\n- Human documentation: [documentation index](docs/README.md).\n- Structured agent documentation: [agent index](docs/agent-index.json).\n",
       "items": [
         {
@@ -543,10 +604,10 @@
       ]
     },
     {
-      "id": "b000069",
+      "id": "b000077",
       "kind": "html",
-      "start_line": 161,
-      "end_line": 161,
+      "start_line": 184,
+      "end_line": 184,
       "raw": "<!-- workspace-docs:readme:end -->\n"
     }
   ],
@@ -608,12 +669,20 @@
       "start_line": 148
     },
     {
-      "block_id": "b000066",
+      "block_id": "b000065",
+      "parent_id": "b000001",
+      "level": 2,
+      "title": "Hosted build test",
+      "anchor": "hosted-build-test",
+      "start_line": 154
+    },
+    {
+      "block_id": "b000074",
       "parent_id": "b000001",
       "level": 2,
       "title": "Documentation entry points",
       "anchor": "documentation-entry-points",
-      "start_line": 155
+      "start_line": 178
     }
   ],
   "indexes": {
@@ -657,6 +726,13 @@
         "block_id": "b000045",
         "line": 126,
         "text": "applications do not need that client or Python to run.",
+        "basis": "lexical_match",
+        "context": "paragraph"
+      },
+      {
+        "block_id": "b000071",
+        "line": 175,
+        "text": "iiSDKCore is tier 0 and omits `dependencies`. Qt 6.8.3 and Apple frameworks are not installed on these runners. Disable a Qt target with that project's CMake option, for example `-DIIFILEPROVIDER_BUILD_QT_API=OFF`, and do not set `Qt6_DIR` to `/Volumes/Storage/Qt/6.8.3` or `C:/Qt/6.8.3`. Apple-only sources stay behind their existing `APPLE` / `iOS` conditions. See [hosted build test](docs/HostedBuild.md).",
         "basis": "lexical_match",
         "context": "paragraph"
       }
@@ -808,25 +884,39 @@
         "line": 152
       },
       {
-        "block_id": "b000068",
+        "block_id": "b000067",
+        "label": "workflow",
+        "target": ".github/workflows/build-test.yml",
+        "kind": "relative",
+        "line": 156
+      },
+      {
+        "block_id": "b000071",
+        "label": "hosted build test",
+        "target": "docs/HostedBuild.md",
+        "kind": "relative",
+        "line": 175
+      },
+      {
+        "block_id": "b000076",
         "label": "AGENT.md",
         "target": "AGENT.md",
         "kind": "relative",
-        "line": 158
+        "line": 181
       },
       {
-        "block_id": "b000068",
+        "block_id": "b000076",
         "label": "documentation index",
         "target": "docs/README.md",
         "kind": "relative",
-        "line": 159
+        "line": 182
       },
       {
-        "block_id": "b000068",
+        "block_id": "b000076",
         "label": "agent index",
         "target": "docs/agent-index.json",
         "kind": "relative",
-        "line": 160
+        "line": 183
       }
     ],
     "tables": []

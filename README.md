@@ -151,6 +151,29 @@ and verify a staged installed consumer after changing source/header paths.
 
 Each test that generates files uses a unique temporary workspace below `resources/.state/`; it is removed after the test, including failure. Compiler output remains in `build/`. See [build layout](docs/BuildLayout.md).
 
+## Hosted build test
+
+A push of this repository runs one build and test on GitHub-hosted `ubuntu-latest` and `windows-latest`. Linux compiles with the runner's GCC. Clang and `clang-scan-deps` are installed for callers that select Clang; Ubuntu's Clang 18 reports `__cpp_concepts` as 201907, so libstdc++ does not declare `std::expected` for that compiler. The same [workflow](.github/workflows/build-test.yml) is reusable. Another iiSDK C++ repository calls it without its own OS matrix and without a self-hosted runner:
+
+```yaml
+name: Build test
+on:
+  push:
+jobs:
+  build-test:
+    uses: iisacc-Justmoong/iiSDKBuilder/.github/workflows/build-test.yml@main
+    with:
+      build_type: Release
+      build_tests: true
+      # cmake_args: -DIISDK_OPTION=ON
+      # apt_packages: pkg-config
+      # choco_packages: nuget
+      # dependencies: |
+      #   iisacc-Justmoong/iiSDKCore@master -- -DBUILD_TESTING=OFF
+```
+
+iiSDKCore is tier 0 and omits `dependencies`. Qt 6.8.3 and Apple frameworks are not installed on these runners. Disable a Qt target with that project's CMake option, for example `-DIIFILEPROVIDER_BUILD_QT_API=OFF`, and do not set `Qt6_DIR` to `/Volumes/Storage/Qt/6.8.3` or `C:/Qt/6.8.3`. Apple-only sources stay behind their existing `APPLE` / `iOS` conditions. See [hosted build test](docs/HostedBuild.md).
+
 <!-- workspace-docs:readme:start -->
 ## Documentation entry points
 

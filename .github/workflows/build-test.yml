@@ -1,0 +1,154 @@
+# Reusable hosted build and test for iiSDK C++ repositories.
+# Pushing this repository runs the job directly. Another repository calls it
+# with `workflow_call` and does not add its own OS matrix.
+name: Build test
+
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      project_repository:
+        description: owner/repo to build. Empty builds this repository.
+        type: string
+        default: ""
+      project_ref:
+        description: Git ref of project_repository. Required when project_repository is set.
+        type: string
+        default: ""
+      cmake_args:
+        description: Extra CMake configure arguments. @dep:Name@ expands to that dependency checkout.
+        type: string
+        default: ""
+      build_type:
+        description: CMAKE_BUILD_TYPE
+        type: string
+        default: Release
+      build_tests:
+        description: Configure BUILD_TESTING and run ctest.
+        type: boolean
+        default: true
+      apt_packages:
+        description: Extra apt packages on Ubuntu, separated by spaces.
+        type: string
+        default: ""
+      choco_packages:
+        description: Extra Chocolatey packages on Windows, separated by spaces.
+        type: string
+        default: ""
+      dependencies:
+        description: >
+          iiSDK repositories to fetch, build, and install before the project,
+          one per line: owner/repo[@ref] -- -DSOME_OPTION=OFF
+        type: string
+        default: ""
+  workflow_call:
+    inputs:
+      cmake_args:
+        description: Extra CMake configure arguments. @dep:Name@ expands to that dependency checkout.
+        type: string
+        default: ""
+      build_type:
+        description: CMAKE_BUILD_TYPE
+        type: string
+        default: Release
+      build_tests:
+        description: Configure BUILD_TESTING and run ctest.
+        type: boolean
+        default: true
+      apt_packages:
+        description: Extra apt packages on Ubuntu, separated by spaces.
+        type: string
+        default: ""
+      choco_packages:
+        description: Extra Chocolatey packages on Windows, separated by spaces.
+        type: string
+        default: ""
+      dependencies:
+        description: >
+          iiSDK repositories to fetch, build, and install before the project,
+          one per line: owner/repo[@ref] -- -DSOME_OPTION=OFF
+        type: string
+        default: ""
+
+# A newer push of the same ref cancels the older run. The group is the caller
+# repository when this file is used with workflow_call.
+concurrency:
+  group: ${{ github.repository }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    env:
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+      CCACHE_MAXSIZE: 500M
+      SCCACHE_DIR: ${{ github.workspace }}/.sccache
+      SCCACHE_CACHE_SIZE: 500M
+      INPUT_CMAKE_ARGS: ${{ inputs.cmake_args }}
+      INPUT_BUILD_TYPE: ${{ inputs.build_type || 'Release' }}
+      INPUT_BUILD_TESTS: ${{ github.event_name == 'push' && 'true' || (inputs.build_tests && 'true' || 'false') }}
+      INPUT_APT_PACKAGES: ${{ inputs.apt_packages }}
+      INPUT_CHOCO_PACKAGES: ${{ inputs.choco_packages }}
+      INPUT_DEPENDENCIES: ${{ inputs.dependencies }}
+      EVENT_NAME: ${{ github.event_name }}
+    steps:
+      - name: Checkout workflow driver
+        uses: actions/checkout@v4
+        with:
+          repository: iisacc-Justmoong/iiSDKBuilder
+          ref: ${{ github.workflow_sha }}
+          path: _iisdk_workflow
+
+      - name: Checkout project
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event_name == 'workflow_dispatch' && inputs.project_repository || github.repository }}
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.project_ref || github.sha }}
+          path: project
+          submodules: recursive
+          fetch-depth: 1
+
+      - name: Cache compiler results
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ github.workspace }}/.ccache
+            ${{ github.workspace }}/.sccache
+          key: ${{ runner.os }}-compiler-cache-${{ hashFiles('project/**/CMakeLists.txt', 'project/cmake/**') }}
+          restore-keys: |
+            ${{ runner.os }}-compiler-cache-
+
+      - name: Configure, build, and test
+        id: build
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${HOME:-}" && -n "${USERPROFILE:-}" ]]; then
+            export HOME="${USERPROFILE}"
+          fi
+          if command -v python3 >/dev/null 2>&1; then
+            PY=python3
+          else
+            PY=python
+          fi
+          export PROJECT_DIR="${GITHUB_WORKSPACE}/project"
+          "$PY" "${GITHUB_WORKSPACE}/_iisdk_workflow/.github/scripts/hosted_build_test.py"
+
+      - name: Upload test logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs-${{ matrix.os }}
+          if-no-files-found: ignore
+          path: |
+            project/build/Testing/**
+            project/build/CMakeFiles/*.log
+            project/build/CMakeFiles/CMakeConfigureLog.yaml
+            project/**/CMakeError.log
+            project/**/CMakeOutput.log

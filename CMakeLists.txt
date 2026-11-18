@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.31)
 project(iiSDKBuilder VERSION 0.4.0 LANGUAGES CXX)
+include(./cmake/ModuleImports.cmake)
 set(CMAKE_CXX_EXTENSIONS OFF)
 # File creation is owned by iiFileProvider.
 find_package(iiFileProviderNative 0.6 CONFIG REQUIRED HINTS "$ENV{IIFILEPROVIDER_PREFIX}" "$ENV{HOME}/.local/SDK/iiFileProvider")

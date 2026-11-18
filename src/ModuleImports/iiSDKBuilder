@@ -1,0 +1,9 @@
+#pragma once
+
+// C++ public entry for iiSDKBuilder; the linked components select the API.
+#include <iiSDKBuilder/Builder.h>
+#include <iiSDKBuilder/NativeAot.h>
+#include <iiSDKBuilder/Resources.h>
+#include <iiSDKBuilder/Hls.h>
+#include <iiSDKBuilder/iiSDKBuilder.h>
+#include <iiSDKBuilder/Export.h>

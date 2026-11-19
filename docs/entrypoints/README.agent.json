@@ -10,8 +10,8 @@
   },
   "source": {
     "path": "README.md",
-    "sha256": "0a3e390f872615dc98e5f420ae4d16741f87fea97605b4af0e1c75f8744c9168",
-    "bytes": 9615,
+    "sha256": "f5f5371ec62e72aad5888923393bd2dffa1e116bb05ec5e05a195445fef8726e",
+    "bytes": 9629,
     "line_count": 161,
     "encoding": "utf-8",
     "language": "en"
@@ -379,7 +379,7 @@
       "kind": "paragraph",
       "start_line": 130,
       "end_line": 130,
-      "raw": "SPDX-License-Identifier: MIT\n"
+      "raw": "SPDX-License-Identifier: Apache-2.0\n"
     },
     {
       "id": "b000050",
@@ -393,7 +393,7 @@
       "kind": "paragraph",
       "start_line": 132,
       "end_line": 134,
-      "raw": "The original code and documentation in this repository are licensed under the\n[MIT License](LICENSE). Third-party code, libraries, fonts, tools, and model\nweights retain their respective licenses.\n"
+      "raw": "The original code and documentation in this repository are licensed under the\n[Apache License 2.0](LICENSE). Third-party code, libraries, fonts, tools, and model\nweights retain their respective licenses.\n"
     },
     {
       "id": "b000052",
@@ -781,7 +781,7 @@
       },
       {
         "block_id": "b000051",
-        "label": "MIT License",
+        "label": "Apache License 2.0",
         "target": "LICENSE",
         "kind": "relative",
         "line": 133
